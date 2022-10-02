@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" version="3.0" method="upgrade">
+
+	<name>COM_SEMINARDESK</name>
+	<creationDate>October 2022</creationDate>
+	<author>Benno Flory</author>
+	<authorEmail>kontakt@web-und-wandel.net</authorEmail>
+	<authorUrl>https://www.web-und-wandel.net</authorUrl>
+	<copyright>Copyright ZEGG gGmbH, DE-Bad Belzig</copyright>
+	<license>GNU GPLv3</license>
+	<!--  The version string is recorded in the components table -->
+	<version>0.0.1</version>
+	<description>COM_SEMINARDESK_DESC</description>
+
+	<update>
+		<schemas>
+			<schemapath type="mysql">sql/updates/mysql</schemapath>
+		</schemas>
+	</update>
+
+	<!-- Site Main File Copy Section -->
+	<!-- Note the folder attribute: This attribute describes the folder
+		to copy FROM in the package to install therefore files copied
+		in this section are copied from /site/ in the package -->
+	<files folder="site">
+		<filename>index.html</filename>
+		<filename>seminardesk.php</filename>
+		<filename>controller.php</filename>
+		<folder>views</folder>
+	</files>
+
+	<administration>
+		<!-- Administration Menu Section -->
+		<menu link='index.php?option=com_seminardesk'>SeminarDesk</menu>
+		<!-- Administration Main File Copy Section -->
+		<!-- Note the folder attribute: This attribute describes the folder
+			to copy FROM in the package to install therefore files copied
+			in this section are copied from /admin/ in the package -->
+		<files folder="admin">
+			<!-- Admin Main File Copy Section -->
+			<filename>index.html</filename>
+			<filename>seminardesk.php</filename>
+			<!-- SQL files section -->
+			<folder>sql</folder>
+		</files>
+	</administration>
+
+</extension>

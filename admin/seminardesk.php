@@ -1,0 +1,2 @@
+<?php
+echo 'SeminarDesk Admin';
