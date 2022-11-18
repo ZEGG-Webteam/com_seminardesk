@@ -26,6 +26,8 @@
 		<filename>index.html</filename>
 		<filename>seminardesk.php</filename>
 		<filename>controller.php</filename>
+		<folder>assets</folder>
+		<folder>helpers</folder>
 		<folder>views</folder>
 	</files>
 

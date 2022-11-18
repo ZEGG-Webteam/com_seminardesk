@@ -10,6 +10,8 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
+JLoader::register('SeminardeskHelperEvents', JPATH_SITE . '/components/com_seminardesk/helpers/events.php');
+
 // Get an instance of the controller prefixed by SeminarDesk
 $controller = JControllerLegacy::getInstance('SeminarDesk');
 

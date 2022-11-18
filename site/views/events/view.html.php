@@ -26,8 +26,24 @@ class SeminarDeskViewEvents extends JViewLegacy
 	 */
 	function display($tpl = null)
 	{
+    $app = JFactory::getApplication();
+    
+    //-- Get key for translations from SeminarDesk (e.g. 'DE', 'EN')
+    $this->langKey = SeminardeskHelperEvents::getCurrentLanguageKey();
+    
+    //-- Get SeminarDesk API settings
+    $this->tenant_id = $app->input->get('tenant_id', 'zegg', 'STRING');
+    
+    // Configuration - To do: move into some propper configuration place
+    $config = [
+      'api' => 'https://' . $this->tenant_id . '.seminardesk.de/api',
+      'booking_base' => 'https://booking.seminardesk.de/' . $this->tenant_id . '/',
+    ];
+
 		// Assign data to the view
-		$this->msg = 'SeminarDesk Events';
+    $this->title = $app->getMenu()->getActive()->title;
+    $this->pageclass_sfx = htmlspecialchars($app->input->get('pageclass_sfx'), ENT_COMPAT, 'UTF-8');
+    $this->eventDates = SeminardeskHelperEvents::getEventDates($config);
 
 		// Display the view
 		parent::display($tpl);
