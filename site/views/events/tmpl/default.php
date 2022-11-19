@@ -11,7 +11,7 @@
 defined('_JEXEC') or die('Restricted access');
 
 JHtml::_('jquery.framework');
-JHTML::_('behavior.modal');
+//JHTML::_('behavior.modal'); // use with class="modal" and rel="{handler: 'iframe'}" in link
 
 $app = JFactory::getApplication();
 
@@ -47,11 +47,7 @@ $previousEventMonth = '';
   
       <div class="sd-event">
         
-        <?php if ($eventDate->registrationAvailable) : ?>
-        <a class="modal registration-available" href="<?= $eventDate->booking_url ?>" rel="{handler: 'iframe'}">
-        <?php else : ?>
-        <a class="no-registration-available no-link" title="<?php echo JText::_("COM_SEMINARDESK_EVENTS_NO_REGISTRATION_AVAILABLE"); ?>">
-        <?php endif; ?>
+        <a class="registration-available" href="<?= $eventDate->details_url ?>" target="seminardesk">
           
           <?php $sameYear = date('Y', $eventDate->beginDate) === date('Y', $eventDate->endDate); ?>
           <div class="sd-event-date <?= (!$sameYear)?' not-same-year':'' ?>">

@@ -114,7 +114,8 @@ class SeminardeskHelperEvents
         $eventDate->dateFormatted = self::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
         
         //-- Booking
-        $eventDate->booking_url = self::getBookingUrl($eventDate, $langKey, $config);
+        $eventDate->details_url = self::getDetailsUrl($eventDate, $langKey, $config);
+//        $eventDate->booking_url = self::getBookingUrl($eventDate, $langKey, $config);
         $eventDate->statusLabel = self::getStatusLabel($eventDate);
         
         $eventDates[$key] = $eventDate;
@@ -128,6 +129,22 @@ class SeminardeskHelperEvents
   }
   
   /**
+   * Get url for SeminarDesk detail page
+   * - TO DO: Preselection of a specific date: ?eventDateId=<id> - NOT working here!
+   *   See description of getBookingUrl()
+   * 
+   * @param object $eventDate
+   * @param string $landKey
+   * @param string $booking_base_url
+   * @return string URL to event detail page
+   */
+  public static function getDetailsUrl($eventDate, $langKey, $config)
+  {
+    $slug = self::getValueByLanguage($eventDate->titleSlug, $langKey);
+    return $config['booking_base'] . $eventDate->eventId . '/' . $slug;
+  }
+  
+  /**
    * Get url for SeminarDesk booking
    * - Preselection of a specific date: ?eventDateId=<id>
    * - For preselection of multiple dates of an event (e.g. regular annual group), 
@@ -136,12 +153,11 @@ class SeminardeskHelperEvents
    * @param object $eventDate
    * @param string $landKey
    * @param string $booking_base_url
-   * @return string URL to embedded 
+   * @return string URL to embedded event booking form
    */
   public static function getBookingUrl($eventDate, $langKey, $config)
   {
-    $slug = self::getValueByLanguage($eventDate->titleSlug, $langKey);
-    return $config['booking_base'] . $eventDate->eventId . '/' . $slug . '/embed?eventDateId=' . $eventDate->id;
+    return self::getDetailsUrl($eventDate, $langKey, $config) . '/embed?eventDateId=' . $eventDate->id;
   }
   
   /**
