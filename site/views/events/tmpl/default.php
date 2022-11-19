@@ -30,44 +30,64 @@ $previousEventMonth = '';
 		</div>
 	<?php // endif; ?>
   
-  <?php if ($this->eventDates) : ?>
-    <?php foreach($this->eventDates as $eventDate) : ?>
+  <div class="sd-filter">
+    <form class="sd-filter-form">
+      <input type="date" name="filter_date_from" id="sd-filter-date-from" placeholder=" / /  Datumswahl">
+      <input type="text" name="filter_search_term" id="sd-filter-search-term" value="" placeholder="z.B. 'Forum'">
+      <button class="btn btn-secondary" type="submit">Suchen</button>
+    </form>
+  </div>
   
-      <?php 
-        //-- Month headings?
+  <div class="sd-eventlist">
+    <div class="sd-month">
+      <?php foreach($this->eventDates as $eventDate) : ?>
+        <?php 
+        //-- New month heading?
         $currentMonth = (int)date('m', $eventDate->beginDate);
-        if ($currentMonth !== $previousEventMonth) { ?>
-          <div class="sd-month-row">
-            <h3><?= JText::sprintf( JHTML::_('date', $eventDate->beginDate, 'F Y')) ?></h3>
+        if ($currentMonth !== $previousEventMonth) { 
+          // Close last month container and open new one?>
           </div>
+          <div class="sd-month">
+            <div class="sd-month-row">
+              <h3><?= JText::sprintf( JHTML::_('date', $eventDate->beginDate, 'F Y')) ?></h3>
+            </div>
           <?php
           $previousEventMonth = $currentMonth;
         }
-      ?>
+        ?>
   
-      <div class="sd-event">
-        
-        <a class="registration-available" href="<?= $eventDate->details_url ?>" target="seminardesk">
-          
-          <?php $sameYear = date('Y', $eventDate->beginDate) === date('Y', $eventDate->endDate); ?>
-          <div class="sd-event-date <?= (!$sameYear)?' not-same-year':'' ?>">
-            <?= $eventDate->dateFormatted; ?>
-          </div>
-          <div class="sd-event-title">
-            <?= $eventDate->title; ?>
-          </div>
-          <div class="sd-event-facilitators">
-            <?= implode(', ', $eventDate->facilitators); ?>
-          </div>
-          <div class="sd-event-registration">
-            <?= $eventDate->statusLabel; ?>
-          </div>
-          
-        </a>
-          
-      </div>
-    <?php endforeach; ?>
-  <?php else : ?>
-    <p><?php echo JText::_("COM_SEMINARDESK_EVENTS_NO_EVENTS_FOUND");?></p>
-  <?php endif; ?>
+        <div class="sd-event" itemscope="itemscope" itemtype="https://schema.org/Event" 
+             data-start-date="<?= date('Y-m-d', $eventDate->beginDate) ?>"
+             data-title="<?= $eventDate->title ?>"
+             data-fascilitators="<?= implode(' ', $eventDate->facilitators) ?>">
+
+          <a href="<?= $eventDate->details_url ?>" target="seminardesk" itemprop="url" class="registration-available">
+            <?php $sameYear = date('Y', $eventDate->beginDate) === date('Y', $eventDate->endDate); ?>
+            <div class="sd-event-date <?= (!$sameYear)?' not-same-year':'' ?>">
+              <time itemprop="startDate" 
+                    datetime="<?= date('c', $eventDate->beginDate) ?>" 
+                    content="<?= date('c', $eventDate->beginDate) ?>">
+                <?= $eventDate->dateFormatted; ?>
+              </time>
+              <time itemprop="endDate" datetime="<?= date('c', $eventDate->endDate) ?>"></time>
+            </div>
+            <div class="sd-event-title">
+              <?= $eventDate->title; ?>
+            </div>
+            <div class="sd-event-facilitators">
+              <?= implode(', ', $eventDate->facilitators); ?>
+            </div>
+            <div class="sd-event-registration">
+              <?= $eventDate->statusLabel; ?>
+            </div>
+
+          </a>
+
+        </div>
+      <?php endforeach; ?>
+    </div>
+    <div class="no-events-found<?= ($this->eventDates)?'':' hidden' ?>">
+      <p><?php echo JText::_("COM_SEMINARDESK_EVENTS_NO_EVENTS_FOUND");?></p>
+    </div>
+  </div>
 </div>
