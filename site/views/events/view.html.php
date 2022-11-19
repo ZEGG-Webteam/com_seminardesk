@@ -37,7 +37,7 @@ class SeminarDeskViewEvents extends JViewLegacy
     // Configuration - To do: move into some propper configuration place
     $config = [
       'api' => 'https://' . $this->tenant_id . '.seminardesk.de/api',
-      'booking_base' => 'https://booking.seminardesk.de/' . $this->tenant_id . '/',
+      'booking_base' => 'https://booking.seminardesk.de/' . strtolower($this->langKey) . '/' . $this->tenant_id . '/',
     ];
 
 		// Assign data to the view
