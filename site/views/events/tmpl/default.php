@@ -24,16 +24,21 @@ $previousEventMonth = '';
 ?>
   
 <div class="sd-events<?php echo ($this->pageclass_sfx)?' sd-events'.$this->pageclass_sfx:''; ?>">
+  
 	<?php // if ($app->input->get('show_page_heading')) : // to do: buggy ?>
 		<div class="page-header">
 			<h1><?= $this->escape($this->title) ?></h1>
 		</div>
 	<?php // endif; ?>
   
+  <div class="btn-warning"><!-- temporary!! -->
+    <?= JText::_("COM_SEMINARDESK_TEMP_WARNING");?>
+  </div>
+  
   <div class="sd-filter">
     <form class="sd-filter-form">
-      <input type="date" name="filter_date_from" id="sd-filter-date-from" placeholder=" / /  Datumswahl">
-      <input type="text" name="filter_search_term" id="sd-filter-search-term" value="" placeholder="z.B. 'Forum'">
+      <input type="date" name="filter_date_from" id="sd-filter-date-from" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_DATE_PLACEHOLDER");?>">
+      <input type="text" name="filter_search_term" id="sd-filter-search-term" value="" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_TERM_PLACEHOLDER");?>">
       <button class="btn btn-secondary" type="submit">Suchen</button>
     </form>
   </div>
@@ -86,8 +91,8 @@ $previousEventMonth = '';
         </div>
       <?php endforeach; ?>
     </div>
-    <div class="no-events-found<?= ($this->eventDates)?'':' hidden' ?>">
-      <p><?php echo JText::_("COM_SEMINARDESK_EVENTS_NO_EVENTS_FOUND");?></p>
+    <div class="no-events-found<?= ($this->eventDates)?' hidden':'' ?>">
+      <p><?= JText::_("COM_SEMINARDESK_EVENTS_NO_EVENTS_FOUND");?></p>
     </div>
   </div>
 </div>
