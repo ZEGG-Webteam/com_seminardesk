@@ -7,6 +7,7 @@
  * @copyright  2022 Benno Flory
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
+
 // No direct access
 defined('_JEXEC') or die;
 
@@ -16,36 +17,47 @@ use \Joomla\CMS\Factory;
 use \Joomla\CMS\Language\Text;
 
 /**
- * View class for a list of Seminardesk.
+ * View class for a list of SeminarDesk Events
  *
  * @since  1.6
  */
 class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
 {
 	protected $items;
-
 	protected $pagination;
-
 	protected $state;
-
 	protected $params;
 
 	/**
-	 * Display the view
+	 * Display the Events view
 	 *
-	 * @param   string  $tpl  Template name
-	 *
+	 * @param   string  $tpl  Name of the template file to parse; automatically searches through the template paths.
 	 * @return void
-	 *
 	 * @throws Exception
 	 */
 	public function display($tpl = null)
 	{
 		$app = Factory::getApplication();
-
+		
 		$this->state = $this->get('State');
 		$this->params = $this->state->get('params');
 		
+    //-- Get key for translations from SeminarDesk (e.g. 'DE', 'EN')
+    $this->langKey = SeminardeskHelperEvents::getCurrentLanguageKey();
+
+    //-- Get SeminarDesk API settings
+    $this->tenant_id = $app->input->get('tenant_id', 'zegg', 'STRING');
+
+    // Configuration - To do: move into some propper configuration place
+    $config = [
+      'api' => 'https://' . $this->tenant_id . '.seminardesk.de/api',
+      'booking_base' => 'https://booking.seminardesk.de/' . strtolower($this->langKey) . '/' . $this->tenant_id . '/',
+    ];
+
+    // Assign data to the view
+    $this->title = $app->getMenu()->getActive()->title;
+    $this->pageclass_sfx = htmlspecialchars($app->input->get('pageclass_sfx'), ENT_COMPAT, 'UTF-8');
+    $this->eventDates = SeminardeskHelperEvents::getEventDates($config);
 
 		// Check for errors.
 		if (count($errors = $this->get('Errors')))
@@ -53,6 +65,7 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
 			throw new Exception(implode("\n", $errors));
 		}
 
+		// Display the view
 		$this->_prepareDocument();
 		parent::display($tpl);
 	}
@@ -61,7 +74,6 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
 	 * Prepares the document
 	 *
 	 * @return void
-	 *
 	 * @throws Exception
 	 */
 	protected function _prepareDocument()
@@ -114,15 +126,13 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
 		{
 			$this->document->setMetadata('robots', $this->params->get('robots'));
 		}
-
-        
+    
 	}
 
 	/**
 	 * Check if state is set
 	 *
 	 * @param   mixed  $state  State
-	 *
 	 * @return bool
 	 */
 	public function getState($state)

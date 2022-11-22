@@ -15,6 +15,7 @@ use \Joomla\CMS\Router\Route;
 use \Joomla\CMS\Language\Text;
 use \Joomla\CMS\Layout\LayoutHelper;
 
+//JHtml::_('behavior.modal'); // use with class="modal" and rel="{handler: 'iframe'}" in link
 
 ?>
 

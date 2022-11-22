@@ -30,8 +30,6 @@ class SeminardeskRouter extends RouterView
 		$params = JComponentHelper::getComponent('com_seminardesk')->params;
 		$this->noIDs = (bool) $params->get('sef_ids');
 		
-		
-
 		parent::__construct($app, $menu);
 
 		$this->attachRule(new MenuRules($this));
@@ -49,8 +47,4 @@ class SeminardeskRouter extends RouterView
 		}
 	}
 
-
-	
-
-	
 }

@@ -1,0 +1,15 @@
+.sd-events .sd-event > a > div {
+  display: inline-block;
+}
+
+#sbox-window {
+  position: fixed;
+  left: 10vw !important;
+  top: 10vw !important;
+  width: 80vw !important;
+  height: 80vh !important;
+}
+#sbox-window iframe {
+  width: calc(80vw - 20px) !important;
+  height: calc(80vh - 20px) !important;
+}

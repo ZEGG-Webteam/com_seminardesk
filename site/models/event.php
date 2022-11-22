@@ -36,6 +36,6 @@ class SeminardeskModelEvent extends \Joomla\CMS\MVC\Model\ItemModel
 
 	public function getItem ($id = null)
 	{
-	
+    
 	}
 }

@@ -33,9 +33,9 @@ class SeminardeskHelpersSeminardesk
 		$model = null;
 
 		// If the file exists, let's
-		if (file_exists(JPATH_SITE . '/components/com_seminardesk/models/' . strtolower($name) . '.php'))
+		if (file_exists(JPATH_COMPONENT . '/models/' . strtolower($name) . '.php'))
 		{
-			require_once JPATH_SITE . '/components/com_seminardesk/models/' . strtolower($name) . '.php';
+			require_once JPATH_COMPONENT . '/models/' . strtolower($name) . '.php';
 			$model = BaseDatabaseModel::getInstance($name, 'SeminardeskModel');
 		}
 

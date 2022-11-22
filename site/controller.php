@@ -35,7 +35,7 @@ class SeminardeskController extends \Joomla\CMS\MVC\Controller\BaseController
 	public function display($cachable = false, $urlparams = false)
 	{
 		$app  = Factory::getApplication();
-		$view = $app->input->getCmd('view', '//XXX_DEFAULT_VIEW_XXX');
+		$view = $app->input->getCmd('view', 'events');
 		$app->input->set('view', $view);
 		
 

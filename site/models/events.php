@@ -110,8 +110,8 @@ class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
 	 */
 	public function getItems()
 	{
-		$items = parent::getItems();
-		
+//		$items = parent::getItems();
+    $items = SeminardeskHelperEvents::getEventDates($config);
 
 		return $items;
 	}
