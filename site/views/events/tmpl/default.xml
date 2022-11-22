@@ -1,19 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <metadata>
-	<layout title="COM_SEMINARDESK_VIEW_EVENTS_TITLE">
-		<message>COM_SEMINARDESK_VIEW_EVENTS_DESC</message>
+	<layout title="COM_SEMINARDESK_TITLE_LIST_VIEW_EVENTS" option="View">
+        <message>
+                        <![CDATA[COM_SEMINARDESK_TITLE_LIST_VIEW_EVENTS_DESC]]>
+        </message>
 	</layout>
-  <fields name="params">
-    <fieldset name="basic">
-
-      <field
-        name="tenant_id"
-        type="text"
-        label="COM_SEMINARDESK_EVENTS_FIELD_TENANT_ID_LABEL"
-        description="COM_SEMINARDESK_EVENTS_FIELD_TENANT_ID_DESC"
-        required="1"
-      />
-
-    </fieldset>
-  </fields>
+	
 </metadata>

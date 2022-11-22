@@ -16,17 +16,17 @@ use \Joomla\CMS\Factory;
 use \Joomla\CMS\Language\Text;
 
 /**
- * View class for a list of Seminardesk.
+ * View to edit
  *
  * @since  1.6
  */
-class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
+class SeminardeskViewEvent extends \Joomla\CMS\MVC\View\HtmlView
 {
-	protected $items;
-
-	protected $pagination;
-
 	protected $state;
+
+	protected $item;
+
+	protected $form;
 
 	protected $params;
 
@@ -41,11 +41,17 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
 	 */
 	public function display($tpl = null)
 	{
-		$app = Factory::getApplication();
+		$app  = Factory::getApplication();
+		$user = Factory::getUser();
 
-		$this->state = $this->get('State');
+		$this->state  = $this->get('State');
+		$this->item   = $this->get('Item');
 		$this->params = $this->state->get('params');
-		
+
+		if (!empty($this->item))
+		{
+			
+		}
 
 		// Check for errors.
 		if (count($errors = $this->get('Errors')))
@@ -53,7 +59,20 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
 			throw new Exception(implode("\n", $errors));
 		}
 
+		
+
+		if ($this->_layout == 'edit')
+		{
+			$authorised = $user->authorise('core.create', 'com_seminardesk');
+
+			if ($authorised !== true)
+			{
+				throw new Exception(Text::_('JERROR_ALERTNOAUTHOR'));
+			}
+		}
+
 		$this->_prepareDocument();
+
 		parent::display($tpl);
 	}
 
@@ -71,7 +90,7 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
 		$title = null;
 
 		// Because the application sets a default page title,
-		// we need to get it from the menu item itself
+		// We need to get it from the menu item itself
 		$menu = $menus->getActive();
 
 		if ($menu)
@@ -116,17 +135,5 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
 		}
 
         
-	}
-
-	/**
-	 * Check if state is set
-	 *
-	 * @param   mixed  $state  State
-	 *
-	 * @return bool
-	 */
-	public function getState($state)
-	{
-		return isset($this->state->{$state}) ? $this->state->{$state} : false;
 	}
 }
