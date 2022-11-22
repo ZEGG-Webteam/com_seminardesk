@@ -11,7 +11,6 @@
         type="text"
         label="COM_SEMINARDESK_EVENTS_FIELD_TENANT_ID_LABEL"
         description="COM_SEMINARDESK_EVENTS_FIELD_TENANT_ID_DESC"
-        default="zegg"
         required="1"
       />
 

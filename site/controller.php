@@ -42,32 +42,32 @@ class SeminarDeskController extends JControllerLegacy
 
 		$view = $this->getView($viewName, $viewFormat);
 		if ($view) {
-			// Do any specific processing by view.
-			switch ($viewName) {
-				case 'events':
+//			// Do any specific processing by view.
+//			switch ($viewName) {
+//				case 'events':
 //					$model = $this->getModel($viewName);
-					break;
-				default:
+//					break;
+//				default:
 //					$model = $this->getModel('events');
-					break;
-			}
-
-			// Push the model into the view
-			if ($viewName == 'events') {
+//					break;
+//			}
+//
+//			// Push the model into the view
+//			if ($viewName == 'events') {
 //				$model1 = $this->getModel('Venue');
 //
 //				$view->setModel($model1, true);
 //				$view->setModel($model2);
-			} elseif($viewName == 'event') {
+//			} elseif($viewName == 'event') {
 //				$model1 = $this->getModel('ModelX');
 //				$model2 = $this->getModel('ModelY');
 //
 //				$view->setModel($model1, true);
 //				$view->setModel($model2);
-			} else {
+//			} else {
 //				$view->setModel($model, true);
-			}
-
+//			}
+//
 //			$view->setLayout($layoutName);
 
 			// Push document object into the view.
