@@ -59,14 +59,19 @@ $previousEventMonth = '';
           <?php
           $previousEventMonth = $currentMonth;
         }
+        
+        //-- Use labels as event classes (e.g. festival)
+        $featuredClass = (in_array('Festival', array_column($eventDate->labels, 'name')))?' featured':'';
+        $labelData = implode(',', array_column($eventDate->labels, 'name'));
         ?>
   
         <div class="sd-event" itemscope="itemscope" itemtype="https://schema.org/Event" 
              data-start-date="<?= date('Y-m-d', $eventDate->beginDate) ?>"
              data-title="<?= $eventDate->title ?>"
-             data-fascilitators="<?= implode(' ', $eventDate->facilitators) ?>">
+             data-fascilitators="<?= implode(' ', $eventDate->facilitators) ?>"
+             data-labels="<?= $labelData ?>">
 
-          <a href="<?= $eventDate->details_url ?>" target="seminardesk" itemprop="url" class="registration-available">
+          <a href="<?= $eventDate->details_url ?>" target="seminardesk" itemprop="url" class="registration-available<?= $featuredClass ?>">
             <?php $sameYear = date('Y', $eventDate->beginDate) === date('Y', $eventDate->endDate); ?>
             <div class="sd-event-date <?= (!$sameYear)?' not-same-year':'' ?>">
               <time itemprop="startDate" 
