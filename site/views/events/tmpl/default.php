@@ -60,7 +60,7 @@ $previousEventMonth = '';
           $previousEventMonth = $currentMonth;
         }
         
-        //-- Use labels as event classes (e.g. festival)
+        //-- Add labels data and featured class for festivals
         $featuredClass = (in_array('Festival', array_column($eventDate->labels, 'name')))?' featured':'';
         $labelData = implode(',', array_column($eventDate->labels, 'name'));
         ?>
