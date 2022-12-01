@@ -109,6 +109,8 @@ class SeminardeskHelperEvents
       //-- Get values in current language, with fallback to first language in set
       foreach ($eventDates as $key => $eventDate) {
         $eventDate->title = self::getValueByLanguage($eventDate->title, $langKey);
+        $eventDate->eventDateTitle = self::getValueByLanguage($eventDate->eventDateTitle, $langKey);
+        $eventDate->fullTitle = $eventDate->title . (($eventDate->eventDateTitle != $eventDate->title)?(' - ' . $eventDate->eventDateTitle):'');
         $eventDate->facilitators = array_column($eventDate->facilitators, 'name');
         
         //-- Format date
@@ -222,9 +224,9 @@ class SeminardeskHelperEvents
         }
       }
     }
-    else {
-      $label = JText::_("COM_SEMINARDESK_EVENTS_NO_REGISTRATION_AVAILABLE");
-    }
+//    else {
+//      $label = JText::_("COM_SEMINARDESK_EVENTS_NO_REGISTRATION_AVAILABLE");
+//    }
     return $label;
   }
   

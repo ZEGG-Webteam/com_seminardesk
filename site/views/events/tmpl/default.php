@@ -83,7 +83,7 @@ $previousEventMonth = '';
               <time itemprop="endDate" datetime="<?= date('c', $eventDate->endDate) ?>"></time>
             </div>
             <div class="sd-event-title">
-              <?= $eventDate->title; ?>
+              <?= $eventDate->fullTitle; ?>
             </div>
             <div class="sd-event-facilitators">
               <?= implode(', ', $eventDate->facilitators); ?>
