@@ -107,7 +107,6 @@ class SeminardeskHelperEvents
       foreach ($eventDates as $key => $eventDate) {
         $eventDate->title = self::getValueByLanguage($eventDate->title, $langKey);
         $eventDate->eventDateTitle = self::getValueByLanguage($eventDate->eventDateTitle, $langKey);
-        $eventDate->fullTitle = $eventDate->title . (($eventDate->eventDateTitle != $eventDate->title)?(' - ' . $eventDate->eventDateTitle):'');
         $eventDate->facilitators = array_column($eventDate->facilitators, 'name');
         
         //-- Format date
