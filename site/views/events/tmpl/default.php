@@ -64,6 +64,7 @@ $previousEventMonth = '';
         //-- Add labels data and featured class for festivals
         $featuredClass = (in_array('Festival', array_column($eventDate->labels, 'name')))?' featured':'';
         $labelData = implode(',', array_column($eventDate->labels, 'name'));
+        $showDateTitle = ($eventDate->eventDateTitle && $eventDate->eventDateTitle != $eventDate->title);
         ?>
   
         <div class="sd-event" itemscope="itemscope" itemtype="https://schema.org/Event" 
@@ -83,7 +84,10 @@ $previousEventMonth = '';
               <time itemprop="endDate" datetime="<?= date('c', $eventDate->endDate) ?>"></time>
             </div>
             <div class="sd-event-title">
-              <?= $eventDate->fullTitle; ?>
+              <?= $eventDate->title; ?>
+            </div>
+            <div class="sd-event-date-title<?= !$showDateTitle?' empty':''; ?>">
+              <?= $showDateTitle?$eventDate->eventDateTitle:''; ?>
             </div>
             <div class="sd-event-facilitators">
               <?= implode(', ', $eventDate->facilitators); ?>
