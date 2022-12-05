@@ -68,9 +68,9 @@ $previousEventMonth = '';
   
         <div class="sd-event" itemscope="itemscope" itemtype="https://schema.org/Event" 
              data-start-date="<?= date('Y-m-d', $eventDate->beginDate) ?>"
-             data-title="<?= $eventDate->title ?>"
-             data-fascilitators="<?= implode(' ', $eventDate->facilitators) ?>"
-             data-labels="<?= $labelData ?>">
+             data-title="<?= htmlentities($eventDate->title, ENT_QUOTES) ?>"
+             data-fascilitators="<?= htmlentities(implode(' ', $eventDate->facilitators), ENT_QUOTES) ?>"
+             data-labels="<?= htmlentities($labelData, ENT_QUOTES) ?>">
 
           <a href="<?= $eventDate->details_url ?>" target="seminardesk" itemprop="url" class="registration-available<?= $featuredClass ?>">
             <?php $sameYear = date('Y', $eventDate->beginDate) === date('Y', $eventDate->endDate); ?>
