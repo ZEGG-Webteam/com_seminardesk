@@ -62,15 +62,19 @@ $previousEventMonth = '';
         
         //-- Add labels data and featured class for festivals
         $featuredClass = (in_array('Festival', array_column($eventDate->labels, 'name')))?' featured':'';
-        $labelData = implode(',', array_column($eventDate->labels, 'name'));
+        $labelData = htmlentities(implode(',', array_column($eventDate->labels, 'name')), ENT_QUOTES);
         $showDateTitle = ($eventDate->eventDateTitle && $eventDate->eventDateTitle != $eventDate->title);
+        $eventDate->title = htmlentities($eventDate->title, ENT_QUOTES);
+        $eventDate->eventDateTitle = htmlentities($eventDate->eventDateTitle, ENT_QUOTES);
+        $eventDate->facilitators = htmlentities(implode(' ', $eventDate->facilitators), ENT_QUOTES);
+        $eventDate->statusLabel = htmlentities($eventDate->statusLabel, ENT_QUOTES);
         ?>
   
         <div class="sd-event" itemscope="itemscope" itemtype="https://schema.org/Event" 
              data-start-date="<?= date('Y-m-d', $eventDate->beginDate) ?>"
-             data-title="<?= htmlentities($eventDate->title, ENT_QUOTES) ?>"
-             data-fascilitators="<?= htmlentities(implode(' ', $eventDate->facilitators), ENT_QUOTES) ?>"
-             data-labels="<?= htmlentities($labelData, ENT_QUOTES) ?>">
+             data-title="<?= $eventDate->title . ($showDateTitle)?(' ' . $eventDate->eventDateTitle):'' ?>"
+             data-fascilitators="<?= $eventDate->facilitators ?>"
+             data-labels="<?= $labelData ?>">
 
           <a href="<?= $eventDate->details_url ?>" target="seminardesk" itemprop="url" class="registration-available<?= $featuredClass ?>">
             <?php $sameYear = date('Y', $eventDate->beginDate) === date('Y', $eventDate->endDate); ?>
