@@ -73,7 +73,7 @@ $previousEventMonth = '';
   
         <div class="sd-event" itemscope="itemscope" itemtype="https://schema.org/Event" 
              data-start-date="<?= date('Y-m-d', $eventDate->beginDate) ?>"
-             data-title="<?= $eventDate->title . ($showDateTitle)?(' ' . $eventDate->eventDateTitle):'' ?>"
+             data-title="<?= $eventDate->title . (($showDateTitle)?(' ' . $eventDate->eventDateTitle):'') ?>"
              data-fascilitators="<?= $eventDate->facilitators ?>"
              data-labels="<?= $labelData ?>">
 
