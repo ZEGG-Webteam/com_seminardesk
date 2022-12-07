@@ -21,6 +21,15 @@ use Joomla\CMS\Language\LanguageHelper;
  */
 class SeminardeskHelperEvents
 {
+  /**
+   * Configurations
+   */
+  const LABELS_FESTIVALS_ID = 12;
+  const LABELS_EXTERNAL_ID = 55;
+  const LABELS_TO_HIDE = [
+      self::LABELS_FESTIVALS_ID => 'Festival',
+      self::LABELS_EXTERNAL_ID => 'Veranstaltung eines externen Anbieters',
+  ];
   
   /**
    * Get short language code in UC letters, e.g. 'DE' or 'EN'
@@ -107,29 +116,20 @@ class SeminardeskHelperEvents
       $eventDates = json_decode($eventDatesData->body)->dates;
       
       //-- Get values in current language, with fallback to first language in set
-      foreach ($eventDates as $key => $eventDate) {
-        $eventDate->title = self::getValueByLanguage($eventDate->title, $langKey);
-        $eventDate->eventDateTitle = self::getValueByLanguage($eventDate->eventDateTitle, $langKey);
-        $eventDate->facilitators = array_column($eventDate->facilitators, 'name');
-        
-        //-- Format date
-        $eventDate->beginDate = $eventDate->beginDate / 1000;
-        $eventDate->endDate = $eventDate->endDate / 1000;
-        $eventDate->dateFormatted = self::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
-        
-        //-- Booking
-        $eventDate->details_url = self::getDetailsUrl($eventDate, $langKey, $config);
-//        $eventDate->booking_url = self::getBookingUrl($eventDate, $langKey, $config);
-        $eventDate->statusLabel = self::getStatusLabel($eventDate);
-        
-        $eventDates[$key] = $eventDate;
+      foreach ($eventDates as $key => &$eventDate) {
+        self::prepareEventDate($eventDate, $config, $langKey);
       }
-      return $eventDates;
     }
     else {
-      // To do: Propper error handling
-      return 'getEventDates() failed! ($eventDatesData = ' . json_encode($eventDatesData) . ')';
+      // Error handling
+      JLog::add(
+        'getEventDates() failed! ($eventDatesData = ' . json_encode($eventDatesData) . ')', 
+        JLog::ERROR, 
+        'com_seminardesk'
+      );
+      $eventDates = [];
     }
+    return $eventDates;
   }
   
   /**
@@ -139,7 +139,7 @@ class SeminardeskHelperEvents
    * 
    * @param object $eventDate
    * @param string $landKey
-   * @param string $booking_base_url
+   * @param array $config containing key 'booking_base'
    * @return string URL to event detail page
    */
   public static function getDetailsUrl($eventDate, $langKey, $config)
@@ -202,6 +202,48 @@ class SeminardeskHelperEvents
         )
       . '</span>'
     );
+  }
+  
+  /**
+   * Preprocess / prepare fields of event date for use in views
+   * 
+   * @param object $eventDate
+   * @param string $landKey
+   * @param array $config containing key 'booking_base'
+   * @return object - $eventDate with preprocessed fields
+   */
+  public static function prepareEventDate(&$eventDate, $config, $langKey)
+  {
+    $eventDate->title = htmlentities(self::getValueByLanguage($eventDate->title, $langKey), ENT_QUOTES);
+    $eventDate->eventDateTitle = htmlentities(self::getValueByLanguage($eventDate->eventDateTitle, $langKey), ENT_QUOTES);
+    $eventDate->facilitators = array_combine(
+      array_column($eventDate->facilitators, 'id'), 
+      array_column($eventDate->facilitators, 'name')
+    );
+    $eventDate->facilitatorsList = htmlentities(implode(' ', $eventDate->facilitators), ENT_QUOTES);
+    $eventDate->labels = array_combine(
+      array_column($eventDate->labels, 'id'), 
+      array_column($eventDate->labels, 'name')
+    );
+    $eventDate->labelsList = htmlentities(implode(',', $eventDate->labels), ENT_QUOTES);
+    $eventDate->categories = array_diff_key($eventDate->labels, self::LABELS_TO_HIDE);
+    $eventDate->categoriesList = htmlentities(implode(',', $eventDate->categories), ENT_QUOTES);
+    $eventDate->statusLabel = htmlentities($eventDate->statusLabel, ENT_QUOTES);
+
+    //-- Set special event flags (festivals, external organisers)
+    $eventDate->isFeatured = array_key_exists(self::LABELS_FESTIVALS_ID, $eventDate->labels);
+    $eventDate->isExternal = array_key_exists(self::LABELS_EXTERNAL_ID, $eventDate->labels);
+    $eventDate->showDateTitle = ($eventDate->eventDateTitle && $eventDate->eventDateTitle != $eventDate->title);
+
+    //-- Format date
+    $eventDate->beginDate = $eventDate->beginDate / 1000;
+    $eventDate->endDate = $eventDate->endDate / 1000;
+    $eventDate->dateFormatted = self::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
+
+    //-- Booking
+    $eventDate->details_url = self::getDetailsUrl($eventDate, $langKey, $config);
+//    $eventDate->booking_url = self::getBookingUrl($eventDate, $langKey, $config);
+    $eventDate->statusLabel = self::getStatusLabel($eventDate);
   }
   
   /**

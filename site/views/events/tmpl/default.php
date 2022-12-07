@@ -19,8 +19,8 @@ $app = Factory::getApplication();
 
 //-- Load CSS / JS
 $document  = Factory::getDocument();
-$document->addStyleSheet(JPATH_COMPONENT . '/media/css/styles.css');
-$document->addScript(JPATH_COMPONENT . '/media/js/seminardesk.js');
+$document->addStyleSheet('/media/com_seminardesk/css/styles.css');
+$document->addScript('/media/com_seminardesk/js/seminardesk.js');
 
 $previousEventMonth = '';
 ?>
@@ -61,23 +61,16 @@ $previousEventMonth = '';
           <?php
           $previousEventMonth = $currentMonth;
         }
-        //-- Add labels data and featured class for festivals
-        $featuredClass = (in_array('Festival', array_column($eventDate->labels, 'name')))?' featured':'';
-        $labelData = htmlentities(implode(',', array_column($eventDate->labels, 'name')), ENT_QUOTES);
-        $showDateTitle = ($eventDate->eventDateTitle && $eventDate->eventDateTitle != $eventDate->title);
-        $eventDate->title = htmlentities($eventDate->title, ENT_QUOTES);
-        $eventDate->eventDateTitle = htmlentities($eventDate->eventDateTitle, ENT_QUOTES);
-        $eventDate->facilitators = htmlentities(implode(' ', $eventDate->facilitators), ENT_QUOTES);
-        $eventDate->statusLabel = htmlentities($eventDate->statusLabel, ENT_QUOTES);
         ?>
   
         <div class="sd-event" itemscope="itemscope" itemtype="https://schema.org/Event" 
              data-start-date="<?= date('Y-m-d', $eventDate->beginDate) ?>"
-             data-title="<?= $eventDate->title . (($showDateTitle)?(' ' . $eventDate->eventDateTitle):'') ?>"
-             data-fascilitators="<?= $eventDate->facilitators ?>"
-             data-labels="<?= $labelData ?>">
+             data-title="<?= $eventDate->title . (($eventDate->showDateTitle)?(' ' . $eventDate->eventDateTitle):'') ?>"
+             data-fascilitators="<?= $eventDate->facilitatorsList ?>"
+             data-labels="<?= $eventDate->labelsList ?>">
 
-          <a href="<?= $eventDate->details_url ?>" target="seminardesk" itemprop="url" class="registration-available<?= $featuredClass ?>">
+          <a href="<?= $eventDate->details_url ?>" target="seminardesk" itemprop="url" 
+             class="registration-available<?= ($eventDate->isFeatured)?' featured':'' ?><?= (!$eventDate->isExternal)?' zegg-event':' external-event'; ?>">
             <?php $sameYear = date('Y', $eventDate->beginDate) === date('Y', $eventDate->endDate); ?>
             <div class="sd-event-date <?= (!$sameYear)?' not-same-year':'' ?>">
               <time itemprop="startDate" 
@@ -90,11 +83,11 @@ $previousEventMonth = '';
             <div class="sd-event-title">
               <?= $eventDate->title; ?>
             </div>
-            <div class="sd-event-date-title<?= !$showDateTitle?' empty':''; ?>">
-              <?= $showDateTitle?$eventDate->eventDateTitle:''; ?>
+            <div class="sd-event-date-title<?= !$eventDate->showDateTitle?' empty':''; ?>">
+              <?= $eventDate->showDateTitle?$eventDate->eventDateTitle:''; ?>
             </div>
             <div class="sd-event-facilitators">
-              <?= implode(', ', $eventDate->facilitators); ?>
+              <?= $eventDate->facilitatorsList; ?>
             </div>
             <div class="sd-event-registration">
               <?= $eventDate->statusLabel; ?>
