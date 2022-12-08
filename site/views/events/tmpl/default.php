@@ -80,6 +80,7 @@ $previousEventMonth = '';
              data-start-date="<?= date('Y-m-d', $eventDate->beginDate) ?>"
              data-title="<?= $eventDate->title . (($eventDate->showDateTitle)?(' ' . $eventDate->eventDateTitle):'') ?>"
              data-fascilitators="<?= $eventDate->facilitatorsList ?>"
+             data-categories='<?= json_encode(array_keys($eventDate->categories)); ?>'
              data-labels="<?= $eventDate->labelsList ?>">
 
           <a href="<?= $eventDate->details_url ?>" target="seminardesk" itemprop="url" class="<?= implode(' ', $eventClasses); ?>">
