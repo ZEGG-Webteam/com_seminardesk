@@ -39,8 +39,14 @@ $previousEventMonth = '';
   
   <div class="sd-filter">
     <form class="sd-filter-form">
-      <input type="date" name="filter_date_from" id="sd-filter-date-from" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_DATE_PLACEHOLDER");?>">
-      <input type="text" name="filter_search_term" id="sd-filter-search-term" value="" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_TERM_PLACEHOLDER");?>">
+      <input type="date" name="from" id="sd-filter-date-from" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_DATE_PLACEHOLDER");?>">
+      <input type="text" name="term" id="sd-filter-search-term" value="" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_TERM_PLACEHOLDER");?>">
+      <select name="category" id="sd-filter-category">
+        <option value="0"><?= JText::_("COM_SEMINARDESK_FILTER_CATEGORY_ALL");?></option>
+        <?php foreach($this->eventCategories as $key => $category) : ?>
+          <option value="<?= $key ?>"><?= $category ?></option>
+        <?php endforeach; ?>
+      </select>
       <button class="btn btn-secondary" type="submit">Suchen</button>
     </form>
   </div>
@@ -61,6 +67,13 @@ $previousEventMonth = '';
           <?php
           $previousEventMonth = $currentMonth;
         }
+        //-- Set event classes
+        $eventClasses = ['registration-available'];
+        if ($eventDate->isFeatured)       { $eventClasses[] = 'featured';         }
+        if ($eventDate->categoriesList)   { $eventClasses[] = 'has-categories';   }
+        if ($eventDate->facilitatorsList) { $eventClasses[] = 'has-facilitators'; }
+        if ($eventDate->isExternal)       { $eventClasses[] = 'external-event';   } 
+        if (!$eventDate->isExternal)      { $eventClasses[] = 'zegg-event';       }
         ?>
   
         <div class="sd-event" itemscope="itemscope" itemtype="https://schema.org/Event" 
@@ -69,8 +82,7 @@ $previousEventMonth = '';
              data-fascilitators="<?= $eventDate->facilitatorsList ?>"
              data-labels="<?= $eventDate->labelsList ?>">
 
-          <a href="<?= $eventDate->details_url ?>" target="seminardesk" itemprop="url" 
-             class="registration-available<?= ($eventDate->isFeatured)?' featured':'' ?><?= (!$eventDate->isExternal)?' zegg-event':' external-event'; ?>">
+          <a href="<?= $eventDate->details_url ?>" target="seminardesk" itemprop="url" class="<?= implode(' ', $eventClasses); ?>">
             <?php $sameYear = date('Y', $eventDate->beginDate) === date('Y', $eventDate->endDate); ?>
             <div class="sd-event-date <?= (!$sameYear)?' not-same-year':'' ?>">
               <time itemprop="startDate" 
@@ -81,16 +93,20 @@ $previousEventMonth = '';
               <time itemprop="endDate" datetime="<?= date('c', $eventDate->endDate) ?>"></time>
             </div>
             <div class="sd-event-title">
-              <?= $eventDate->title; ?>
-            </div>
-            <div class="sd-event-date-title<?= !$eventDate->showDateTitle?' empty':''; ?>">
-              <?= $eventDate->showDateTitle?$eventDate->eventDateTitle:''; ?>
+              <h4><?= $eventDate->title; ?></h4>
+              <?= ($eventDate->showDateTitle)?('<p>' . $eventDate->eventDateTitle . '</p>'):'' ?>
             </div>
             <div class="sd-event-facilitators">
               <?= $eventDate->facilitatorsList; ?>
             </div>
+            <div class="sd-event-categories">
+              <?= $eventDate->categoriesList; ?>
+            </div>
             <div class="sd-event-registration">
               <?= $eventDate->statusLabel; ?>
+            </div>
+            <div class="sd-event-external">
+              <?= ($eventDate->isExternal)?JText::_("COM_SEMINARDESK_EVENTS_LABEL_EXTERNAL"):''; ?>
             </div>
 
           </a>

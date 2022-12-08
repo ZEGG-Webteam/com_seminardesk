@@ -27,8 +27,9 @@ class SeminardeskHelperEvents
   const LABELS_FESTIVALS_ID = 12;
   const LABELS_EXTERNAL_ID = 55;
   const LABELS_TO_HIDE = [
-      self::LABELS_FESTIVALS_ID => 'Festival',
-      self::LABELS_EXTERNAL_ID => 'Veranstaltung eines externen Anbieters',
+      1, 2, 3, 53, 54, // Languages
+      self::LABELS_FESTIVALS_ID, 
+      self::LABELS_EXTERNAL_ID, 
   ];
   
   /**
@@ -225,9 +226,12 @@ class SeminardeskHelperEvents
       array_column($eventDate->labels, 'id'), 
       array_column($eventDate->labels, 'name')
     );
-    $eventDate->labelsList = htmlentities(implode(',', $eventDate->labels), ENT_QUOTES);
-    $eventDate->categories = array_diff_key($eventDate->labels, self::LABELS_TO_HIDE);
-    $eventDate->categoriesList = htmlentities(implode(',', $eventDate->categories), ENT_QUOTES);
+    $eventDate->labelsList = htmlentities(implode(', ', $eventDate->labels), ENT_QUOTES);
+    // Get categories = labels except LABELS_TO_HIDE
+    $eventDate->categories = array_filter($eventDate->labels, function($key){
+      return !in_array($key, self::LABELS_TO_HIDE);
+    }, ARRAY_FILTER_USE_KEY);
+    $eventDate->categoriesList = htmlentities(implode(', ', $eventDate->categories), ENT_QUOTES);
     $eventDate->statusLabel = htmlentities($eventDate->statusLabel, ENT_QUOTES);
 
     //-- Set special event flags (festivals, external organisers)
@@ -244,6 +248,25 @@ class SeminardeskHelperEvents
     $eventDate->details_url = self::getDetailsUrl($eventDate, $langKey, $config);
 //    $eventDate->booking_url = self::getBookingUrl($eventDate, $langKey, $config);
     $eventDate->statusLabel = self::getStatusLabel($eventDate);
+  }
+  
+  /**
+   * Get status label in current language, or untranslated, but readable, if no 
+   * translation has been found (e.g. fully_booked => Fully Booked), 
+   * or empty, if no status is set. 
+   * 
+   * @param array $eventDates
+   * @return array - Collected categories of all events
+   */
+  public static function getAllEventCategories($eventDates)
+  {
+    $labels = [];
+    foreach($eventDates as $eventDate) {
+      $labels += $eventDate->categories;
+    }
+    $labels = array_unique($labels);
+    asort($labels);
+    return $labels;
   }
   
   /**

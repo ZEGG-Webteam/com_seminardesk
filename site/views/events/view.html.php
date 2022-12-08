@@ -58,6 +58,7 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
     $this->title = $app->getMenu()->getActive()->title;
     $this->pageclass_sfx = htmlspecialchars($app->input->get('pageclass_sfx'), ENT_COMPAT, 'UTF-8');
     $this->eventDates = SeminardeskHelperEvents::getEventDates($config);
+    $this->eventCategories = SeminardeskHelperEvents::getAllEventCategories($this->eventDates);
 
 		// Check for errors.
 		if (count($errors = $this->get('Errors')))
