@@ -1,7 +1,3 @@
-.sd-events .sd-event > a > div {
-  display: inline-block;
-}
-
 #sbox-window {
   position: fixed;
   left: 10vw !important;
