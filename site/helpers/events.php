@@ -221,7 +221,7 @@ class SeminardeskHelperEvents
       array_column($eventDate->facilitators, 'id'), 
       array_column($eventDate->facilitators, 'name')
     );
-    $eventDate->facilitatorsList = htmlentities(implode(' ', $eventDate->facilitators), ENT_QUOTES);
+    $eventDate->facilitatorsList = htmlentities(implode(', ', $eventDate->facilitators), ENT_QUOTES);
     $eventDate->labels = array_combine(
       array_column($eventDate->labels, 'id'), 
       array_column($eventDate->labels, 'name')
