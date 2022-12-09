@@ -7,12 +7,19 @@
   $( document ).ready(function() {
     
     //-- Events filter
-    
     function filterEvents() {
+      // Get field values
       let filterStartDate = $('#sd-filter-date-from').val().trim();
       let filterSearchTerms = $('#sd-filter-search-term').val().trim().replace(',', ' ').toLowerCase().split(' ').filter(Boolean);
-      let filterCategory = $('#sd-filter-category').val();
       let areSearchTermsEmpty = (filterSearchTerms.length === 0);
+      let filterOrganisers = $('#sd-filter-organisers').val();
+      let filterCategory = $('#sd-filter-category').val();
+      
+      // Field dependencies: Currently categories are only available for zegg events
+      filterCategory   = (filterOrganisers == 'external')?0:filterCategory;
+      $('#sd-filter-category').val(filterCategory).prop( "disabled", (filterOrganisers == 'external') );
+      filterOrganisers = (filterCategory > 0)?'zegg':filterOrganisers;
+      $('#sd-filter-organisers').val(filterOrganisers).prop( "disabled", (filterCategory > 0) );
       
       // Add filter values to url
       var url = new URL(document.location);
@@ -22,6 +29,12 @@
       }
       else {
         url.searchParams.delete('term');
+      }
+      if (filterOrganisers != 'all') {
+        url.searchParams.set('org', filterOrganisers);
+      }
+      else {
+        url.searchParams.delete('org');
       }
       if (filterCategory > 0) {
         url.searchParams.set('cat', filterCategory);
@@ -33,15 +46,16 @@
       
       // Hide all events not matching ALL of the search terms
       $('.sd-eventlist .sd-event').each(function() {
-        let eventStartDate = $(this).data('start-date');
+        let isDateMatching = $(this).data('start-date') >= filterStartDate;
         let eventSearchableText = $(this).data('title') + ' ' + $(this).data('fascilitators') + ' ' + $(this).data('labels');
         let areSearchTermsMatching = areSearchTermsEmpty || filterSearchTerms.every( 
           substring=>eventSearchableText.toLowerCase().includes( substring ) 
         );
         let isCategoryMatching = filterCategory == '0' || $(this).data('categories').includes(parseInt(filterCategory));
+        let isOrganiserMatching = filterOrganisers == 'all' || $(this).children('a').hasClass(filterOrganisers + '-event');
         
         // Show events if filters are matching, otherwise hide them
-        if (eventStartDate >= filterStartDate && areSearchTermsMatching && isCategoryMatching) {
+        if (isDateMatching && areSearchTermsMatching && isCategoryMatching && isOrganiserMatching) {
           $(this).removeClass('hidden');
         } else {
           $(this).addClass('hidden');
@@ -67,7 +81,7 @@
       });
     }
     
-    // Init form with values from url params
+    // Init filter form with values from url params
     var url_params = new URL(document.location).searchParams;
     if(url_params.has('date')) {
       $('#sd-filter-date-from').val(url_params.get('date'));
@@ -81,6 +95,9 @@
     if(url_params.has('term')) {
       $('#sd-filter-search-term').val(url_params.get('term'));
     }
+    if(url_params.has('org')) {
+      $('#sd-filter-organisers').val(url_params.get('org'));
+    }
     if(url_params.has('cat')) {
       $('#sd-filter-category').val(url_params.get('cat'));
     }
@@ -88,6 +105,7 @@
     // Filter on any filter field changed
     $('.sd-filter-form #sd-filter-date-from').on('change', filterEvents);
     $('.sd-filter-form #sd-filter-search-term').on('keyup blur change', filterEvents);
+    $('.sd-filter-form #sd-filter-organisers').on('change', filterEvents);
     $('.sd-filter-form #sd-filter-category').on('change', filterEvents);
     // Filter on submit
     $('.sd-filter-form [type="submit"]').on('click', function(e){
