@@ -41,16 +41,16 @@ $previousEventMonth = '';
     <form class="sd-filter-form">
       <input type="date" name="from" id="sd-filter-date-from" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_DATE_PLACEHOLDER");?>">
       <input type="text" name="term" id="sd-filter-search-term" value="" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_TERM_PLACEHOLDER");?>">
-      <select name="organisers" id="sd-filter-organisers">
-        <option value="all"><?= JText::_("COM_SEMINARDESK_FILTER_ORGANISER_ALL");?></option>
-        <option value="zegg"><?= JText::_("COM_SEMINARDESK_FILTER_ORGANISER_ZEGG");?></option>
-        <option value="external"><?= JText::_("COM_SEMINARDESK_FILTER_ORGANISER_EXTERNAL");?></option>
-      </select>
       <select name="category" id="sd-filter-category">
         <option value="0"><?= JText::_("COM_SEMINARDESK_FILTER_CATEGORY_ALL");?></option>
         <?php foreach($this->eventCategories as $key => $category) : ?>
           <option value="<?= $key ?>"><?= $category ?></option>
         <?php endforeach; ?>
+      </select>
+      <select name="organisers" id="sd-filter-organisers">
+        <option value="all"><?= JText::_("COM_SEMINARDESK_FILTER_ORGANISER_ALL");?></option>
+        <option value="zegg"><?= JText::_("COM_SEMINARDESK_FILTER_ORGANISER_ZEGG");?></option>
+        <option value="external"><?= JText::_("COM_SEMINARDESK_FILTER_ORGANISER_EXTERNAL");?></option>
       </select>
       <!--<button class="btn btn-secondary" type="submit"><?= JText::_("COM_SEMINARDESK_FILTER_SUBMIT");?></button>-->
     </form>
