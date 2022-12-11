@@ -43,7 +43,7 @@ $previousEventMonth = '';
       <input type="text" name="term" id="sd-filter-search-term" value="" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_TERM_PLACEHOLDER");?>">
       <select name="category" id="sd-filter-category">
         <option value="0"><?= JText::_("COM_SEMINARDESK_FILTER_CATEGORY_ALL");?></option>
-        <?php foreach($this->eventCategories as $key => $category) : ?>
+        <?php foreach($this->events->getAllEventCategories() as $key => $category) : ?>
           <option value="<?= $key ?>"><?= $category ?></option>
         <?php endforeach; ?>
       </select>
@@ -58,7 +58,7 @@ $previousEventMonth = '';
   
   <div class="sd-eventlist">
     <div class="sd-month">
-      <?php foreach($this->eventDates as $eventDate) : ?>
+      <?php foreach($this->events->getItems() as $eventDate) : ?>
         <?php 
         //-- New month heading?
         $currentMonth = (int)date('m', $eventDate->beginDate);
@@ -120,7 +120,7 @@ $previousEventMonth = '';
         </div>
       <?php endforeach; ?>
     </div>
-    <div class="no-events-found<?= ($this->eventDates)?' hidden':'' ?>">
+    <div class="no-events-found<?= ($this->events->getItems())?' hidden':'' ?>">
       <p><?= JText::_("COM_SEMINARDESK_EVENTS_NO_EVENTS_FOUND");?></p>
     </div>
   </div>

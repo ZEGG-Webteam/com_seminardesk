@@ -17,12 +17,32 @@ use \Joomla\CMS\Layout\FileLayout;
 use \Joomla\Utilities\ArrayHelper;
 
 /**
- * Methods supporting a list of Seminardesk records.
+ * Methods supporting a list of Seminardesk records. Reflecting EventDates
  *
  * @since  1.6
  */
 class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
 {
+  /** Custom config, other than https://api.joomla.org/cms-3/classes/Joomla.CMS.MVC.Model.ListModel.html
+   *
+   * @var array - ['api', 'booking_base', 'langKey'] // URL of the SeminarDesk API, base URL to events booking
+   */
+  protected $config = [];
+  
+  /**
+   * Array of all eventDates loaded from SeminarDesk API
+   * 
+   * @var array
+   */
+  protected $eventDates = [];
+  
+  /**
+   * Collected categories from all events
+   * 
+   * @var type 
+   */
+  protected $categories = [];
+  
 	/**
 	 * Constructor.
 	 *
@@ -33,14 +53,16 @@ class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
 	 */
 	public function __construct($config = array())
 	{
-		if (empty($config['filter_fields']))
-		{
-			$config['filter_fields'] = array(
-				
-			);
-		}
+    if (empty($config['filter_fields']))
+    {
+      $config['filter_fields'] = array(
 
-		parent::__construct($config);
+      );
+    }
+
+    parent::__construct($config);
+
+    $this->config = $config;
 	}
 
         
@@ -61,31 +83,26 @@ class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
 	 */
 	protected function populateState($ordering = null, $direction = null)
 	{
-		$app  = Factory::getApplication();
-            
-           
-            
-        // List state information.
+    $app  = Factory::getApplication();
 
-        parent::populateState($ordering, $direction);
+    // List state information.
+    parent::populateState($ordering, $direction);
 
-        $context = $this->getUserStateFromRequest($this->context.'.filter.search', 'filter_search');
-        $this->setState('filter.search', $context);
+    $context = $this->getUserStateFromRequest($this->context.'.filter.search', 'filter_search');
+    $this->setState('filter.search', $context);
 
-        
+    // Load the parameters.
+    $params = $app->getParams();
+    $this->setState('params', $params);
 
-        // Load the parameters.
-		$params = $app->getParams();
-		$this->setState('params', $params);
+    // Split context into component and optional section
+    $parts = FieldsHelper::extract($context);
 
-        // Split context into component and optional section
-        $parts = FieldsHelper::extract($context);
-
-        if ($parts)
-        {
-            $this->setState('filter.component', $parts[0]);
-            $this->setState('filter.section', $parts[1]);
-        }
+    if ($parts)
+    {
+        $this->setState('filter.component', $parts[0]);
+        $this->setState('filter.section', $parts[1]);
+    }
 	}
 
 	/**
@@ -103,6 +120,83 @@ class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
 	 return $query;
 	}
 
+  /**
+   * Preprocess / prepare fields of event date for use in views
+   * 
+   * @param object $eventDate
+   * @param string $landKey
+   * @param array $config containing key 'booking_base'
+   * @return object - $eventDate with preprocessed fields
+   */
+  public function prepareEventDate(&$eventDate)
+  {
+    $eventDate->title = htmlentities(SeminardeskHelperEvents::getValueByLanguage($eventDate->title, $this->config['langKey']), ENT_QUOTES);
+    $eventDate->eventDateTitle = htmlentities(SeminardeskHelperEvents::getValueByLanguage($eventDate->eventDateTitle, $this->config['langKey']), ENT_QUOTES);
+    $eventDate->facilitators = array_combine(
+      array_column($eventDate->facilitators, 'id'), 
+      array_column($eventDate->facilitators, 'name')
+    );
+    $eventDate->facilitatorsList = htmlentities(implode(', ', $eventDate->facilitators), ENT_QUOTES);
+    $eventDate->labels = array_combine(
+      array_column($eventDate->labels, 'id'), 
+      array_column($eventDate->labels, 'name')
+    );
+    $eventDate->labelsList = htmlentities(implode(', ', $eventDate->labels), ENT_QUOTES);
+    // Get categories = labels except LABELS_TO_HIDE
+    $eventDate->categories = array_filter($eventDate->labels, function($key){
+      return !in_array($key, SeminardeskHelperEvents::LABELS_TO_HIDE);
+    }, ARRAY_FILTER_USE_KEY);
+    $eventDate->categoriesList = htmlentities(implode(', ', $eventDate->categories), ENT_QUOTES);
+//    $eventDate->categoryLinks = implode(', ', SeminardeskHelperEvents::getCategoryLinks($eventDate->categories));
+    $eventDate->statusLabel = htmlentities($eventDate->statusLabel, ENT_QUOTES);
+
+    //-- Set special event flags (festivals, external organisers)
+    $eventDate->isFeatured = array_key_exists(SeminardeskHelperEvents::LABELS_FESTIVALS_ID, $eventDate->labels);
+    $eventDate->isExternal = array_key_exists(SeminardeskHelperEvents::LABELS_EXTERNAL_ID, $eventDate->labels);
+    $eventDate->showDateTitle = ($eventDate->eventDateTitle && $eventDate->eventDateTitle != $eventDate->title);
+
+    //-- Format date
+    $eventDate->beginDate = $eventDate->beginDate / 1000;
+    $eventDate->endDate = $eventDate->endDate / 1000;
+    $eventDate->dateFormatted = SeminardeskHelperEvents::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
+
+    //-- Booking
+    $eventDate->details_url = SeminardeskHelperEvents::getDetailsUrl($eventDate, $config);
+//    $eventDate->booking_url = SeminardeskHelperEvents::getBookingUrl($eventDate, $config);
+    $eventDate->statusLabel = SeminardeskHelperEvents::getStatusLabel($eventDate);
+  }
+  
+  /**
+   * Load EventDates from SeminarDesk API
+   *
+   * @return  array Event Dates (objects)
+   *
+   * @since   3.0
+   */
+  public function loadEventDates()
+  {
+    $eventDatesData = SeminardeskHelperEvents::getSeminarDeskData($this->config, '/EventDates');
+    
+    if (is_object($eventDatesData) && $eventDatesData) {
+      $eventDates = json_decode($eventDatesData->body)->dates;
+      
+      //-- Get values in current language, with fallback to first language in set
+      foreach ($eventDates as $key => &$eventDate) {
+        $this->prepareEventDate($eventDate, $this->config, $config['langKey']);
+      }
+    }
+    else {
+      // Error handling
+      JLog::add(
+        'loadEventDates() failed! ($eventDatesData = ' . json_encode($eventDatesData) . ')', 
+        JLog::ERROR, 
+        'com_seminardesk'
+      );
+      $eventDates = [];
+    }
+    return $eventDates;
+  }
+  
 	/**
 	 * Method to get an array of data items
 	 *
@@ -111,11 +205,37 @@ class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
 	public function getItems()
 	{
 //		$items = parent::getItems();
-    $items = SeminardeskHelperEvents::getEventDates($config);
+    // If not yet loaded: Get events from API
+    if (!$this->eventDates) {
+      $this->eventDates = $this->loadEventDates();
+    }
 
-		return $items;
+		return $this->eventDates;
 	}
 
+  /**
+   * Get status label in current language, or untranslated, but readable, if no 
+   * translation has been found (e.g. fully_booked => Fully Booked), 
+   * or empty, if no status is set. 
+   * 
+   * @param array $eventDates
+   * @return array - Collected categories of all events
+   */
+  public function getAllEventCategories()
+  {
+    // If not yet populated: Build categories array
+    if (!$this->categories) {
+      $eventDates = $this->getItems();
+      foreach($eventDates as $eventDate) {
+        $this->categories += $eventDate->categories;
+      }
+      $this->categories = array_unique($this->categories);
+      asort($this->categories);
+    }
+    
+    return $this->categories;
+  }
+  
 	/**
 	 * Overrides the default function to check Date fields format, identified by
 	 * "_dateformat" suffix, and erases the field if it's not correct.

@@ -102,38 +102,6 @@ class SeminardeskHelperEvents
   }
   
   /**
-   * Get EventDates
-   *
-   * @return  array Event Dates (objects)
-   *
-   * @since   3.0
-   */
-  public static function getEventDates($config)
-  {
-    $eventDatesData = self::getSeminarDeskData($config, '/EventDates');
-    $langKey = self::getCurrentLanguageKey();
-    
-    if (is_object($eventDatesData) && $eventDatesData) {
-      $eventDates = json_decode($eventDatesData->body)->dates;
-      
-      //-- Get values in current language, with fallback to first language in set
-      foreach ($eventDates as $key => &$eventDate) {
-        self::prepareEventDate($eventDate, $config, $langKey);
-      }
-    }
-    else {
-      // Error handling
-      JLog::add(
-        'getEventDates() failed! ($eventDatesData = ' . json_encode($eventDatesData) . ')', 
-        JLog::ERROR, 
-        'com_seminardesk'
-      );
-      $eventDates = [];
-    }
-    return $eventDates;
-  }
-  
-  /**
    * Get url for SeminarDesk detail page
    * - TO DO: Preselection of a specific date: ?eventDateId=<id> - NOT working here!
    *   See description of getBookingUrl()
@@ -143,9 +111,9 @@ class SeminardeskHelperEvents
    * @param array $config containing key 'booking_base'
    * @return string URL to event detail page
    */
-  public static function getDetailsUrl($eventDate, $langKey, $config)
+  public static function getDetailsUrl($eventDate, $config)
   {
-    $slug = self::getValueByLanguage($eventDate->titleSlug, $langKey);
+    $slug = self::getValueByLanguage($eventDate->titleSlug, $config['langKey']);
     return $config['booking_base'] . $eventDate->eventId . '/' . $slug;
   }
   
@@ -160,9 +128,9 @@ class SeminardeskHelperEvents
    * @param string $booking_base_url
    * @return string URL to embedded event booking form
    */
-  public static function getBookingUrl($eventDate, $langKey, $config)
+  public static function getBookingUrl($eventDate, $config)
   {
-    return self::getDetailsUrl($eventDate, $langKey, $config) . '/embed?eventDateId=' . $eventDate->id;
+    return self::getDetailsUrl($eventDate, $config) . '/embed?eventDateId=' . $eventDate->id;
   }
   
   /**
@@ -206,67 +174,17 @@ class SeminardeskHelperEvents
   }
   
   /**
-   * Preprocess / prepare fields of event date for use in views
+   * Render categories as links 
    * 
-   * @param object $eventDate
-   * @param string $landKey
-   * @param array $config containing key 'booking_base'
-   * @return object - $eventDate with preprocessed fields
+   * @param array $categories
+   * @return array - category links
    */
-  public static function prepareEventDate(&$eventDate, $config, $langKey)
+  public static function getCategoryLinks($categories, $link_url = '.')
   {
-    $eventDate->title = htmlentities(self::getValueByLanguage($eventDate->title, $langKey), ENT_QUOTES);
-    $eventDate->eventDateTitle = htmlentities(self::getValueByLanguage($eventDate->eventDateTitle, $langKey), ENT_QUOTES);
-    $eventDate->facilitators = array_combine(
-      array_column($eventDate->facilitators, 'id'), 
-      array_column($eventDate->facilitators, 'name')
-    );
-    $eventDate->facilitatorsList = htmlentities(implode(', ', $eventDate->facilitators), ENT_QUOTES);
-    $eventDate->labels = array_combine(
-      array_column($eventDate->labels, 'id'), 
-      array_column($eventDate->labels, 'name')
-    );
-    $eventDate->labelsList = htmlentities(implode(', ', $eventDate->labels), ENT_QUOTES);
-    // Get categories = labels except LABELS_TO_HIDE
-    $eventDate->categories = array_filter($eventDate->labels, function($key){
-      return !in_array($key, self::LABELS_TO_HIDE);
-    }, ARRAY_FILTER_USE_KEY);
-    $eventDate->categoriesList = htmlentities(implode(', ', $eventDate->categories), ENT_QUOTES);
-    $eventDate->statusLabel = htmlentities($eventDate->statusLabel, ENT_QUOTES);
-
-    //-- Set special event flags (festivals, external organisers)
-    $eventDate->isFeatured = array_key_exists(self::LABELS_FESTIVALS_ID, $eventDate->labels);
-    $eventDate->isExternal = array_key_exists(self::LABELS_EXTERNAL_ID, $eventDate->labels);
-    $eventDate->showDateTitle = ($eventDate->eventDateTitle && $eventDate->eventDateTitle != $eventDate->title);
-
-    //-- Format date
-    $eventDate->beginDate = $eventDate->beginDate / 1000;
-    $eventDate->endDate = $eventDate->endDate / 1000;
-    $eventDate->dateFormatted = self::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
-
-    //-- Booking
-    $eventDate->details_url = self::getDetailsUrl($eventDate, $langKey, $config);
-//    $eventDate->booking_url = self::getBookingUrl($eventDate, $langKey, $config);
-    $eventDate->statusLabel = self::getStatusLabel($eventDate);
-  }
-  
-  /**
-   * Get status label in current language, or untranslated, but readable, if no 
-   * translation has been found (e.g. fully_booked => Fully Booked), 
-   * or empty, if no status is set. 
-   * 
-   * @param array $eventDates
-   * @return array - Collected categories of all events
-   */
-  public static function getAllEventCategories($eventDates)
-  {
-    $labels = [];
-    foreach($eventDates as $eventDate) {
-      $labels += $eventDate->categories;
-    }
-    $labels = array_unique($labels);
-    asort($labels);
-    return $labels;
+    array_walk($categories, function(&$category, $key, $link_url) {
+      $category = '<a href="' . $link_url . '?category=' . $key . '">' . htmlentities($category, ENT_QUOTES) . '</a>';
+    }, $link_url);
+    return $categories;
   }
   
   /**

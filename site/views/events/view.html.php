@@ -52,13 +52,13 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
     $config = [
       'api' => 'https://' . $this->tenant_id . '.seminardesk.de/api',
       'booking_base' => 'https://booking.seminardesk.de/' . strtolower($this->langKey) . '/' . $this->tenant_id . '/',
+      'langKey' => $this->langKey,
     ];
 
     // Assign data to the view
+    $this->events = new SeminardeskModelEvents($config);
     $this->title = $app->getMenu()->getActive()->title;
     $this->pageclass_sfx = htmlspecialchars($app->input->get('pageclass_sfx'), ENT_COMPAT, 'UTF-8');
-    $this->eventDates = SeminardeskHelperEvents::getEventDates($config);
-    $this->eventCategories = SeminardeskHelperEvents::getAllEventCategories($this->eventDates);
 
 		// Check for errors.
 		if (count($errors = $this->get('Errors')))
