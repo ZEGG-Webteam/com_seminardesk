@@ -56,18 +56,22 @@ class SeminardeskRouter extends RouterView
   public function build(&$query)
   {
     $app  = Factory::getApplication();
-    $segments = [$query['id']];
+    $segments = [];
 
-    if (isset($query['view']))
-    {
-      unset($query['view']);
+    // Add eventId
+    if (isset($query['eventId'])) {
+      $segments[] = $query['eventId'];
+      unset($query['eventId']);
     }
-    unset($query['id']);
-
     // Add slug
     if (isset($query['slug'])) { 
       $segments[] = $query['slug'];
       unset($query['slug']);
+    }
+
+    if (isset($query['view']))
+    {
+      unset($query['view']);
     }
 
     return $segments;
@@ -83,7 +87,7 @@ class SeminardeskRouter extends RouterView
   public function parse(&$segments)
   {
     $vars = [];
-    $vars['id']   = $segments[0];
+    $vars['eventId']   = $segments[0];
     $vars['view'] = 'event';
 
     return $vars;
