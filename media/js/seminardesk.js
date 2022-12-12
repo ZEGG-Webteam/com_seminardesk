@@ -6,6 +6,10 @@
   
   $( document ).ready(function() {
     
+    //-- Get current date
+    let today = new Date()
+    let todaysDate = today.toISOString().split('T')[0];
+    
     //-- Events filter
     function filterEvents() {
       // Get field values
@@ -21,32 +25,21 @@
       filterOrganisers = (filterCategory > 0)?'zegg':filterOrganisers;
       $('#sd-filter-organisers').val(filterOrganisers).prop( "disabled", (filterCategory > 0) );
       
-      // Add filter values to url
-      var url = new URL(document.location);
-      url.searchParams.set('date', filterStartDate);
-      if (!areSearchTermsEmpty) {
-        url.searchParams.set('term', filterSearchTerms);
+      // Update filter values in url (cond = if param should be set or deleted)
+      let url = new URL(document.location);
+      function updateUrlParam(name, value, cond) {
+        if (cond) url.searchParams.set(name, value)
+        else      url.searchParams.delete(name);
       }
-      else {
-        url.searchParams.delete('term');
-      }
-      if (filterOrganisers != 'all') {
-        url.searchParams.set('org', filterOrganisers);
-      }
-      else {
-        url.searchParams.delete('org');
-      }
-      if (filterCategory > 0) {
-        url.searchParams.set('cat', filterCategory);
-      }
-      else {
-        url.searchParams.delete('cat');
-      }
+      updateUrlParam('date', filterStartDate,   filterStartDate && todaysDate != filterStartDate);
+      updateUrlParam('term', filterSearchTerms, !areSearchTermsEmpty);
+      updateUrlParam('org',  filterOrganisers,  filterOrganisers != 'all');
+      updateUrlParam('cat',  filterCategory,    filterCategory > 0);
       window.history.pushState({}, '', url);
       
       // Hide all events not matching ALL of the search terms
       $('.sd-eventlist .sd-event').each(function() {
-        let isDateMatching = $(this).data('start-date') >= filterStartDate;
+        let isDateMatching = $(this).data('end-date') >= filterStartDate;
         let eventSearchableText = $(this).data('title') + ' ' + $(this).data('fascilitators') + ' ' + $(this).data('labels');
         let areSearchTermsMatching = areSearchTermsEmpty || filterSearchTerms.every( 
           substring=>eventSearchableText.toLowerCase().includes( substring ) 
@@ -60,6 +53,7 @@
         } else {
           $(this).addClass('hidden');
         }
+        $(this).removeClass('loading');
       });
       
       // Remove empty month headings
@@ -88,8 +82,6 @@
     }
     else {
       // Init form with current date and min date
-      let today = new Date()
-      let todaysDate = today.toISOString().split('T')[0];
       $('#sd-filter-date-from').val(todaysDate).attr('min', todaysDate);
     }
     if(url_params.has('term')) {

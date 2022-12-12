@@ -65,7 +65,7 @@ $previousEventMonth = '';
         if ($currentMonth !== $previousEventMonth) { 
           // Close last month container and open new one?>
           </div>
-          <div class="sd-month">
+          <div class="sd-month loading">
             <div class="sd-month-row">
               <h3><?= JText::sprintf( JHtml::_('date', $eventDate->beginDate, 'F Y')) ?></h3>
             </div>
@@ -81,8 +81,9 @@ $previousEventMonth = '';
         if (!$eventDate->isExternal)      { $eventClasses[] = 'zegg-event';       }
         ?>
   
-        <div class="sd-event" itemscope="itemscope" itemtype="https://schema.org/Event" 
+        <div class="sd-event loading" itemscope="itemscope" itemtype="https://schema.org/Event" 
              data-start-date="<?= date('Y-m-d', $eventDate->beginDate) ?>"
+             data-end-date="<?= date('Y-m-d', $eventDate->endDate) ?>"
              data-title="<?= $eventDate->title . (($eventDate->showDateTitle)?(' ' . $eventDate->eventDateTitle):'') ?>"
              data-fascilitators="<?= $eventDate->facilitatorsList ?>"
              data-categories='<?= json_encode(array_keys($eventDate->categories)); ?>'
