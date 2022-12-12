@@ -22,118 +22,112 @@ use \Joomla\CMS\Language\Text;
  */
 class SeminardeskViewEvent extends \Joomla\CMS\MVC\View\HtmlView
 {
-	protected $state;
+  protected $state;
+  protected $item;
+  protected $form;
+  protected $params;
 
-	protected $item;
+  /**
+   * Display the view
+   *
+   * @param   string  $tpl  Template name
+   * @return void
+   * @throws Exception
+   */
+  public function display($tpl = null)
+  {
+    $app  = Factory::getApplication();
+    $user = Factory::getUser();
 
-	protected $form;
+    $this->state  = $this->get('State');
+    $this->item   = $this->get('Item');
+    $this->params = $this->state->get('params');
 
-	protected $params;
+    // Get event information from eventDates - to do: get from events
+    $this->eventModel = new SeminardeskModelEvent();
+    $this->event = $this->eventModel->getItem(intval($app->input->getCmd('id', '0')));
 
-	/**
-	 * Display the view
-	 *
-	 * @param   string  $tpl  Template name
-	 *
-	 * @return void
-	 *
-	 * @throws Exception
-	 */
-	public function display($tpl = null)
-	{
-		$app  = Factory::getApplication();
-		$user = Factory::getUser();
+    if (!empty($this->event))
+    {
 
-		$this->state  = $this->get('State');
-		$this->item   = $this->get('Item');
-		$this->params = $this->state->get('params');
+    }
 
-		if (!empty($this->item))
-		{
-			
-		}
+    // Check for errors.
+    if (count($errors = $this->get('Errors')))
+    {
+      throw new Exception(implode("\n", $errors));
+    }
+    if ($this->_layout == 'edit')
+    {
+      $authorised = $user->authorise('core.create', 'com_seminardesk');
 
-		// Check for errors.
-		if (count($errors = $this->get('Errors')))
-		{
-			throw new Exception(implode("\n", $errors));
-		}
+      if ($authorised !== true)
+      {
+        throw new Exception(Text::_('JERROR_ALERTNOAUTHOR'));
+      }
+    }
 
-		
+    $this->_prepareDocument();
 
-		if ($this->_layout == 'edit')
-		{
-			$authorised = $user->authorise('core.create', 'com_seminardesk');
+    parent::display($tpl);
+  }
 
-			if ($authorised !== true)
-			{
-				throw new Exception(Text::_('JERROR_ALERTNOAUTHOR'));
-			}
-		}
+  /**
+   * Prepares the document
+   *
+   * @return void
+   * @throws Exception
+   */
+  protected function _prepareDocument()
+  {
+    $app   = Factory::getApplication();
+    $menus = $app->getMenu();
+    $title = null;
 
-		$this->_prepareDocument();
+    // Because the application sets a default page title,
+    // We need to get it from the menu item itself
+    $menu = $menus->getActive();
 
-		parent::display($tpl);
-	}
+    if ($menu)
+    {
+      $this->params->def('page_heading', $this->params->get('page_title', $menu->title));
+    }
+    else
+    {
+      $this->params->def('page_heading', Text::_('COM_SEMINARDESK_DEFAULT_PAGE_TITLE'));
+    }
 
-	/**
-	 * Prepares the document
-	 *
-	 * @return void
-	 *
-	 * @throws Exception
-	 */
-	protected function _prepareDocument()
-	{
-		$app   = Factory::getApplication();
-		$menus = $app->getMenu();
-		$title = null;
+    $title = $this->params->get('page_title', '');
 
-		// Because the application sets a default page title,
-		// We need to get it from the menu item itself
-		$menu = $menus->getActive();
+    if (empty($title))
+    {
+      $title = $app->get('sitename');
+    }
+    elseif ($app->get('sitename_pagetitles', 0) == 1)
+    {
+      $title = Text::sprintf('JPAGETITLE', $app->get('sitename'), $title);
+    }
+    elseif ($app->get('sitename_pagetitles', 0) == 2)
+    {
+      $title = Text::sprintf('JPAGETITLE', $title, $app->get('sitename'));
+    }
 
-		if ($menu)
-		{
-			$this->params->def('page_heading', $this->params->get('page_title', $menu->title));
-		}
-		else
-		{
-			$this->params->def('page_heading', Text::_('COM_SEMINARDESK_DEFAULT_PAGE_TITLE'));
-		}
+    $this->document->setTitle($title);
 
-		$title = $this->params->get('page_title', '');
+    if ($this->params->get('menu-meta_description'))
+    {
+      $this->document->setDescription($this->params->get('menu-meta_description'));
+    }
 
-		if (empty($title))
-		{
-			$title = $app->get('sitename');
-		}
-		elseif ($app->get('sitename_pagetitles', 0) == 1)
-		{
-			$title = Text::sprintf('JPAGETITLE', $app->get('sitename'), $title);
-		}
-		elseif ($app->get('sitename_pagetitles', 0) == 2)
-		{
-			$title = Text::sprintf('JPAGETITLE', $title, $app->get('sitename'));
-		}
+    if ($this->params->get('menu-meta_keywords'))
+    {
+      $this->document->setMetadata('keywords', $this->params->get('menu-meta_keywords'));
+    }
 
-		$this->document->setTitle($title);
+    if ($this->params->get('robots'))
+    {
+      $this->document->setMetadata('robots', $this->params->get('robots'));
+    }
 
-		if ($this->params->get('menu-meta_description'))
-		{
-			$this->document->setDescription($this->params->get('menu-meta_description'));
-		}
-
-		if ($this->params->get('menu-meta_keywords'))
-		{
-			$this->document->setMetadata('keywords', $this->params->get('menu-meta_keywords'));
-		}
-
-		if ($this->params->get('robots'))
-		{
-			$this->document->setMetadata('robots', $this->params->get('robots'));
-		}
-
-        
-	}
+  }
 }

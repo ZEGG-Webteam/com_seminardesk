@@ -19,9 +19,9 @@ use \Joomla\CMS\MVC\Model\BaseDatabaseModel;
  *
  * @since  1.6
  */
-class SeminardeskHelpersSeminardesk
+class SeminardeskHelperSeminardesk
 {
-	/**
+  /**
 	 * Get an instance of the named model
 	 *
 	 * @param   string  $name  Model name

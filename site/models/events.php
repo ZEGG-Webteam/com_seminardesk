@@ -23,25 +23,20 @@ use \Joomla\Utilities\ArrayHelper;
  */
 class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
 {
-  /** Custom config, other than https://api.joomla.org/cms-3/classes/Joomla.CMS.MVC.Model.ListModel.html
-   *
-   * @var array - ['api', 'booking_base', 'langKey'] // URL of the SeminarDesk API, base URL to events booking
-   */
-  protected $config = [];
   
   /**
    * Array of all eventDates loaded from SeminarDesk API
    * 
    * @var array
    */
-  protected $eventDates = [];
+  protected static $events = [];
   
   /**
    * Collected categories from all events
    * 
    * @var type 
    */
-  protected $categories = [];
+  protected static $categories = [];
   
 	/**
 	 * Constructor.
@@ -61,8 +56,6 @@ class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
     }
 
     parent::__construct($config);
-
-    $this->config = $config;
 	}
 
         
@@ -120,83 +113,6 @@ class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
 	 return $query;
 	}
 
-  /**
-   * Preprocess / prepare fields of event date for use in views
-   * 
-   * @param object $eventDate
-   * @param string $landKey
-   * @param array $config containing key 'booking_base'
-   * @return object - $eventDate with preprocessed fields
-   */
-  public function prepareEventDate(&$eventDate)
-  {
-    $eventDate->title = htmlentities(SeminardeskHelperEvents::getValueByLanguage($eventDate->title, $this->config['langKey']), ENT_QUOTES);
-    $eventDate->eventDateTitle = htmlentities(SeminardeskHelperEvents::getValueByLanguage($eventDate->eventDateTitle, $this->config['langKey']), ENT_QUOTES);
-    $eventDate->facilitators = array_combine(
-      array_column($eventDate->facilitators, 'id'), 
-      array_column($eventDate->facilitators, 'name')
-    );
-    $eventDate->facilitatorsList = htmlentities(implode(', ', $eventDate->facilitators), ENT_QUOTES);
-    $eventDate->labels = array_combine(
-      array_column($eventDate->labels, 'id'), 
-      array_column($eventDate->labels, 'name')
-    );
-    $eventDate->labelsList = htmlentities(implode(', ', $eventDate->labels), ENT_QUOTES);
-    // Get categories = labels except LABELS_TO_HIDE
-    $eventDate->categories = array_filter($eventDate->labels, function($key){
-      return !in_array($key, SeminardeskHelperEvents::LABELS_TO_HIDE);
-    }, ARRAY_FILTER_USE_KEY);
-    $eventDate->categoriesList = htmlentities(implode(', ', $eventDate->categories), ENT_QUOTES);
-//    $eventDate->categoryLinks = implode(', ', SeminardeskHelperEvents::getCategoryLinks($eventDate->categories));
-    $eventDate->statusLabel = htmlentities($eventDate->statusLabel, ENT_QUOTES);
-
-    //-- Set special event flags (festivals, external organisers)
-    $eventDate->isFeatured = array_key_exists(SeminardeskHelperEvents::LABELS_FESTIVALS_ID, $eventDate->labels);
-    $eventDate->isExternal = array_key_exists(SeminardeskHelperEvents::LABELS_EXTERNAL_ID, $eventDate->labels);
-    $eventDate->showDateTitle = ($eventDate->eventDateTitle && $eventDate->eventDateTitle != $eventDate->title);
-
-    //-- Format date
-    $eventDate->beginDate = $eventDate->beginDate / 1000;
-    $eventDate->endDate = $eventDate->endDate / 1000;
-    $eventDate->dateFormatted = SeminardeskHelperEvents::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
-
-    //-- Booking
-    $eventDate->details_url = SeminardeskHelperEvents::getDetailsUrl($eventDate, $config);
-//    $eventDate->booking_url = SeminardeskHelperEvents::getBookingUrl($eventDate, $config);
-    $eventDate->statusLabel = SeminardeskHelperEvents::getStatusLabel($eventDate);
-  }
-  
-  /**
-   * Load EventDates from SeminarDesk API
-   *
-   * @return  array Event Dates (objects)
-   *
-   * @since   3.0
-   */
-  public function loadEventDates()
-  {
-    $eventDatesData = SeminardeskHelperEvents::getSeminarDeskData($this->config, '/EventDates');
-    
-    if (is_object($eventDatesData) && $eventDatesData) {
-      $eventDates = json_decode($eventDatesData->body)->dates;
-      
-      //-- Get values in current language, with fallback to first language in set
-      foreach ($eventDates as $key => &$eventDate) {
-        $this->prepareEventDate($eventDate, $this->config, $config['langKey']);
-      }
-    }
-    else {
-      // Error handling
-      JLog::add(
-        'loadEventDates() failed! ($eventDatesData = ' . json_encode($eventDatesData) . ')', 
-        JLog::ERROR, 
-        'com_seminardesk'
-      );
-      $eventDates = [];
-    }
-    return $eventDates;
-  }
-  
 	/**
 	 * Method to get an array of data items
 	 *
@@ -204,36 +120,35 @@ class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
 	 */
 	public function getItems()
 	{
-//		$items = parent::getItems();
+    // $items = parent::getItems();
     // If not yet loaded: Get events from API
-    if (!$this->eventDates) {
-      $this->eventDates = $this->loadEventDates();
+    if (!self::$events) {
+      self::$events = SeminardeskHelperData::loadEventDates();
     }
-
-		return $this->eventDates;
+		return self::$events;
 	}
-
+  
   /**
    * Get status label in current language, or untranslated, but readable, if no 
    * translation has been found (e.g. fully_booked => Fully Booked), 
    * or empty, if no status is set. 
    * 
-   * @param array $eventDates
+   * @param array $events
    * @return array - Collected categories of all events
    */
   public function getAllEventCategories()
   {
     // If not yet populated: Build categories array
-    if (!$this->categories) {
-      $eventDates = $this->getItems();
-      foreach($eventDates as $eventDate) {
-        $this->categories += $eventDate->categories;
+    if (!self::$categories) {
+      $events = $this->getItems();
+      foreach($events as $event) {
+        self::$categories += $event->categories;
       }
-      $this->categories = array_unique($this->categories);
-      asort($this->categories);
+      self::$categories = array_unique(self::$categories);
+      asort(self::$categories);
     }
     
-    return $this->categories;
+    return self::$categories;
   }
   
 	/**

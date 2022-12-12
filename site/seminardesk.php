@@ -16,8 +16,10 @@ use \Joomla\CMS\MVC\Controller\BaseController;
 jimport('joomla.application.component.controller');
 
 JLoader::registerPrefix('Seminardesk', JPATH_COMPONENT);
+JLoader::register('SeminardeskModelEvents', JPATH_COMPONENT . '/models/events.php');
 JLoader::register('SeminardeskController', JPATH_COMPONENT . '/controller.php');
-JLoader::register('SeminardeskHelperEvents', JPATH_COMPONENT . '/helpers/events.php');
+JLoader::register('SeminardeskHelperSeminardesk', JPATH_COMPONENT . '/helpers/seminardesk.php');
+JLoader::register('SeminardeskHelperData', JPATH_COMPONENT . '/helpers/data.php');
 
 // Execute the task.
 $controller = BaseController::getInstance('Seminardesk');

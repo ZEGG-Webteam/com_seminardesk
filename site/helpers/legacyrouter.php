@@ -111,7 +111,7 @@ class SeminardeskRulesLegacy implements RulesInterface
 
         // View is always the first element of the array
         $vars['view'] = array_shift($segments);
-        $model        = SeminardeskHelpersSeminardesk::getModel($vars['view']);
+        $model        = SeminardeskHelperSeminardesk::getModel($vars['view']);
 
         while (!empty($segments))
         {

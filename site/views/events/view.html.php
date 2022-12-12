@@ -42,21 +42,8 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
 		$this->state = $this->get('State');
 		$this->params = $this->state->get('params');
 		
-    //-- Get key for translations from SeminarDesk (e.g. 'DE', 'EN')
-    $this->langKey = SeminardeskHelperEvents::getCurrentLanguageKey();
-
-    //-- Get SeminarDesk API settings
-    $this->tenant_id = $app->input->get('tenant_id', 'zegg', 'STRING');
-
-    // Configuration - To do: move into some propper configuration place
-    $config = [
-      'api' => 'https://' . $this->tenant_id . '.seminardesk.de/api',
-      'booking_base' => 'https://booking.seminardesk.de/' . strtolower($this->langKey) . '/' . $this->tenant_id . '/',
-      'langKey' => $this->langKey,
-    ];
-
     // Assign data to the view
-    $this->events = new SeminardeskModelEvents($config);
+    $this->events = new SeminardeskModelEvents();
     $this->title = $app->getMenu()->getActive()->title;
     $this->pageclass_sfx = htmlspecialchars($app->input->get('pageclass_sfx'), ENT_COMPAT, 'UTF-8');
 

@@ -26,6 +26,13 @@ use \Joomla\CMS\Helper\TagsHelper;
  */
 class SeminardeskModelEvent extends \Joomla\CMS\MVC\Model\ItemModel
 {
+  /**
+   * Event object from SeminarDesk API
+   * 
+   * @var object
+   */
+  protected static $event = null;
+  
 	protected function populateState()
 	{
 		$app  = Factory::getApplication('com_seminardesk');
@@ -36,6 +43,9 @@ class SeminardeskModelEvent extends \Joomla\CMS\MVC\Model\ItemModel
 
 	public function getItem ($id = null)
 	{
-    
+    if (!self::$event) {
+      self::$event = SeminardeskHelperData::loadEvent($id);
+    }
+		return self::$event;
 	}
 }
