@@ -31,9 +31,13 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
     <h2 id="subtitle"><?= $this->event->subtitle; ?></h2>
   <?php endif; ?>
   <p id="teaser"><?= $this->event->teaser; ?></p>
-  <?php //echo htmlentities($this->event->description, ENT_QUOTES); ?>
-  <?php // echo $this->event->description; ?>
-  <?php // echo '<textarea>' . json_encode($this->event) . '</textarea>'; ?>
+  
+  <?php if ($this->event->settings->registrationAvailable) : ?>
+    <a href="<?= $this->event->booking_url ?>" class="btn modal" rel="{handler: 'iframe'}">
+      Anmelden
+    </a>
+  <?php endif; ?>
+  
   <div id="description" class="async loading">Loading description...<!-- load from API, because of inline images which are too big to be handled by joomla (regex) --></div>
   
   <?php if (count($this->event->facilitators) > 0) : ?>
@@ -57,9 +61,13 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
           <div class="date-date"<?= $date->dateFormatted ?></div>
           <div class="date-title"><?= $date->title ?></div>
           <div class="date-status"><?= $date->statusLabel ?></div>
-          <a href="<?= $date->booking_url ?>" class=" btn modal" rel="{handler: 'iframe'}">
-            Anmelden
-          </a>
+          
+          <?php if ($this->event->settings->registrationAvailable && $date->registrationAvailable) : ?>
+            <a href="<?= $date->booking_url ?>" class=" btn modal" rel="{handler: 'iframe'}">
+              Anmelden
+            </a>
+          <?php endif; ?>
+          
         </div>
       <?php endforeach; ?>
     </div>

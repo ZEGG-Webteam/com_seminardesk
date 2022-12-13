@@ -89,7 +89,7 @@ $previousEventMonth = '';
              data-categories='<?= json_encode(array_keys($eventDate->categories)); ?>'
              data-labels="<?= $eventDate->labelsList ?>">
 
-          <a href="<?= $eventDate->details_url ?>" rel="nofollow" target="seminardesk" itemprop="url" class="<?= implode(' ', $eventClasses); ?>">
+          <a href="<?= $eventDate->details_url ?>" itemprop="url" class="<?= implode(' ', $eventClasses); ?>">
             <?php $sameYear = date('Y', $eventDate->beginDate) === date('Y', $eventDate->endDate); ?>
             <div class="sd-event-date <?= (!$sameYear)?' not-same-year':'' ?>">
               <time itemprop="startDate" 

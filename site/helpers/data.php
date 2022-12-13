@@ -404,6 +404,7 @@ class SeminardeskHelperData
     $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices));
     $event->infoBoardLodging = self::translate($event->infoBoardLodging);
     $event->infoMisc = self::translate($event->infoMisc);
+    $event->booking_url = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug);
     foreach($event->facilitators as $key => $facilitator) {
       $event->facilitators[$key]->about = self::translate($facilitator->about);
     }
