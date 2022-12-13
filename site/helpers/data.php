@@ -66,6 +66,7 @@ class SeminardeskHelperData
   }
 
   /**
+   * Remove attributes from tags and strip some tags, if desired
    * 
    * @param string $text
    * @param string|boolean $stripTagsExceptions - Tags or false = do not strip tags)
@@ -73,6 +74,18 @@ class SeminardeskHelperData
    */
   public static function cleanupHtml($text, $stripTagsExceptions = '<h1><h2><h3><h4><p><br><b><strong>') {
     return strip_tags(preg_replace("/<([a-z][a-z0-9]*)[^>]*?(\/?)>/si",'<$1$2>', $text), $stripTagsExceptions);
+  }
+
+  /**
+   * Remove all font tags and style attributes
+   * 
+   * @param string $text
+   * @return type
+   */
+  public static function cleanupFormatting($text) {
+    $text = preg_replace("/<font.*?>(.*)?<\/font>/im","$1", $text);
+    $text = preg_replace('/(<[^>]+) style=".*?"/i', '$1', $text);
+    return $text;
   }
 
   /**
@@ -401,13 +414,15 @@ class SeminardeskHelperData
     $event->subtitle = self::translate($event->subtitle, true);
     $event->teaser = self::translate($event->teaser);
     $event->description = self::translate($event->description);
+    $event->description = self::cleanupFormatting($event->description);
     $event->headerPictureUrl = self::translate($event->headerPictureUrl);
     $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices));
     $event->infoBoardLodging = self::translate($event->infoBoardLodging);
     $event->infoMisc = self::translate($event->infoMisc);
     $event->booking_url = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug);
     foreach($event->facilitators as $key => $facilitator) {
-      $event->facilitators[$key]->about = self::translate($facilitator->about);
+      $about = self::translate($facilitator->about);
+      $event->facilitators[$key]->about = self::cleanupFormatting($about);
     }
     //-- Prepare event dates
     foreach($event->dates as $key => $date) {
