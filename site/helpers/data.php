@@ -400,6 +400,7 @@ class SeminardeskHelperData
     $event->titleSlug = self::translate($event->titleSlug);
     $event->subtitle = self::translate($event->subtitle, true);
     $event->teaser = self::translate($event->teaser);
+    $event->description = self::translate($event->description);
     $event->headerPictureUrl = self::translate($event->headerPictureUrl);
     $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices));
     $event->infoBoardLodging = self::translate($event->infoBoardLodging);

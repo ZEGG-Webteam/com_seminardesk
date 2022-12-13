@@ -22,6 +22,15 @@ $document  = Factory::getDocument();
 $document->addStyleSheet('/media/com_seminardesk/css/styles.css');
 $document->addScript('/media/com_seminardesk/js/seminardesk.js');
 
+//-- Set document title
+$document->setTitle(str_replace(['&ndash;', '&amp;'], ['-', '&'], $this->event->title) . ' - ' . date('d.m.Y', $this->event->dates[0]->beginDate));
+
+// Bugfix (Joomla / SeminarDesk bug): Some descriptions contain inline images data which are blasting Joomla's regex limit (pcre.backtrack_limit).
+// => remove images from description and add class which will trigger async loading by JS.
+$descriptionTooLong = strlen($this->event->description) > ini_get( "pcre.backtrack_limit");
+if ($descriptionTooLong) {
+  $this->event->description = preg_replace("/<img[^>]+\>/i", ' (' . JText::_("COM_SEMINARDESK_EVENT_LOADING_IMAGES") . ') ', $this->event->description); 
+}
 ?>
 
 <div class="event-details" data-api-uri="<?= $this->event->apiUri ?>" data-lang-key="<?= $this->event->langKey ?>">
@@ -33,16 +42,18 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
   <p id="teaser"><?= $this->event->teaser; ?></p>
   
   <?php if ($this->event->settings->registrationAvailable) : ?>
-    <a href="<?= $this->event->booking_url ?>" class="btn modal" rel="{handler: 'iframe'}">
-      Anmelden
-    </a>
+  <a href="<?= $this->event->booking_url ?>" class="btn modal" rel="{handler: 'iframe'}">
+    <?= JText::_("COM_SEMINARDESK_EVENT_BOOKING"); ?>
+  </a>
   <?php endif; ?>
   
-  <div id="description" class="async loading">Loading description...<!-- load from API, because of inline images which are too big to be handled by joomla (regex) --></div>
+  <div id="description"<?= $descriptionTooLong?' class="async loading"':''; ?>>
+    <?= $this->event->description ?>
+  </div>
   
   <?php if (count($this->event->facilitators) > 0) : ?>
     <div id="facilitators">
-      <h2>Seminarleiter*innen</h2>
+      <h2><?= JText::_("COM_SEMINARDESK_EVENT_FACILITATORS"); ?></h2>
       <?php foreach($this->event->facilitators as $facilitator) : ?>
         <div class="fascilitator">
           <div class="fascilitator-picture"><img src="<?= $facilitator->pictureUrl ?>"></div>
@@ -55,7 +66,11 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
   
   <?php if (count($this->event->dates) > 0) : ?>
     <div id="dates">
-      <h2>Daten</h2>
+      <h2><?= JText::_("COM_SEMINARDESK_EVENT_DATES_BOOKING"); ?></h2>
+      
+      <div id="infoDatesPrices"><?= $this->event->infoDatesPrices; ?></div>
+      <div id="infoBoardLodging"><?= $this->event->infoBoardLodging; ?></div>
+
       <?php foreach($this->event->dates as $date) : ?>
         <div class="date">
           <div class="date-date"<?= $date->dateFormatted ?></div>
@@ -64,7 +79,7 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
           
           <?php if ($this->event->settings->registrationAvailable && $date->registrationAvailable) : ?>
             <a href="<?= $date->booking_url ?>" class=" btn modal" rel="{handler: 'iframe'}">
-              Anmelden
+              <?= JText::_("COM_SEMINARDESK_EVENT_BOOKING"); ?>
             </a>
           <?php endif; ?>
           
@@ -73,7 +88,6 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
     </div>
   <?php endif; ?>
   
-  <div id="infoDatesPrices"><?= $this->event->infoDatesPrices; ?></div>
   <div id="infoBoardLodging"><?= $this->event->infoBoardLodging; ?></div>
   <div id="infoMisc"><?= $this->event->infoMisc; ?></div>
 
