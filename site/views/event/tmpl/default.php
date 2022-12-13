@@ -35,9 +35,6 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
   <?php // echo $this->event->description; ?>
   <?php // echo '<textarea>' . json_encode($this->event) . '</textarea>'; ?>
   <div id="description" class="async loading">Loading description...<!-- load from API, because of inline images which are too big to be handled by joomla (regex) --></div>
-  <div id="infoDatesPrices"><?= $this->event->infoDatesPrices; ?></div>
-  <div id="infoBoardLodging"><?= $this->event->infoBoardLodging; ?></div>
-  <div id="infoMisc"><?= $this->event->infoMisc; ?></div>
   
   <?php if (count($this->event->facilitators) > 0) : ?>
     <div id="facilitators">
@@ -57,15 +54,20 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
       <h2>Daten</h2>
       <?php foreach($this->event->dates as $date) : ?>
         <div class="date">
-          <a href="<?= $date->booking_url ?>" class="modal" rel="{handler: 'iframe'}">
-            <div class="date-date"<?= $date->dateFormatted ?></div>
-            <div class="date-title"><?= $date->title ?></div>
-            <div class="date-status"><?= $date->statusLabel ?></div>
-            <button class="date-booking"></button>
+          <div class="date-date"<?= $date->dateFormatted ?></div>
+          <div class="date-title"><?= $date->title ?></div>
+          <div class="date-status"><?= $date->statusLabel ?></div>
+          <a href="<?= $date->booking_url ?>" class=" btn modal" rel="{handler: 'iframe'}">
+            Anmelden
           </a>
         </div>
       <?php endforeach; ?>
     </div>
   <?php endif; ?>
+  
+  <div id="infoDatesPrices"><?= $this->event->infoDatesPrices; ?></div>
+  <div id="infoBoardLodging"><?= $this->event->infoBoardLodging; ?></div>
+  <div id="infoMisc"><?= $this->event->infoMisc; ?></div>
+
 </div>
 

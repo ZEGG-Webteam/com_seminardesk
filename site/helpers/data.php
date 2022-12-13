@@ -183,10 +183,14 @@ class SeminardeskHelperData
    * @param stdClass $event - must contain id, titleSlug and eventId
    * @return string URL to embedded event booking form
    */
-  public static function getBookingUrl($event)
+  public static function getBookingUrl($eventId, $slug, $eventDateIds = [])
   {
-    $slug = self::translate($event->titleSlug, true);
-    return $config['booking_base'] . $eventDate->eventId . '/' . $slug;
+    $config = self::getConfiguration();
+    $url = $config['booking_base'] . $eventId . '/' . $slug . '/embed';
+    if ($eventDateIds) {
+      $url .= '?eventDateId=' . implode('&eventDateId=', $eventDateIds);
+    }
+    return $url;
 //    return self::getDetailsUrl($event) . '/embed?eventDateId=' . $event->id;
   }
   
@@ -376,8 +380,8 @@ class SeminardeskHelperData
     $eventDate->dateFormatted = SeminardeskHelperData::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
 
     //-- Booking
-    $eventDate->details_url = SeminardeskHelperData::getDetailsUrl($eventDate, $config);
-    $eventDate->booking_url = SeminardeskHelperData::getBookingUrl($eventDate, $config);
+    $eventDate->details_url = SeminardeskHelperData::getDetailsUrl($eventDate);
+//    $eventDate->booking_url = SeminardeskHelperData::getBookingUrl($eventDate...);
     $eventDate->statusLabel = SeminardeskHelperData::getStatusLabel($eventDate);
   }
   
@@ -393,6 +397,7 @@ class SeminardeskHelperData
     
     //-- Translations
     $event->title = self::translate($event->title, true);
+    $event->titleSlug = self::translate($event->titleSlug);
     $event->subtitle = self::translate($event->subtitle, true);
     $event->teaser = self::translate($event->teaser);
     $event->headerPictureUrl = self::translate($event->headerPictureUrl);
@@ -416,7 +421,7 @@ class SeminardeskHelperData
       $date->dateFormatted = SeminardeskHelperData::getDateFormatted($date->beginDate, $date->endDate);
 
       //-- Booking
-      $date->booking_url = SeminardeskHelperData::getBookingUrl($date, $config);
+      $date->booking_url = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, [$date->id]);
       $date->statusLabel = SeminardeskHelperData::getStatusLabel($date);
       
       $event->$dates[$key] = $date;

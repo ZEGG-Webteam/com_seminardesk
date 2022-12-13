@@ -133,13 +133,9 @@
         url: api_uri,
       })
       .done(function( data ) {
-        console.log(data);
         $('.event-details .async').each(function(){
           let field = $(this).attr('id');
-//          console.log(translate(data[field], lang_key));
-//          let content = data.field;
           $(this).html(translate(data[field], lang_key));
-//          $(this).text(field);
           $(this).removeClass('loading');
         });
       });
