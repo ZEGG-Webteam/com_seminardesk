@@ -83,9 +83,8 @@ class SeminardeskHelperData
    * @return type
    */
   public static function cleanupFormatting($text) {
-    $text = preg_replace("/<font.*?>(.*)?<\/font>/im","$1", $text);
     $text = preg_replace('/(<[^>]+) style=".*?"/i', '$1', $text);
-    return $text;
+    return str_replace(['&nbsp;', '<font>', '</font>'], [' ', '', ''], $text);
   }
 
   /**
@@ -413,8 +412,16 @@ class SeminardeskHelperData
     $event->titleSlug = self::translate($event->titleSlug);
     $event->subtitle = self::translate($event->subtitle, true);
     $event->teaser = self::translate($event->teaser);
+    
     $event->description = self::translate($event->description);
+    // Bugfix (Joomla / SeminarDesk bug): Some descriptions contain inline images data which are blasting Joomla's regex limit (pcre.backtrack_limit).
+    // => remove images from description and add class which will trigger async loading by JS.
+    $event->descriptionTooLong = strlen($event->description) > ini_get( "pcre.backtrack_limit");
+    if ($event->descriptionTooLong) {
+      $event->description = preg_replace("/<img[^>]+\>/i", ' (' . JText::_("COM_SEMINARDESK_EVENT_LOADING_IMAGES") . ') ', $event->description); 
+    }
     $event->description = self::cleanupFormatting($event->description);
+    
     $event->headerPictureUrl = self::translate($event->headerPictureUrl);
     $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices));
     $event->infoBoardLodging = self::translate($event->infoBoardLodging);

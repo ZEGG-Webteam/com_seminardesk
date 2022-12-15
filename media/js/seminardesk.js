@@ -140,6 +140,11 @@
         });
       });
     }
+    
+    //-- Read more links
+    $('.readmore').on('click', function(){
+      $(this).prev().toggleClass('show-all');
+    });
 
   });
   

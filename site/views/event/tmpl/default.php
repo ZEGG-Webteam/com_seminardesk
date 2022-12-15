@@ -23,17 +23,12 @@ $document->addStyleSheet('/media/com_seminardesk/css/styles.css');
 $document->addScript('/media/com_seminardesk/js/seminardesk.js');
 
 //-- Set document title
-$document->setTitle(str_replace(['&ndash;', '&amp;'], ['-', '&'], $this->event->title) . ' - ' . date('d.m.Y', $this->event->dates[0]->beginDate));
-
-// Bugfix (Joomla / SeminarDesk bug): Some descriptions contain inline images data which are blasting Joomla's regex limit (pcre.backtrack_limit).
-// => remove images from description and add class which will trigger async loading by JS.
-$descriptionTooLong = strlen($this->event->description) > ini_get( "pcre.backtrack_limit");
-if ($descriptionTooLong) {
-  $this->event->description = preg_replace("/<img[^>]+\>/i", ' (' . JText::_("COM_SEMINARDESK_EVENT_LOADING_IMAGES") . ') ', $this->event->description); 
-}
+$title = str_replace(['&ndash;', '&amp;'], ['-', '&'], $this->event->title);
+$facilitators = implode(', ', array_column($this->event->facilitators, 'name'));
+$document->setTitle($title . ' - ' . $facilitators);
 ?>
 
-<div class="event-details" data-api-uri="<?= $this->event->apiUri ?>" data-lang-key="<?= $this->event->langKey ?>">
+<div class="sd-event-details" data-api-uri="<?= $this->event->apiUri ?>" data-lang-key="<?= $this->event->langKey ?>">
   <div id="header-picture"><img src="<?= $this->event->headerPictureUrl ?>"></div>
   <h1 id="title"><?= $this->event->title; ?></h1>
   <?php if ($this->event->subtitle) : ?>
@@ -42,12 +37,14 @@ if ($descriptionTooLong) {
   <p id="teaser"><?= $this->event->teaser; ?></p>
   
   <?php if ($this->event->settings->registrationAvailable) : ?>
-  <a href="<?= $this->event->booking_url ?>" class="btn modal" rel="{handler: 'iframe'}">
-    <?= JText::_("COM_SEMINARDESK_EVENT_BOOKING"); ?>
-  </a>
+  <div class="registration">
+    <a href="<?= $this->event->booking_url ?>" class="btn modal" rel="{handler: 'iframe'}">
+      <?= JText::_("COM_SEMINARDESK_EVENT_BOOKING"); ?>
+    </a>
+  </div>
   <?php endif; ?>
   
-  <div id="description"<?= $descriptionTooLong?' class="async loading"':''; ?>>
+  <div id="description"<?= $this->event->descriptionTooLong?' class="async loading"':''; ?>>
     <?= $this->event->description ?>
   </div>
   
@@ -57,32 +54,40 @@ if ($descriptionTooLong) {
       <?php foreach($this->event->facilitators as $facilitator) : ?>
         <div class="fascilitator">
           <div class="fascilitator-picture"><img src="<?= $facilitator->pictureUrl ?>"></div>
-          <div class="fascilitator-name"><?= $facilitator->title ?> <?= $facilitator->name ?></div>
+          <div class="fascilitator-name"><h3><?= $facilitator->title . ' ' . $facilitator->name ?></h3></div>
           <div class="fascilitator-about"><?= $facilitator->about ?></div>
+          <?php if (strlen($facilitator->about) > 300) : ?>
+            <div class="readmore"><span><i class="fas fa-chevron-down"></i>
+                <span class="readmore-label"><?= JText::_("COM_SEMINARDESK_EVENT_READMORE"); ?></span>
+                <span class="readless-label"><?= JText::_("COM_SEMINARDESK_EVENT_READLESS"); ?></span>                  
+              </span></div>
+          <?php endif; ?>
         </div>
       <?php endforeach; ?>
     </div>
   <?php endif; ?>
   
   <?php if (count($this->event->dates) > 0) : ?>
-    <div id="dates">
-      <h2><?= JText::_("COM_SEMINARDESK_EVENT_DATES_BOOKING"); ?></h2>
-      
-      <div id="infoDatesPrices"><?= $this->event->infoDatesPrices; ?></div>
-      <div id="infoBoardLodging"><?= $this->event->infoBoardLodging; ?></div>
+    <h2><?= JText::_("COM_SEMINARDESK_EVENT_DATES_BOOKING"); ?></h2>
 
+    <div id="infoDatesPrices"><?= $this->event->infoDatesPrices; ?></div>
+    <div id="infoBoardLodging"><?= $this->event->infoBoardLodging; ?></div>
+
+    <div id="dates">
       <?php foreach($this->event->dates as $date) : ?>
         <div class="date">
           <div class="date-date"<?= $date->dateFormatted ?></div>
           <div class="date-title"><?= $date->title ?></div>
           <div class="date-status"><?= $date->statusLabel ?></div>
-          
+
           <?php if ($this->event->settings->registrationAvailable && $date->registrationAvailable) : ?>
+          <div class="date-registration">
             <a href="<?= $date->booking_url ?>" class=" btn modal" rel="{handler: 'iframe'}">
               <?= JText::_("COM_SEMINARDESK_EVENT_BOOKING"); ?>
             </a>
+          </div>
           <?php endif; ?>
-          
+
         </div>
       <?php endforeach; ?>
     </div>
