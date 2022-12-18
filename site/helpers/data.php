@@ -86,9 +86,11 @@ class SeminardeskHelperData
    * @return type
    */
   public static function cleanupFormatting($text) {
+    // Remove all style attributes
     // regex hack: (<[^i>]+) is for all tags except starting with "i" => images should keep their styles
     $text = preg_replace('/(<[^i>]+) style=".*?"/i', '$1', $text);
-    $text = preg_replace("/<font.*?>(.*)?<\/font>/im","$1", $text);
+    // Remove font tags
+    $text = preg_replace(["/<font.*?>/im", "/<\/font>/im"], "", $text);
     return str_replace(['&nbsp;'], [' '], $text);
   }
 

@@ -82,7 +82,7 @@ foreach( $this->event->categories as $cat_id => $cat_name) {
   <?php endif; ?>
   
   <?php if (count($this->event->dates) > 0) : ?>
-    <h2><?= JText::_("COM_SEMINARDESK_EVENT_DATES_BOOKING"); ?></h2>
+    <h2><?= JText::_("COM_SEMINARDESK_EVENT_DATES_REGISTRATION"); ?></h2>
 
     <div id="infoDatesPrices"><?= $this->event->infoDatesPrices; ?></div>
     <div id="infoBoardLodging"><?= $this->event->infoBoardLodging; ?></div>
@@ -97,20 +97,27 @@ foreach( $this->event->categories as $cat_id => $cat_name) {
           <?php if ($this->event->settings->registrationAvailable && $date->registrationAvailable) : ?>
           <div class="date-registration">
             <a href="<?= $date->booking_url ?>" class=" btn modal" rel="{handler: 'iframe'}">
-              <?= JText::_("COM_SEMINARDESK_EVENT_BOOKING"); ?>
+              <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION"); ?>
             </a>
           </div>
           <?php endif; ?>
 
         </div>
       <?php endforeach; ?>
+      <?php if (!$this->event->settings->registrationAvailable) : ?>
+        <div class="no-registration">
+          <?= JText::_("COM_SEMINARDESK_EVENT_NO_REGISTRATION"); ?>
+        </div>
+      <?php endif; ?>
     </div>
   <?php endif; ?>
   
   <div id="infoBoardLodging"><?= $this->event->infoBoardLodging; ?></div>
   <div id="infoMisc"><?= $this->event->infoMisc; ?></div>
   
-  <iframe id="registration-iframe" src="<?= $this->event->booking_url ?>"></iframe>
+  <?php if ($this->event->settings->registrationAvailable) : ?>
+    <!--<iframe id="registration-iframe" src="<?= $this->event->booking_url ?>"></iframe>-->
+  <?php endif; ?>
 
 </div>
 
