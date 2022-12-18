@@ -11,11 +11,12 @@ defined('_JEXEC') or die;
 use \Joomla\CMS\HTML\HTMLHelper;
 use \Joomla\CMS\Factory;
 use \Joomla\CMS\Uri\Uri;
-use \Joomla\CMS\Router\Route;
 use \Joomla\CMS\Language\Text;
 use \Joomla\CMS\Layout\LayoutHelper;
 
 JHtml::_('behavior.modal'); // use with class="modal" and rel="{handler: 'iframe'}" in link
+
+$config = SeminardeskHelperData::getConfiguration();
 
 //-- Load CSS / JS
 $document  = Factory::getDocument();
@@ -26,15 +27,23 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
 $title = str_replace(['&ndash;', '&amp;'], ['-', '&'], $this->event->title);
 $facilitators = implode(', ', array_column($this->event->facilitators, 'name'));
 $document->setTitle($title . ' - ' . $facilitators);
+
+//-- Prepare event labels list (categories)
+$cat_links = [];
+foreach( $this->event->categories as $cat_id => $cat_name) { 
+  $cat_links[] = '<a href="' . JRoute::_($config['eventlist_url']) . '?cat=' . $cat_id . '">' . $cat_name . '</a>';
+}
 ?>
 
 <div class="sd-event-details" data-api-uri="<?= $this->event->apiUri ?>" data-lang-key="<?= $this->event->langKey ?>">
-  <div id="header-picture"><img src="<?= $this->event->headerPictureUrl ?>"></div>
+  <?php if ($this->event->headerPictureUrl) : ?>
+    <div id="header-picture"><img src="<?= $this->event->headerPictureUrl ?>"></div>
+  <?php endif; ?>
   <h1 id="title"><?= $this->event->title; ?></h1>
   <?php if ($this->event->subtitle) : ?>
     <h2 id="subtitle"><?= $this->event->subtitle; ?></h2>
   <?php endif; ?>
-  <p id="teaser"><?= $this->event->teaser; ?></p>
+  <div id="teaser"><?= $this->event->teaser; ?></div>
   
   <?php if ($this->event->settings->registrationAvailable) : ?>
   <div class="registration">
@@ -47,6 +56,11 @@ $document->setTitle($title . ' - ' . $facilitators);
   <div id="description"<?= $this->event->descriptionTooLong?' class="async loading"':''; ?>>
     <?= $this->event->description ?>
   </div>
+  <?php if ($cat_links) : ?>
+    <div id="categories">
+      <?= implode(', ', $cat_links); ?>
+    </div>
+  <?php endif; ?>
   
   <?php if (count($this->event->facilitators) > 0) : ?>
     <div id="facilitators">
@@ -76,7 +90,7 @@ $document->setTitle($title . ' - ' . $facilitators);
     <div id="dates">
       <?php foreach($this->event->dates as $date) : ?>
         <div class="date">
-          <div class="date-date"<?= $date->dateFormatted ?></div>
+          <div class="date-date"><?= $date->dateFormatted ?></div>
           <div class="date-title"><?= $date->title ?></div>
           <div class="date-status"><?= $date->statusLabel ?></div>
 
@@ -95,6 +109,8 @@ $document->setTitle($title . ' - ' . $facilitators);
   
   <div id="infoBoardLodging"><?= $this->event->infoBoardLodging; ?></div>
   <div id="infoMisc"><?= $this->event->infoMisc; ?></div>
+  
+  <iframe id="registration-iframe" src="<?= $this->event->booking_url ?>"></iframe>
 
 </div>
 

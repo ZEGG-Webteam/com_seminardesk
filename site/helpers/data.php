@@ -32,6 +32,8 @@ class SeminardeskHelperData
       self::LABELS_FESTIVALS_ID, 
       self::LABELS_EXTERNAL_ID, 
   ];
+  const DEFAULT_TENANT_ID = 'zegg';
+  const EVENTLIST_ITEMID = 532; // Menu id - to do, move to component / menu config, translate
   
   /** Custom config, other than https://api.joomla.org/cms-3/classes/Joomla.CMS.MVC.Model.ListModel.html
    *
@@ -51,7 +53,7 @@ class SeminardeskHelperData
       $langKey = self::getCurrentLanguageKey();
 
       //-- Get SeminarDesk API settings
-      $tenant_id = $app->input->get('tenant_id', 'zegg', 'STRING');
+      $tenant_id = $app->input->get('tenant_id', self::DEFAULT_TENANT_ID, 'STRING');
 
       // Configuration - To do: move into some propper configuration place
       self::$config = [
@@ -59,6 +61,7 @@ class SeminardeskHelperData
         'langKey' => $langKey,
         'api' => 'https://' . $tenant_id . '.seminardesk.de/api',
         'booking_base' => 'https://booking.seminardesk.de/' . strtolower($langKey) . '/' . $tenant_id . '/',
+        'eventlist_url' => 'index.php?option=com_seminardesk&view=events&Itemid=' . self::EVENTLIST_ITEMID, 
       ];
     }
     
@@ -83,8 +86,10 @@ class SeminardeskHelperData
    * @return type
    */
   public static function cleanupFormatting($text) {
-    $text = preg_replace('/(<[^>]+) style=".*?"/i', '$1', $text);
-    return str_replace(['&nbsp;', '<font>', '</font>'], [' ', '', ''], $text);
+    // regex hack: (<[^i>]+) is for all tags except starting with "i" => images should keep their styles
+    $text = preg_replace('/(<[^i>]+) style=".*?"/i', '$1', $text);
+    $text = preg_replace("/<font.*?>(.*)?<\/font>/im","$1", $text);
+    return str_replace(['&nbsp;'], [' '], $text);
   }
 
   /**
@@ -360,7 +365,6 @@ class SeminardeskHelperData
    */
   public function prepareEventDate(&$eventDate)
   {
-    $config = self::getConfiguration();
     $eventDate->title = self::translate($eventDate->title, true);
     $eventDate->eventDateTitle = self::translate($eventDate->eventDateTitle, true);
     $eventDate->facilitators = array_combine(
@@ -412,6 +416,14 @@ class SeminardeskHelperData
     $event->titleSlug = self::translate($event->titleSlug);
     $event->subtitle = self::translate($event->subtitle, true);
     $event->teaser = self::translate($event->teaser);
+    $event->labels = array_combine(
+      array_column($event->labels, 'id'), 
+      array_column($event->labels, 'name')
+    );
+    // Get categories: Labels except LABELS_TO_HIDE
+    $event->categories = array_filter($event->labels, function($key){
+      return !in_array($key, SeminardeskHelperData::LABELS_TO_HIDE);
+    }, ARRAY_FILTER_USE_KEY);
     
     $event->description = self::translate($event->description);
     // Bugfix (Joomla / SeminarDesk bug): Some descriptions contain inline images data which are blasting Joomla's regex limit (pcre.backtrack_limit).
