@@ -32,6 +32,8 @@ class SeminardeskHelperData
       self::LABELS_FESTIVALS_ID, 
       self::LABELS_EXTERNAL_ID, 
   ];
+  const DEFAULT_TENANT_ID = 'zegg';
+  const EVENTLIST_ITEMID = 532; // Menu id - to do, move to component / menu config, translate
   
   /** Custom config, other than https://api.joomla.org/cms-3/classes/Joomla.CMS.MVC.Model.ListModel.html
    *
@@ -51,7 +53,7 @@ class SeminardeskHelperData
       $langKey = self::getCurrentLanguageKey();
 
       //-- Get SeminarDesk API settings
-      $tenant_id = $app->input->get('tenant_id', 'zegg', 'STRING');
+      $tenant_id = $app->input->get('tenant_id', self::DEFAULT_TENANT_ID, 'STRING');
 
       // Configuration - To do: move into some propper configuration place
       self::$config = [
@@ -59,10 +61,37 @@ class SeminardeskHelperData
         'langKey' => $langKey,
         'api' => 'https://' . $tenant_id . '.seminardesk.de/api',
         'booking_base' => 'https://booking.seminardesk.de/' . strtolower($langKey) . '/' . $tenant_id . '/',
+        'eventlist_url' => 'index.php?option=com_seminardesk&view=events&Itemid=' . self::EVENTLIST_ITEMID, 
       ];
     }
     
     return self::$config;
+  }
+
+  /**
+   * Remove attributes from tags and strip some tags, if desired
+   * 
+   * @param string $text
+   * @param string|boolean $stripTagsExceptions - Tags or false = do not strip tags)
+   * @return type
+   */
+  public static function cleanupHtml($text, $stripTagsExceptions = '<h1><h2><h3><h4><p><br><b><strong>') {
+    return strip_tags(preg_replace("/<([a-z][a-z0-9]*)[^>]*?(\/?)>/si",'<$1$2>', $text), $stripTagsExceptions);
+  }
+
+  /**
+   * Remove all font tags and style attributes
+   * 
+   * @param string $text
+   * @return type
+   */
+  public static function cleanupFormatting($text) {
+    // Remove all style attributes
+    // regex hack: (<[^i>]+) is for all tags except starting with "i" => images should keep their styles
+    $text = preg_replace('/(<[^i>]+) style=".*?"/i', '$1', $text);
+    // Remove font tags
+    $text = preg_replace(["/<font.*?>/im", "/<\/font>/im"], "", $text);
+    return str_replace(['&nbsp;'], [' '], $text);
   }
 
   /**
@@ -81,55 +110,66 @@ class SeminardeskHelperData
    * Get localized value from languages provided by SeminarDesk
    * 
    * @param array $fieldValues - Containing values for all languages
-   * @param string $langKey - in capital letters, e.g. 'EN', 'DE'
-   * @param boolean|string $fallback - true = Fallback to first language in array, OR 
+   * @param boolean|string $fallbackLang - true = Fallback to first language in array, OR 
    *                                   string = Fallback language key ('DE', 'EN' ...)
    * @param boolean $htmlencode - true = encode html entities before returning
    * @return string - Value
    */
-  public static function translate($fieldValues, $fallback = true, $htmlencode = true)
+  public static function translate($fieldValues, $htmlencode = false, $fallbackLangLang = true)
   {
     $config = self::getConfiguration();
     $langKey = $config['langKey'];
     $value = '';
-    
-    //-- Set language field as array key
-    $localizedValues = array_combine(
-      array_column($fieldValues, 'language'),
-      array_column($fieldValues, 'value')
-    );
-    
-    //-- Return localized or fallback value
-    if (array_key_exists($langKey, $localizedValues)) {
-      $value = $localizedValues[$langKey];
+
+    if (is_array($fieldValues)) {
+
+      //-- Set language field as array key
+      $localizedValues = array_combine(
+        array_column($fieldValues, 'language'),
+        array_column($fieldValues, 'value')
+      );
+
+      //-- Return localized or fallback value
+      if (array_key_exists($langKey, $localizedValues)) {
+        $value = $localizedValues[$langKey];
+      }
+
+      //-- Fallback to first language
+      if ($fallbackLang === true) {
+        $value = reset($localizedValues);
+      }
+      //-- Fallback to selected language, if exists (otherwise $value is empty)
+      elseif (is_string($fallbackLang) && array_key_exists($fallbackLangLangKey, $localizedValues)) {
+        $value = $localizedValues[$langKey];
+      }
     }
-    
-    //-- Fallback to first language
-    if ($fallback === true) {
-      $value = reset($localizedValues);
-    }
-    //-- Fallback to selected language, if exists (otherwise $value is empty)
-    elseif (is_string($fallback) && array_key_exists($fallbackLangKey, $localizedValues)) {
-      $value = $localizedValues[$langKey];
-    }
-    
+
     //-- Encode html entities and return
     return ($htmlencode) ? htmlentities($value, ENT_QUOTES) : $value;
   }
 
   /**
+   * Get SeminarDesk API url
+   *
+   * @return  string Json data from Seminardesk
+   * @since   3.0
+   */
+  public static function getSeminarDeskApiLink($route) {
+    $config = self::getConfiguration();
+    return $config['api'] . $route;
+  }
+  
+  /**
    * Get data from SeminarDesk
    *
    * @return  string Json data from Seminardesk
-   *
    * @since   3.0
    */
-  public static function getSeminarDeskData($route)
+  public static function getSeminarDeskData($api_uri)
   {
-    $config = self::getConfiguration();
     $connector = HttpFactory::getHttp();
     try {
-      $data = $connector->get($config['api'] . $route);
+      $data = $connector->get($api_uri);
     } catch (\Exception $exception) {
       Log::add('Failed to fetch remote IP data: ' . $exception->getMessage(), Log::ERROR, 'com_seminardesk');
       $this->logger->error('Failed to fetch remote IP data: ' . $exception->getMessage());
@@ -149,8 +189,8 @@ class SeminardeskHelperData
    */
   public static function getDetailsUrl($event)
   {
-    $slug = self::translate($event->titleSlug);
-    return JRoute::_("index.php?option=com_seminardesk&view=event&id=" . $event->id . '&slug=' . $slug);
+    $slug = self::translate($event->titleSlug, true);
+    return JRoute::_("index.php?option=com_seminardesk&view=event&eventId=" . $event->eventId . '&slug=' . $slug);
   }
   
   /**
@@ -160,14 +200,17 @@ class SeminardeskHelperData
    *   the URL would be ?eventDateId=<id1>&?eventDateId=<id2>&?eventDateId=<id3>
    * 
    * @param stdClass $event - must contain id, titleSlug and eventId
-   * @param string $landKey
-   * @param string $booking_base_url
    * @return string URL to embedded event booking form
    */
-  public static function getBookingUrl($event)
+  public static function getBookingUrl($eventId, $slug, $eventDateIds = [])
   {
     $config = self::getConfiguration();
-    return self::getDetailsUrl($event, $config) . '/embed?eventDateId=' . $event->id;
+    $url = $config['booking_base'] . $eventId . '/' . $slug . '/embed';
+    if ($eventDateIds) {
+      $url .= '?eventDateId=' . implode('&eventDateId=', $eventDateIds);
+    }
+    return $url;
+//    return self::getDetailsUrl($event) . '/embed?eventDateId=' . $event->id;
   }
   
   /**
@@ -253,13 +296,13 @@ class SeminardeskHelperData
    * Load EventDates from SeminarDesk API
    *
    * @return  array Event Dates (stdClass)
-   *
    * @since   3.0
    */
   public function loadEventDates()
   {
     $config = self::getConfiguration();
-    $eventDatesData = self::getSeminarDeskData('/EventDates');
+    $api_uri = self::getSeminarDeskApiLink('/eventDates');
+    $eventDatesData = self::getSeminarDeskData($api_uri);
     
     if (is_object($eventDatesData) && $eventDatesData) {
       $eventDates = json_decode($eventDatesData->body)->dates;
@@ -285,45 +328,47 @@ class SeminardeskHelperData
   /**
    * Load a single event from SeminarDesk API
    *
+   * @param integer $id
    * @return stdClass Event
    *
    * @since   3.0
    */
-  public function loadEvent()
+  public function loadEvent($eventId)
   {
     $config = self::getConfiguration();
-    $eventData = self::getSeminarDeskData('/Event');
+    $api_uri = self::getSeminarDeskApiLink('/events/' . $eventId);
+    $eventData = self::getSeminarDeskData($api_uri);
     
     if (is_object($eventData) && $eventData) {
-      $event = json_decode($eventData->body)->dates;
-      die('<br>--' . json_encode($event) . '--<br>');
+      $event = json_decode($eventData->body);
       //-- Get values in current language, with fallback to first language in set
-//      self::prepareEventDate($event);
+      self::prepareEvent($event);
+      $event->apiUri = $api_uri;
+      $event->langKey = self::getCurrentLanguageKey();
     }
+    
     else {
       // Error handling
       JLog::add(
-        'loadEventDates() failed! ($eventDatesData = ' . json_encode($eventDatesData) . ')', 
+        'loadEvent($id) failed! ($eventData = ' . json_encode($eventData) . ')', 
         JLog::ERROR, 
         'com_seminardesk'
       );
-      $eventDates = [];
+      $event = [];
     }
-    return $eventDates;
+    return $event;
   }
   
   /**
    * Preprocess / prepare fields of event date for use in views
    * 
    * @param stdClass $eventDate
-   * @param string $landKey
    * @return stdClass - $eventDate with preprocessed fields
    */
   public function prepareEventDate(&$eventDate)
   {
-    $config = self::getConfiguration();
-    $eventDate->title = self::translate($eventDate->title, $config['langKey']);
-    $eventDate->eventDateTitle = self::translate($eventDate->eventDateTitle, $config['langKey']);
+    $eventDate->title = self::translate($eventDate->title, true);
+    $eventDate->eventDateTitle = self::translate($eventDate->eventDateTitle, true);
     $eventDate->facilitators = array_combine(
       array_column($eventDate->facilitators, 'id'), 
       array_column($eventDate->facilitators, 'name')
@@ -334,7 +379,7 @@ class SeminardeskHelperData
       array_column($eventDate->labels, 'name')
     );
     $eventDate->labelsList = htmlentities(implode(', ', $eventDate->labels), ENT_QUOTES);
-    // Get categories = labels except LABELS_TO_HIDE
+    // Get categories: Labels except LABELS_TO_HIDE
     $eventDate->categories = array_filter($eventDate->labels, function($key){
       return !in_array($key, SeminardeskHelperData::LABELS_TO_HIDE);
     }, ARRAY_FILTER_USE_KEY);
@@ -353,9 +398,73 @@ class SeminardeskHelperData
     $eventDate->dateFormatted = SeminardeskHelperData::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
 
     //-- Booking
-    $eventDate->details_url = SeminardeskHelperData::getDetailsUrl($eventDate, $config);
-//    $eventDate->booking_url = SeminardeskHelperData::getBookingUrl($eventDate, $config);
+    $eventDate->details_url = SeminardeskHelperData::getDetailsUrl($eventDate);
+//    $eventDate->booking_url = SeminardeskHelperData::getBookingUrl($eventDate...);
     $eventDate->statusLabel = SeminardeskHelperData::getStatusLabel($eventDate);
+  }
+  
+  /**
+   * Preprocess / prepare fields of event for use in views
+   * 
+   * @param stdClass $event
+   * @return stdClass - $event with preprocessed fields
+   */
+  public function prepareEvent(&$event)
+  {
+    $config = self::getConfiguration();
+    
+    //-- Translations
+    $event->title = self::translate($event->title, true);
+    $event->titleSlug = self::translate($event->titleSlug);
+    $event->subtitle = self::translate($event->subtitle, true);
+    $event->teaser = self::translate($event->teaser);
+    $event->labels = array_combine(
+      array_column($event->labels, 'id'), 
+      array_column($event->labels, 'name')
+    );
+    // Get categories: Labels except LABELS_TO_HIDE
+    $event->categories = array_filter($event->labels, function($key){
+      return !in_array($key, SeminardeskHelperData::LABELS_TO_HIDE);
+    }, ARRAY_FILTER_USE_KEY);
+    
+    $event->description = self::translate($event->description);
+    // Bugfix (Joomla / SeminarDesk bug): Some descriptions contain inline images data which are blasting Joomla's regex limit (pcre.backtrack_limit).
+    // => remove images from description and add class which will trigger async loading by JS.
+    $event->descriptionTooLong = strlen($event->description) > ini_get( "pcre.backtrack_limit");
+    if ($event->descriptionTooLong) {
+      $event->description = preg_replace("/<img[^>]+\>/i", ' (' . JText::_("COM_SEMINARDESK_EVENT_LOADING_IMAGES") . ') ', $event->description); 
+    }
+    $event->description = self::cleanupFormatting($event->description);
+    
+    $event->headerPictureUrl = self::translate($event->headerPictureUrl);
+    $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices));
+    $event->infoBoardLodging = self::translate($event->infoBoardLodging);
+    $event->infoMisc = self::translate($event->infoMisc);
+    $event->booking_url = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug);
+    foreach($event->facilitators as $key => $facilitator) {
+      $about = self::translate($facilitator->about);
+      $event->facilitators[$key]->about = self::cleanupFormatting($about);
+    }
+    //-- Prepare event dates
+    foreach($event->dates as $key => $date) {
+      $date->title = self::translate($date->title);
+      $date->labels = array_combine(
+        array_column($date->labels, 'id'), 
+        array_column($date->labels, 'name')
+      );
+      
+      //-- Format date
+      $date->beginDate = $date->beginDate / 1000;
+      $date->endDate = $date->endDate / 1000;
+      $date->dateFormatted = SeminardeskHelperData::getDateFormatted($date->beginDate, $date->endDate);
+
+      //-- Booking
+      $date->booking_url = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, [$date->id]);
+      $date->statusLabel = SeminardeskHelperData::getStatusLabel($date);
+      
+      $event->$dates[$key] = $date;
+    }
+
   }
   
 }

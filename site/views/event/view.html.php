@@ -40,12 +40,12 @@ class SeminardeskViewEvent extends \Joomla\CMS\MVC\View\HtmlView
     $user = Factory::getUser();
 
     $this->state  = $this->get('State');
-    $this->item   = $this->get('Item');
     $this->params = $this->state->get('params');
+//    $this->item   = $this->get('Item');
 
     // Get event information from eventDates - to do: get from events
     $this->eventModel = new SeminardeskModelEvent();
-    $this->event = $this->eventModel->getItem(intval($app->input->getCmd('id', '0')));
+    $this->event = $this->eventModel->getItem($app->input->getCmd('eventId', '0'));
 
     if (!empty($this->event))
     {
