@@ -58,13 +58,21 @@ class SeminardeskRouter extends RouterView
     $app  = Factory::getApplication();
     $segments = [];
 
+//    // Add cat
+//    if (isset($query['cat']))
+//    {
+//      $segments[] = $query['cat'];
+//      unset($query['cat']);
+//    }
     // Add eventId
-    if (isset($query['eventId'])) {
+    if (isset($query['eventId']))
+    {
       $segments[] = $query['eventId'];
       unset($query['eventId']);
     }
     // Add slug
-    if (isset($query['slug'])) { 
+    if (isset($query['slug']))
+    {
       $segments[] = $query['slug'];
       unset($query['slug']);
     }

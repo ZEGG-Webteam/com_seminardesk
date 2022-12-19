@@ -27,12 +27,6 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
 $title = str_replace(['&ndash;', '&amp;'], ['-', '&'], $this->event->title);
 $facilitators = implode(', ', array_column($this->event->facilitators, 'name'));
 $document->setTitle($title . ' - ' . $facilitators);
-
-//-- Prepare event labels list (categories)
-$cat_links = [];
-foreach( $this->event->categories as $cat_id => $cat_name) { 
-  $cat_links[] = '<a href="' . JRoute::_($config['eventlist_url']) . '?cat=' . $cat_id . '">' . $cat_name . '</a>';
-}
 ?>
 
 <div class="sd-event-details" data-api-uri="<?= $this->event->apiUri ?>" data-lang-key="<?= $this->event->langKey ?>">
@@ -53,14 +47,15 @@ foreach( $this->event->categories as $cat_id => $cat_name) {
   </div>
   <?php endif; ?>
   
+  <?php if ($this->event->catLinks) : ?>
+    <div id="categories">
+      <?= $this->event->catLinks; ?>
+    </div>
+  <?php endif; ?>
+  
   <div id="description"<?= $this->event->descriptionTooLong?' class="async loading"':''; ?>>
     <?= $this->event->description ?>
   </div>
-  <?php if ($cat_links) : ?>
-    <div id="categories">
-      <?= implode(', ', $cat_links); ?>
-    </div>
-  <?php endif; ?>
   
   <?php if (count($this->event->facilitators) > 0) : ?>
     <div id="facilitators">
@@ -88,25 +83,29 @@ foreach( $this->event->categories as $cat_id => $cat_name) {
     <div id="infoBoardLodging"><?= $this->event->infoBoardLodging; ?></div>
 
     <div id="dates">
+      <?php $regAvaliable = ($this->event->settings->registrationAvailable)?'all':'none'; ?>
       <?php foreach($this->event->dates as $date) : ?>
         <div class="date">
           <div class="date-date"><?= $date->dateFormatted ?></div>
           <div class="date-title"><?= $date->title ?></div>
           <div class="date-status"><?= $date->statusLabel ?></div>
 
-          <?php if ($this->event->settings->registrationAvailable && $date->registrationAvailable) : ?>
+          <?php if ($this->event->settings->registrationAvailable) : ?>
           <div class="date-registration">
-            <a href="<?= $date->booking_url ?>" class=" btn modal" rel="{handler: 'iframe'}">
+            <?php if ($date->registrationAvailable) : ?>
+            <a href="<?= $date->booking_url ?>" class="btn modal" rel="{handler: 'iframe'}">
               <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION"); ?>
             </a>
+            <?php else : ?>
+              *<?php $regAvaliable = 'some'; ?>
+            <?php endif; ?>
           </div>
           <?php endif; ?>
-
         </div>
       <?php endforeach; ?>
-      <?php if (!$this->event->settings->registrationAvailable) : ?>
+      <?php if ($regAvaliable != 'all') : ?>
         <div class="no-registration">
-          <?= JText::_("COM_SEMINARDESK_EVENT_NO_REGISTRATION"); ?>
+          <?= (($regAvaliable == 'some')?'* ':'') . JText::_("COM_SEMINARDESK_EVENT_NO_REGISTRATION"); ?>
         </div>
       <?php endif; ?>
     </div>

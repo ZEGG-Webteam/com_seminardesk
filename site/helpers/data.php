@@ -60,7 +60,7 @@ class SeminardeskHelperData
         'langKey' => $langKey,
         'api' => 'https://' . $tenant_id . '.seminardesk.de/api',
         'booking_base' => 'https://booking.seminardesk.de/' . strtolower($langKey) . '/' . $tenant_id . '/',
-        'eventlist_url' => 'index.php?option=com_seminardesk&view=events&Itemid=' . $app->getMenu()->getActive()->id, 
+        'eventlist_url' => 'index.php?option=com_seminardesk&view=events&Itemid=' . $app->getMenu()->getActive()->id . '&lang=' . strtolower($langKey) , 
       ];
     }
     
@@ -439,6 +439,12 @@ class SeminardeskHelperData
     $event->categories = array_filter($event->labels, function($key){
       return !in_array($key, SeminardeskHelperData::LABELS_TO_HIDE);
     }, ARRAY_FILTER_USE_KEY);
+    //-- Prepare event labels list (categories)
+    $event->catLinks = [];
+    foreach( $event->categories as $cat_id => $cat_name) { 
+      $event->catLinks[] = '<a href="' . JRoute::_($config['eventlist_url'] . '?cat=' . $cat_id) . '">' . $cat_name . '</a>';
+    }
+    $event->catLinks = implode(', ', $event->catLinks);
     
     $event->description = self::translate($event->description);
     // Bugfix (Joomla / SeminarDesk bug): Some descriptions contain inline images data which are blasting Joomla's regex limit (pcre.backtrack_limit).
@@ -478,6 +484,29 @@ class SeminardeskHelperData
       $event->$dates[$key] = $date;
     }
 
+  }
+  
+  public static function fittingFilters($eventDate, $filters) {
+    //-- Matching current filter? => Hide event it no
+    return
+      // Check date filter
+      (
+        !$filters['date'] || 
+        $filters['date'] <= date('Y-m-d', $eventDate->endDate)
+      )
+      &&
+      // Check category filter
+      (
+        $filters['cat'] == 0 ||
+        in_array($filters['cat'], array_keys($eventDate->categories))
+      )
+      &&
+      // Check organisator Filter
+      (
+        !in_array($filters['org'], ['zegg', 'external']) ||
+        ($filters['org'] == 'zegg' && !$eventDate->isExternal) ||
+        ($filters['org'] == 'external' && $eventDate->isExternal)
+      );
   }
   
 }
