@@ -33,7 +33,6 @@ class SeminardeskHelperData
       self::LABELS_EXTERNAL_ID, 
   ];
   const DEFAULT_TENANT_ID = 'zegg';
-  const EVENTLIST_ITEMID = 532; // Menu id - to do, move to component / menu config, translate
   
   /** Custom config, other than https://api.joomla.org/cms-3/classes/Joomla.CMS.MVC.Model.ListModel.html
    *
@@ -61,7 +60,7 @@ class SeminardeskHelperData
         'langKey' => $langKey,
         'api' => 'https://' . $tenant_id . '.seminardesk.de/api',
         'booking_base' => 'https://booking.seminardesk.de/' . strtolower($langKey) . '/' . $tenant_id . '/',
-        'eventlist_url' => 'index.php?option=com_seminardesk&view=events&Itemid=' . self::EVENTLIST_ITEMID, 
+        'eventlist_url' => 'index.php?option=com_seminardesk&view=events&Itemid=' . $app->getMenu()->getActive()->id, 
       ];
     }
     
@@ -69,29 +68,43 @@ class SeminardeskHelperData
   }
 
   /**
-   * Remove attributes from tags and strip some tags, if desired
+   * Rplace multiple (>= 3) unterscores and dashes by <hr> a tag.
    * 
    * @param string $text
-   * @param string|boolean $stripTagsExceptions - Tags or false = do not strip tags)
-   * @return type
+   * @return string
    */
-  public static function cleanupHtml($text, $stripTagsExceptions = '<h1><h2><h3><h4><p><br><b><strong>') {
-    return strip_tags(preg_replace("/<([a-z][a-z0-9]*)[^>]*?(\/?)>/si",'<$1$2>', $text), $stripTagsExceptions);
+  public static function replaceHR($text) {
+    return preg_replace('/[_-]{3,}/', '<hr>', $text);
   }
 
   /**
-   * Remove all font tags and style attributes
+   * Remove attributes from tags and strip some tags, if desired
+   *   and replace multiple (>= 3) unterscores and dashes by <hr> a tag.
    * 
    * @param string $text
-   * @return type
+   * @param string|boolean $stripTagsExceptions - Tags or false = do not strip tags)
+   * @return string
+   */
+  public static function cleanupHtml($text, $stripTagsExceptions = '<h1><h2><h3><h4><p><br><b><hr><strong>') {
+    $text = strip_tags(preg_replace("/<([a-z][a-z0-9]*)[^>]*?(\/?)>/si",'<$1$2>', $text), $stripTagsExceptions);
+    return self::replaceHR($text);
+  }
+
+  /**
+   * Remove all font tags and style attributes 
+   *   and replace multiple (>= 3) unterscores and dashes by <hr> a tag. (as in cleanupHtml()
+   * 
+   * @param string $text
+   * @return string
    */
   public static function cleanupFormatting($text) {
     // Remove all style attributes
-    // regex hack: (<[^i>]+) is for all tags except starting with "i" => images should keep their styles
-    $text = preg_replace('/(<[^i>]+) style=".*?"/i', '$1', $text);
+    // regex hack: (<[^x>]+) is for all tags except "img" => images should keep their styles. 
+    //   x replaces img because regex pattern for <img too complicated, and regex (<[^i>]+) is catching also <li> etc.
+    $text = str_replace('<x', '<img', preg_replace('/(<[^x>]+) style=".*?"/i', '$1', str_replace('<img', '<x', $text)));
     // Remove font tags
     $text = preg_replace(["/<font.*?>/im", "/<\/font>/im"], "", $text);
-    return str_replace(['&nbsp;'], [' '], $text);
+    return self::replaceHR(str_replace(['&nbsp;'], [' '], $text));
   }
 
   /**
