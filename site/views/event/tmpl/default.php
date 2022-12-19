@@ -48,7 +48,7 @@ foreach( $this->event->categories as $cat_id => $cat_name) {
   <?php if ($this->event->settings->registrationAvailable) : ?>
   <div class="registration">
     <a href="<?= $this->event->booking_url ?>" class="btn modal" rel="{handler: 'iframe'}">
-      <?= JText::_("COM_SEMINARDESK_EVENT_BOOKING"); ?>
+      <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION"); ?>
     </a>
   </div>
   <?php endif; ?>
