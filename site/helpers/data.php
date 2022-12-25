@@ -29,7 +29,7 @@ class SeminardeskHelperData
   const LABELS_EXTERNAL_ID = 55;
   const LABELS_TO_HIDE = [
       1, 2, 3, 53, 54, // Languages
-      self::LABELS_FESTIVALS_ID, 
+//      self::LABELS_FESTIVALS_ID, 
       self::LABELS_EXTERNAL_ID, 
   ];
   const DEFAULT_TENANT_ID = 'zegg';
@@ -60,7 +60,7 @@ class SeminardeskHelperData
         'langKey' => $langKey,
         'api' => 'https://' . $tenant_id . '.seminardesk.de/api',
         'booking_base' => 'https://booking.seminardesk.de/' . strtolower($langKey) . '/' . $tenant_id . '/',
-        'eventlist_url' => 'index.php?option=com_seminardesk&view=events&Itemid=' . $app->getMenu()->getActive()->id, 
+        'eventlist_url' => 'index.php?option=com_seminardesk&view=events&Itemid=' . $app->getMenu()->getActive()->id . '&lang=' . strtolower($langKey) , 
       ];
     }
     
@@ -439,6 +439,12 @@ class SeminardeskHelperData
     $event->categories = array_filter($event->labels, function($key){
       return !in_array($key, SeminardeskHelperData::LABELS_TO_HIDE);
     }, ARRAY_FILTER_USE_KEY);
+    //-- Prepare event labels list (categories)
+    $event->catLinks = [];
+    foreach( $event->categories as $cat_id => $cat_name) { 
+      $event->catLinks[] = '<a href="' . JRoute::_($config['eventlist_url']) . '?cat=' . $cat_id . '">' . $cat_name . '</a>';
+    }
+    $event->catLinks = implode(', ', $event->catLinks);
     
     $event->description = self::translate($event->description);
     // Bugfix (Joomla / SeminarDesk bug): Some descriptions contain inline images data which are blasting Joomla's regex limit (pcre.backtrack_limit).
@@ -471,6 +477,25 @@ class SeminardeskHelperData
       $date->endDate = $date->endDate / 1000;
       $date->dateFormatted = SeminardeskHelperData::getDateFormatted($date->beginDate, $date->endDate);
 
+      //-- Prepare facilitator list, if not same as in event. Remove otherwise
+      $date->facilitatorLinks = [];
+      if (array_intersect(array_column($event->facilitators, 'id'), array_column($date->facilitators, 'id'))) {
+        foreach ( $date->facilitators as $facilitator ) { 
+//          $date->facilitatorLinks[] = '<a href="#' . $facilitator->id . '" title="Details comming soon...">' . $facilitator->name . '</a>';
+          $date->facilitatorLinks[] = '<span title="Details comming soon...">' . $facilitator->name . '</span>';
+        }
+        $date->facilitatorLinks = implode(', ', $date->facilitatorLinks);
+      }
+      
+      //-- Prices & fees
+      foreach ( $date->attendanceFees as $key => $fee ) {
+        $date->attendanceFees[$key]->name = self::translate($fee->name);
+      }
+//      foreach($date->availableMisc as $key => $misc) {
+//        $date->availableMisc[$key]->title = self::translate($misc->title);
+//        $date->availableMisc[$key]->prices = self::translate($misc->prices);
+//      }
+
       //-- Booking
       $date->booking_url = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, [$date->id]);
       $date->statusLabel = SeminardeskHelperData::getStatusLabel($date);
@@ -478,6 +503,29 @@ class SeminardeskHelperData
       $event->$dates[$key] = $date;
     }
 
+  }
+  
+  public static function fittingFilters($eventDate, $filters) {
+    //-- Matching current filter? => Hide event it no
+    return
+      // Check date filter
+      (
+        !$filters['date'] || 
+        $filters['date'] <= date('Y-m-d', $eventDate->endDate)
+      )
+      &&
+      // Check category filter
+      (
+        $filters['cat'] == 0 ||
+        in_array($filters['cat'], array_keys($eventDate->categories))
+      )
+      &&
+      // Check organisator Filter
+      (
+        !in_array($filters['org'], ['zegg', 'external']) ||
+        ($filters['org'] == 'zegg' && !$eventDate->isExternal) ||
+        ($filters['org'] == 'external' && $eventDate->isExternal)
+      );
   }
   
 }
