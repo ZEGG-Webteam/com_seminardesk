@@ -38,10 +38,18 @@ $filters = [
 		</div>
 	<?php // endif; ?>
   
-  <div class="btn-warning"><!-- temporary!! -->
+  <!-- <div class="btn-warning"><!-- temporary!!
     <?= JText::_("COM_SEMINARDESK_TEMP_WARNING");?>
-  </div>
+  </div>-->
   
+  <?php if ($document->countModules('above-events')): ?>
+    <section class="above-events-container">
+      <div class="row">
+        <?= JHtml::_('content.prepare', '{loadposition above-events, column}') ?>
+      </div>
+    </section>
+  <?php endif ; ?>
+
   <div class="sd-filter">
     <form class="sd-filter-form">
       <input type="date" name="from" id="sd-filter-date-from" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_DATE_PLACEHOLDER");?>" value="<?= $filters['date'] ?>">
@@ -80,17 +88,17 @@ $filters = [
         //-- Set event classes
         $eventClasses = ['registration-available'];
         if ($eventDate->isFeatured)       { $eventClasses[] = 'featured';         }
-        if ($eventDate->categoriesList)   { $eventClasses[] = 'has-categories';   }
+//        if ($eventDate->categoriesList)   { $eventClasses[] = 'has-categories';   } // Hide categories in List for now
         if ($eventDate->facilitatorsList) { $eventClasses[] = 'has-facilitators'; }
         if ($eventDate->isExternal)       { $eventClasses[] = 'external-event';   } 
         if (!$eventDate->isExternal)      { $eventClasses[] = 'zegg-event';       }
         
         //-- Matching current filter? => Hide event it no
         $categoryKeys = array_keys($eventDate->categories);
-        $isMatching = SeminardeskHelperData::fittingFilters($eventDate, $filters);
+        $filterMatching = SeminardeskHelperData::fittingFilters($eventDate, $filters);
         ?>
 
-        <div class="sd-event loading<?= (!$isMatching)?' hidden':'' ?>" 
+        <div class="sd-event loading<?= (!$filterMatching)?' hidden':'' ?>" 
              itemscope="itemscope" itemtype="https://schema.org/Event" 
              data-start-date="<?= date('Y-m-d', $eventDate->beginDate) ?>"
              data-end-date="<?= date('Y-m-d', $eventDate->endDate) ?>"
@@ -117,7 +125,7 @@ $filters = [
               <?= $eventDate->facilitatorsList; ?>
             </div>
             <div class="sd-event-categories">
-              <?= $eventDate->categoriesList; ?>
+              <!--<?= $eventDate->categoriesList; ?> <!-- hide categories for now -->
             </div>
             <div class="sd-event-registration">
               <?= $eventDate->statusLabel; ?>
@@ -134,4 +142,19 @@ $filters = [
       <p><?= JText::_("COM_SEMINARDESK_EVENTS_NO_EVENTS_FOUND");?></p>
     </div>
   </div>
+  
+  <?php if ($document->countModules('below-events')): ?>
+    <section class="below-events-container">
+      <div class="row">
+        <?= JHtml::_('content.prepare', '{loadposition below-events, column}') ?>
+      </div>
+    </section>
+  <?php endif ; ?>
+
+  <section class="event-infos-container">
+    <div class="row">
+      <?= JHtml::_('content.prepare', '{loadposition event-infos, column}') ?>
+    </div>
+  </section>
+
 </div>

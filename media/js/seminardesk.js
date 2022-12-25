@@ -66,6 +66,7 @@
           } else {
             $(this).addClass('hidden');
           }
+          $(this).removeClass('loading');
         });
 
         // Show "no events found" message if no results are left

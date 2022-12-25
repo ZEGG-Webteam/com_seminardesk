@@ -29,7 +29,7 @@ class SeminardeskHelperData
   const LABELS_EXTERNAL_ID = 55;
   const LABELS_TO_HIDE = [
       1, 2, 3, 53, 54, // Languages
-      self::LABELS_FESTIVALS_ID, 
+//      self::LABELS_FESTIVALS_ID, 
       self::LABELS_EXTERNAL_ID, 
   ];
   const DEFAULT_TENANT_ID = 'zegg';
@@ -442,7 +442,7 @@ class SeminardeskHelperData
     //-- Prepare event labels list (categories)
     $event->catLinks = [];
     foreach( $event->categories as $cat_id => $cat_name) { 
-      $event->catLinks[] = '<a href="' . JRoute::_($config['eventlist_url'] . '?cat=' . $cat_id) . '">' . $cat_name . '</a>';
+      $event->catLinks[] = '<a href="' . JRoute::_($config['eventlist_url']) . '?cat=' . $cat_id . '">' . $cat_name . '</a>';
     }
     $event->catLinks = implode(', ', $event->catLinks);
     
@@ -476,6 +476,25 @@ class SeminardeskHelperData
       $date->beginDate = $date->beginDate / 1000;
       $date->endDate = $date->endDate / 1000;
       $date->dateFormatted = SeminardeskHelperData::getDateFormatted($date->beginDate, $date->endDate);
+
+      //-- Prepare facilitator list, if not same as in event. Remove otherwise
+      $date->facilitatorLinks = [];
+      if (array_intersect(array_column($event->facilitators, 'id'), array_column($date->facilitators, 'id'))) {
+        foreach ( $date->facilitators as $facilitator ) { 
+//          $date->facilitatorLinks[] = '<a href="#' . $facilitator->id . '" title="Details comming soon...">' . $facilitator->name . '</a>';
+          $date->facilitatorLinks[] = '<span title="Details comming soon...">' . $facilitator->name . '</span>';
+        }
+        $date->facilitatorLinks = implode(', ', $date->facilitatorLinks);
+      }
+      
+      //-- Prices & fees
+      foreach ( $date->attendanceFees as $key => $fee ) {
+        $date->attendanceFees[$key]->name = self::translate($fee->name);
+      }
+//      foreach($date->availableMisc as $key => $misc) {
+//        $date->availableMisc[$key]->title = self::translate($misc->title);
+//        $date->availableMisc[$key]->prices = self::translate($misc->prices);
+//      }
 
       //-- Booking
       $date->booking_url = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, [$date->id]);
