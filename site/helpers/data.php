@@ -128,7 +128,7 @@ class SeminardeskHelperData
    * @param boolean $htmlencode - true = encode html entities before returning
    * @return string - Value
    */
-  public static function translate($fieldValues, $htmlencode = false, $fallbackLangLang = true)
+  public static function translate($fieldValues, $htmlencode = false, $fallbackLang = true)
   {
     $config = self::getConfiguration();
     $langKey = $config['langKey'];
@@ -146,14 +146,15 @@ class SeminardeskHelperData
       if (array_key_exists($langKey, $localizedValues)) {
         $value = $localizedValues[$langKey];
       }
-
-      //-- Fallback to first language
-      if ($fallbackLang === true) {
-        $value = reset($localizedValues);
-      }
-      //-- Fallback to selected language, if exists (otherwise $value is empty)
-      elseif (is_string($fallbackLang) && array_key_exists($fallbackLangLangKey, $localizedValues)) {
-        $value = $localizedValues[$langKey];
+      else {
+        //-- Fallback to first language
+        if ($fallbackLang === true) {
+          $value = reset($localizedValues);
+        }
+        //-- Fallback to selected language, if exists (otherwise $value is empty)
+        elseif (is_string($fallbackLang) && array_key_exists($fallbackLangLang, $localizedValues)) {
+          $value = $localizedValues[$langKey];
+        }
       }
     }
 
@@ -291,27 +292,20 @@ class SeminardeskHelperData
   public static function getStatusLabel($event)
   {
     $label = '';
-    if ($event->registrationAvailable) {
-      if ($event->status) {
-        $label = JText::_("COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($event->status));
-        if (!$label) {
-          $label = ucfirst(str_replace('_', ' ', $event->status));
-        }
-      }
+    if ($event->registrationAvailable && $event->status) {
+      $label = JText::_("COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($event->status));
     }
-//    else {
-//      $label = JText::_("COM_SEMINARDESK_EVENTS_NO_REGISTRATION_AVAILABLE");
-//    }
     return $label;
   }
   
   /**
    * Load EventDates from SeminarDesk API
    *
+   * @param $filter array - e.g. ['labels' => '1,2,3'] or ['labels' => [1],[2],[3]]
    * @return  array Event Dates (stdClass)
    * @since   3.0
    */
-  public function loadEventDates()
+  public function loadEventDates($filter = [])
   {
     $config = self::getConfiguration();
     $api_uri = self::getSeminarDeskApiLink('/eventDates');
@@ -323,6 +317,28 @@ class SeminardeskHelperData
       //-- Get values in current language, with fallback to first language in set
       foreach ($eventDates as $key => &$eventDate) {
         self::prepareEventDate($eventDate);
+      }
+      
+      //-- Apply filters
+      $filter['labels'] = isset($filter['labels'])?explode(',', $filter['labels']):[];
+
+      $eventDates = array_filter($eventDates, function ($eventDate) use ($filter) {
+        
+        //-- Filter by labels (IDs or labels)
+        if ($filter['labels']) {
+          // Allow both IDs or label text as filter
+          $eventLabels = (is_numeric($filter['labels'][0]))?array_keys($eventDate->labels):$eventDate->labels;
+          // Compare labels with filter. If some are matching, return event
+          return array_intersect($eventLabels, $filter['labels']);
+        }
+        else {
+          return true;
+        }
+      });
+      
+      //-- Limit
+      if (isset($filter['limit']) && $filter['limit'] > 0) {
+        $eventDates = array_slice($eventDates, 0, $filter['limit']);
       }
     }
     else {
@@ -399,6 +415,7 @@ class SeminardeskHelperData
     $eventDate->categoriesList = htmlentities(implode(', ', $eventDate->categories), ENT_QUOTES);
 //    $eventDate->categoryLinks = implode(', ', SeminardeskHelperData::getCategoryLinks($eventDate->categories));
     $eventDate->statusLabel = htmlentities($eventDate->statusLabel, ENT_QUOTES);
+    $eventDate->statusLabel = SeminardeskHelperData::getStatusLabel($eventDate);
 
     //-- Set special event flags (festivals, external organisers)
     $eventDate->isFeatured = array_key_exists(SeminardeskHelperData::LABELS_FESTIVALS_ID, $eventDate->labels);
@@ -413,7 +430,6 @@ class SeminardeskHelperData
     //-- Booking
     $eventDate->details_url = SeminardeskHelperData::getDetailsUrl($eventDate);
 //    $eventDate->booking_url = SeminardeskHelperData::getBookingUrl($eventDate...);
-    $eventDate->statusLabel = SeminardeskHelperData::getStatusLabel($eventDate);
   }
   
   /**
