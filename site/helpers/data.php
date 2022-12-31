@@ -422,14 +422,23 @@ class SeminardeskHelperData
     $eventDate->isExternal = array_key_exists(SeminardeskHelperData::LABELS_EXTERNAL_ID, $eventDate->labels);
     $eventDate->showDateTitle = ($eventDate->eventDateTitle && $eventDate->eventDateTitle != $eventDate->title);
 
+    //-- Set event classes
+    $classes = ['registration-available'];
+    if ($eventDate->isFeatured)       { $classes[] = 'featured';         }
+//    if ($eventDate->categoriesList)   { $classes[] = 'has-categories';   } // Hide categories in List for now
+    if ($eventDate->facilitatorsList) { $classes[] = 'has-facilitators'; }
+    if ($eventDate->isExternal)       { $classes[] = 'external-event';   } 
+    if (!$eventDate->isExternal)      { $classes[] = 'zegg-event';       }
+    $eventDate->cssClasses = implode(' ', $classes);
+
     //-- Format date
     $eventDate->beginDate = $eventDate->beginDate / 1000;
     $eventDate->endDate = $eventDate->endDate / 1000;
     $eventDate->dateFormatted = SeminardeskHelperData::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
 
     //-- Booking
-    $eventDate->details_url = SeminardeskHelperData::getDetailsUrl($eventDate);
-//    $eventDate->booking_url = SeminardeskHelperData::getBookingUrl($eventDate...);
+    $eventDate->detailsUrl = SeminardeskHelperData::getDetailsUrl($eventDate);
+//    $eventDate->bookingUrl = SeminardeskHelperData::getBookingUrl($eventDate...);
   }
   
   /**
@@ -475,7 +484,7 @@ class SeminardeskHelperData
     $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices));
     $event->infoBoardLodging = self::translate($event->infoBoardLodging);
     $event->infoMisc = self::translate($event->infoMisc);
-    $event->booking_url = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug);
+    $event->bookingUrl = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug);
     foreach($event->facilitators as $key => $facilitator) {
       $about = self::translate($facilitator->about);
       $event->facilitators[$key]->about = self::cleanupFormatting($about);
@@ -513,7 +522,7 @@ class SeminardeskHelperData
 //      }
 
       //-- Booking
-      $date->booking_url = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, [$date->id]);
+      $date->bookingUrl = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, [$date->id]);
       $date->statusLabel = SeminardeskHelperData::getStatusLabel($date);
       
       $event->$dates[$key] = $date;

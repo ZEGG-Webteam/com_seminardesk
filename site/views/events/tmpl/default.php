@@ -107,7 +107,7 @@ $filters = [
              data-categories='<?= json_encode($categoryKeys); ?>'
              data-labels="<?= $eventDate->labelsList ?>">
 
-          <a href="<?= $eventDate->details_url ?>" itemprop="url" class="<?= implode(' ', $eventClasses); ?>">
+          <a href="<?= $eventDate->detailsUrl ?>" itemprop="url" class="<?= $eventDate->cssClasses ?>">
             <?php $sameYear = date('Y', $eventDate->beginDate) === date('Y', $eventDate->endDate); ?>
             <div class="sd-event-date <?= (!$sameYear)?' not-same-year':'' ?>">
               <time itemprop="startDate" 

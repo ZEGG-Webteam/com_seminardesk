@@ -42,7 +42,7 @@ $document->setTitle($title . ' - ' . $facilitators);
 
     <?php if ($this->event->settings->registrationAvailable) : ?>
     <div class="registration">
-      <a href="<?= $this->event->booking_url ?>" class="btn modal" rel="{handler: 'iframe'}">
+      <a href="<?= $this->event->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}">
         <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION"); ?>
       </a>
     </div>
@@ -94,7 +94,7 @@ $document->setTitle($title . ' - ' . $facilitators);
 
             <div class="date-registration">
             <?php if ($this->event->settings->registrationAvailable && $date->registrationAvailable) : ?>
-              <a href="<?= $date->booking_url ?>" class="btn modal" rel="{handler: 'iframe'}">
+              <a href="<?= $date->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}">
                 <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION"); ?>
               </a>
             <?php else : ?>
@@ -135,7 +135,7 @@ $document->setTitle($title . ' - ' . $facilitators);
     <?php endif; ?>
     
     <?php // if ($this->event->settings->registrationAvailable) : ?>
-      <!--<iframe class="registration-iframe" src="<?= $this->event->booking_url ?>"></iframe>-->
+      <!--<iframe class="registration-iframe" src="<?= $this->event->bookingUrl ?>"></iframe>-->
     <?php // endif; ?>
   </div>
   
