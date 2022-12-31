@@ -30,7 +30,7 @@ $filters = [
 ];
 ?>
 
-<div class="sd-events<?php echo ($this->pageclass_sfx)?' sd-events'.$this->pageclass_sfx:''; ?>">
+<div class="sd-component sd-events<?php echo ($this->pageclass_sfx)?' sd-events'.$this->pageclass_sfx:''; ?>">
   
 	<?php // if ($app->input->get('show_page_heading')) : // to do: buggy ?>
 		<div class="page-header">
@@ -118,10 +118,10 @@ $filters = [
               <time itemprop="endDate" datetime="<?= date('c', $eventDate->endDate) ?>"></time>
             </div>
             <div class="sd-event-title">
-              <h4><?= $eventDate->title; ?></h4>
+              <h4 itemprop="name"><?= $eventDate->title; ?></h4>
               <?= ($eventDate->showDateTitle)?('<p>' . $eventDate->eventDateTitle . '</p>'):'' ?>
             </div>
-            <div class="sd-event-facilitators">
+            <div class="sd-event-facilitators" itemprop="organizer">
               <?= $eventDate->facilitatorsList; ?>
             </div>
             <div class="sd-event-categories">

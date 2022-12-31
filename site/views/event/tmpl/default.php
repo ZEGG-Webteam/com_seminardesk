@@ -29,7 +29,7 @@ $facilitators = implode(', ', array_column($this->event->facilitators, 'name'));
 $document->setTitle($title . ' - ' . $facilitators);
 ?>
 
-<div class="sd-event-details" data-api-uri="<?= $this->event->apiUri ?>" data-lang-key="<?= $this->event->langKey ?>">
+<div class="sd-component sd-event-details" data-api-uri="<?= $this->event->apiUri ?>" data-lang-key="<?= $this->event->langKey ?>">
   <div class="event-header">
     <?php if ($this->event->headerPictureUrl) : ?>
       <div class="header-picture"><img src="<?= $this->event->headerPictureUrl ?>"></div>

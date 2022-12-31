@@ -198,13 +198,11 @@ class SeminardeskHelperData
    *   See description of getBookingUrl()
    * 
    * @param stdClass $event - must contain id, titleSlug and eventId
-   * @param string $landKey
    * @return string URL to event detail page
    */
   public static function getDetailsUrl($event)
   {
-    $slug = self::translate($event->titleSlug, true);
-    return JRoute::_("index.php?option=com_seminardesk&view=event&eventId=" . $event->eventId . '&slug=' . $slug);
+    return JRoute::_("index.php?option=com_seminardesk&view=event&eventId=" . $event->eventId . '&slug=' . $event->titleSlug);
   }
   
   /**
@@ -320,7 +318,8 @@ class SeminardeskHelperData
       }
       
       //-- Apply filters
-      $filter['labels'] = isset($filter['labels'])?explode(',', $filter['labels']):[];
+      // convert labels to array and trim each label value
+      $filter['labels'] = isset($filter['labels'])?array_map('trim', explode(',', $filter['labels'])):[];
 
       $eventDates = array_filter($eventDates, function ($eventDate) use ($filter) {
         
@@ -397,6 +396,7 @@ class SeminardeskHelperData
   public function prepareEventDate(&$eventDate)
   {
     $eventDate->title = self::translate($eventDate->title, true);
+    $eventDate->titleSlug = self::translate($eventDate->titleSlug);
     $eventDate->eventDateTitle = self::translate($eventDate->eventDateTitle, true);
     $eventDate->facilitators = array_combine(
       array_column($eventDate->facilitators, 'id'), 
