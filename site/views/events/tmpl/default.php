@@ -151,7 +151,7 @@ $filters = [
     </section>
   <?php endif ; ?>
 
-  <section class="event-infos-container">
+  <section class="event-infos-container" id="event-infos">
     <div class="row">
       <?= JHtml::_('content.prepare', '{loadposition event-infos, column}') ?>
     </div>

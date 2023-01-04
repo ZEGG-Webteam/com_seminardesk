@@ -139,7 +139,7 @@ $document->setTitle($title . ' - ' . $facilitators);
     <?php // endif; ?>
   </div>
   
-  <aside class="event-infos-container">
+  <aside class="event-infos-container" id="event-infos">
     <div class="row">
       <?= JHtml::_('content.prepare', '{loadposition event-infos, column}') ?>
     </div>

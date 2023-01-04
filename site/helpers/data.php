@@ -209,7 +209,7 @@ class SeminardeskHelperData
    * Get url for SeminarDesk booking
    * - Preselection of a specific date: ?eventDateId=<id>
    * - For preselection of multiple dates of an event (e.g. regular annual group), 
-   *   the URL would be ?eventDateId=<id1>&?eventDateId=<id2>&?eventDateId=<id3>
+   *   the URL would be ?eventDateId=<id1>&eventDateId=<id2>&eventDateId=<id3>
    * 
    * @param stdClass $event - must contain id, titleSlug and eventId
    * @return string URL to embedded event booking form
@@ -222,7 +222,6 @@ class SeminardeskHelperData
       $url .= '?eventDateId=' . implode('&eventDateId=', $eventDateIds);
     }
     return $url;
-//    return self::getDetailsUrl($event) . '/embed?eventDateId=' . $event->id;
   }
   
   /**
@@ -438,7 +437,7 @@ class SeminardeskHelperData
 
     //-- Booking
     $eventDate->detailsUrl = SeminardeskHelperData::getDetailsUrl($eventDate);
-//    $eventDate->bookingUrl = SeminardeskHelperData::getBookingUrl($eventDate...);
+    $eventDate->bookingUrl = SeminardeskHelperData::getBookingUrl($eventDate->eventId, $eventDate->titleSlug, $eventDate->id);
   }
   
   /**
