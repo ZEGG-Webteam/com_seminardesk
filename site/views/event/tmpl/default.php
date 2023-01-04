@@ -29,7 +29,7 @@ $facilitators = implode(', ', array_column($this->event->facilitators, 'name'));
 $document->setTitle($title . ' - ' . $facilitators);
 ?>
 
-<div class="sd-event-details" data-api-uri="<?= $this->event->apiUri ?>" data-lang-key="<?= $this->event->langKey ?>">
+<div class="sd-component sd-event-details" data-api-uri="<?= $this->event->apiUri ?>" data-lang-key="<?= $this->event->langKey ?>">
   <div class="event-header">
     <?php if ($this->event->headerPictureUrl) : ?>
       <div class="header-picture"><img src="<?= $this->event->headerPictureUrl ?>"></div>
@@ -42,7 +42,7 @@ $document->setTitle($title . ' - ' . $facilitators);
 
     <?php if ($this->event->settings->registrationAvailable) : ?>
     <div class="registration">
-      <a href="<?= $this->event->booking_url ?>" class="btn modal" rel="{handler: 'iframe'}">
+      <a href="<?= $this->event->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}">
         <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION"); ?>
       </a>
     </div>
@@ -94,7 +94,7 @@ $document->setTitle($title . ' - ' . $facilitators);
 
             <div class="date-registration">
             <?php if ($this->event->settings->registrationAvailable && $date->registrationAvailable) : ?>
-              <a href="<?= $date->booking_url ?>" class="btn modal" rel="{handler: 'iframe'}">
+              <a href="<?= $date->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}">
                 <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION"); ?>
               </a>
             <?php else : ?>
@@ -135,11 +135,11 @@ $document->setTitle($title . ' - ' . $facilitators);
     <?php endif; ?>
     
     <?php // if ($this->event->settings->registrationAvailable) : ?>
-      <!--<iframe class="registration-iframe" src="<?= $this->event->booking_url ?>"></iframe>-->
+      <!--<iframe class="registration-iframe" src="<?= $this->event->bookingUrl ?>"></iframe>-->
     <?php // endif; ?>
   </div>
   
-  <aside class="event-infos-container">
+  <aside class="event-infos-container" id="event-infos">
     <div class="row">
       <?= JHtml::_('content.prepare', '{loadposition event-infos, column}') ?>
     </div>

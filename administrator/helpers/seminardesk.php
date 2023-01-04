@@ -24,7 +24,6 @@ class SeminardeskHelper
 	 * Configure the Linkbar.
 	 *
 	 * @param   string  $vName  string
-	 *
 	 * @return void
 	 */
 	public static function addSubmenu($vName = '')
@@ -36,11 +35,8 @@ class SeminardeskHelper
 	 * Gets the files attached to an item
 	 *
 	 * @param   int     $pk     The item's id
-	 *
 	 * @param   string  $table  The table's name
-	 *
 	 * @param   string  $field  The field's name
-	 *
 	 * @return  array  The files
 	 */
 	public static function getFiles($pk, $table, $field)
@@ -62,7 +58,6 @@ class SeminardeskHelper
 	 * Gets a list of the actions that can be performed.
 	 *
 	 * @return    JObject
-	 *
 	 * @since    1.6
 	 */
 	public static function getActions()

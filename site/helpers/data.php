@@ -128,7 +128,7 @@ class SeminardeskHelperData
    * @param boolean $htmlencode - true = encode html entities before returning
    * @return string - Value
    */
-  public static function translate($fieldValues, $htmlencode = false, $fallbackLangLang = true)
+  public static function translate($fieldValues, $htmlencode = false, $fallbackLang = true)
   {
     $config = self::getConfiguration();
     $langKey = $config['langKey'];
@@ -146,14 +146,15 @@ class SeminardeskHelperData
       if (array_key_exists($langKey, $localizedValues)) {
         $value = $localizedValues[$langKey];
       }
-
-      //-- Fallback to first language
-      if ($fallbackLang === true) {
-        $value = reset($localizedValues);
-      }
-      //-- Fallback to selected language, if exists (otherwise $value is empty)
-      elseif (is_string($fallbackLang) && array_key_exists($fallbackLangLangKey, $localizedValues)) {
-        $value = $localizedValues[$langKey];
+      else {
+        //-- Fallback to first language
+        if ($fallbackLang === true) {
+          $value = reset($localizedValues);
+        }
+        //-- Fallback to selected language, if exists (otherwise $value is empty)
+        elseif (is_string($fallbackLang) && array_key_exists($fallbackLangLang, $localizedValues)) {
+          $value = $localizedValues[$langKey];
+        }
       }
     }
 
@@ -197,20 +198,18 @@ class SeminardeskHelperData
    *   See description of getBookingUrl()
    * 
    * @param stdClass $event - must contain id, titleSlug and eventId
-   * @param string $landKey
    * @return string URL to event detail page
    */
   public static function getDetailsUrl($event)
   {
-    $slug = self::translate($event->titleSlug, true);
-    return JRoute::_("index.php?option=com_seminardesk&view=event&eventId=" . $event->eventId . '&slug=' . $slug);
+    return JRoute::_("index.php?option=com_seminardesk&view=event&eventId=" . $event->eventId . '&slug=' . $event->titleSlug);
   }
   
   /**
    * Get url for SeminarDesk booking
    * - Preselection of a specific date: ?eventDateId=<id>
    * - For preselection of multiple dates of an event (e.g. regular annual group), 
-   *   the URL would be ?eventDateId=<id1>&?eventDateId=<id2>&?eventDateId=<id3>
+   *   the URL would be ?eventDateId=<id1>&eventDateId=<id2>&eventDateId=<id3>
    * 
    * @param stdClass $event - must contain id, titleSlug and eventId
    * @return string URL to embedded event booking form
@@ -223,7 +222,6 @@ class SeminardeskHelperData
       $url .= '?eventDateId=' . implode('&eventDateId=', $eventDateIds);
     }
     return $url;
-//    return self::getDetailsUrl($event) . '/embed?eventDateId=' . $event->id;
   }
   
   /**
@@ -291,27 +289,20 @@ class SeminardeskHelperData
   public static function getStatusLabel($event)
   {
     $label = '';
-    if ($event->registrationAvailable) {
-      if ($event->status) {
-        $label = JText::_("COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($event->status));
-        if (!$label) {
-          $label = ucfirst(str_replace('_', ' ', $event->status));
-        }
-      }
+    if ($event->registrationAvailable && $event->status) {
+      $label = JText::_("COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($event->status));
     }
-//    else {
-//      $label = JText::_("COM_SEMINARDESK_EVENTS_NO_REGISTRATION_AVAILABLE");
-//    }
     return $label;
   }
   
   /**
    * Load EventDates from SeminarDesk API
    *
+   * @param $filter array - e.g. ['labels' => '1,2,3'] or ['labels' => [1],[2],[3]]
    * @return  array Event Dates (stdClass)
    * @since   3.0
    */
-  public function loadEventDates()
+  public function loadEventDates($filter = [])
   {
     $config = self::getConfiguration();
     $api_uri = self::getSeminarDeskApiLink('/eventDates');
@@ -323,6 +314,29 @@ class SeminardeskHelperData
       //-- Get values in current language, with fallback to first language in set
       foreach ($eventDates as $key => &$eventDate) {
         self::prepareEventDate($eventDate);
+      }
+      
+      //-- Apply filters
+      // convert labels to array and trim each label value
+      $filter['labels'] = isset($filter['labels'])?array_map('trim', explode(',', $filter['labels'])):[];
+
+      $eventDates = array_filter($eventDates, function ($eventDate) use ($filter) {
+        
+        //-- Filter by labels (IDs or labels)
+        if ($filter['labels']) {
+          // Allow both IDs or label text as filter
+          $eventLabels = (is_numeric($filter['labels'][0]))?array_keys($eventDate->labels):$eventDate->labels;
+          // Compare labels with filter. If some are matching, return event
+          return array_intersect($eventLabels, $filter['labels']);
+        }
+        else {
+          return true;
+        }
+      });
+      
+      //-- Limit
+      if (isset($filter['limit']) && $filter['limit'] > 0) {
+        $eventDates = array_slice($eventDates, 0, $filter['limit']);
       }
     }
     else {
@@ -381,6 +395,7 @@ class SeminardeskHelperData
   public function prepareEventDate(&$eventDate)
   {
     $eventDate->title = self::translate($eventDate->title, true);
+    $eventDate->titleSlug = self::translate($eventDate->titleSlug);
     $eventDate->eventDateTitle = self::translate($eventDate->eventDateTitle, true);
     $eventDate->facilitators = array_combine(
       array_column($eventDate->facilitators, 'id'), 
@@ -399,11 +414,21 @@ class SeminardeskHelperData
     $eventDate->categoriesList = htmlentities(implode(', ', $eventDate->categories), ENT_QUOTES);
 //    $eventDate->categoryLinks = implode(', ', SeminardeskHelperData::getCategoryLinks($eventDate->categories));
     $eventDate->statusLabel = htmlentities($eventDate->statusLabel, ENT_QUOTES);
+    $eventDate->statusLabel = SeminardeskHelperData::getStatusLabel($eventDate);
 
     //-- Set special event flags (festivals, external organisers)
     $eventDate->isFeatured = array_key_exists(SeminardeskHelperData::LABELS_FESTIVALS_ID, $eventDate->labels);
     $eventDate->isExternal = array_key_exists(SeminardeskHelperData::LABELS_EXTERNAL_ID, $eventDate->labels);
     $eventDate->showDateTitle = ($eventDate->eventDateTitle && $eventDate->eventDateTitle != $eventDate->title);
+
+    //-- Set event classes
+    $classes = ['registration-available'];
+    if ($eventDate->isFeatured)       { $classes[] = 'featured';         }
+//    if ($eventDate->categoriesList)   { $classes[] = 'has-categories';   } // Hide categories in List for now
+    if ($eventDate->facilitatorsList) { $classes[] = 'has-facilitators'; }
+    if ($eventDate->isExternal)       { $classes[] = 'external-event';   } 
+    if (!$eventDate->isExternal)      { $classes[] = 'zegg-event';       }
+    $eventDate->cssClasses = implode(' ', $classes);
 
     //-- Format date
     $eventDate->beginDate = $eventDate->beginDate / 1000;
@@ -411,9 +436,8 @@ class SeminardeskHelperData
     $eventDate->dateFormatted = SeminardeskHelperData::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
 
     //-- Booking
-    $eventDate->details_url = SeminardeskHelperData::getDetailsUrl($eventDate);
-//    $eventDate->booking_url = SeminardeskHelperData::getBookingUrl($eventDate...);
-    $eventDate->statusLabel = SeminardeskHelperData::getStatusLabel($eventDate);
+    $eventDate->detailsUrl = SeminardeskHelperData::getDetailsUrl($eventDate);
+    $eventDate->bookingUrl = SeminardeskHelperData::getBookingUrl($eventDate->eventId, $eventDate->titleSlug, $eventDate->id);
   }
   
   /**
@@ -459,7 +483,7 @@ class SeminardeskHelperData
     $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices));
     $event->infoBoardLodging = self::translate($event->infoBoardLodging);
     $event->infoMisc = self::translate($event->infoMisc);
-    $event->booking_url = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug);
+    $event->bookingUrl = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug);
     foreach($event->facilitators as $key => $facilitator) {
       $about = self::translate($facilitator->about);
       $event->facilitators[$key]->about = self::cleanupFormatting($about);
@@ -497,7 +521,7 @@ class SeminardeskHelperData
 //      }
 
       //-- Booking
-      $date->booking_url = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, [$date->id]);
+      $date->bookingUrl = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, [$date->id]);
       $date->statusLabel = SeminardeskHelperData::getStatusLabel($date);
       
       $event->$dates[$key] = $date;

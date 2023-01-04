@@ -1,11 +1,18 @@
 #sbox-window {
   position: fixed;
   left: 10vw !important;
-  top: 10vw !important;
+  top: 7vw !important;
   width: 80vw !important;
   height: 80vh !important;
 }
 #sbox-window iframe {
-  width: calc(80vw - 20px) !important;
+  width: 100% !important;
   height: calc(80vh - 20px) !important;
+}
+
+@media screen and (min-width: 1400px) {
+  #sbox-window {
+    left: calc(50vw - 555px) !important;
+    max-width: 1110px;
+  }
 }
