@@ -133,6 +133,13 @@ $filters = [
             <div class="sd-event-external">
               <?= ($eventDate->isExternal)?JText::_("COM_SEMINARDESK_EVENTS_LABEL_EXTERNAL"):''; ?>
             </div>
+            <div class="sd-event-location hidden" itemprop="location" itemscope itemtype="https://schema.org/Place">
+              <span itemprop="name">ZEGG Bildungszentrum gGmbH</span>
+              <div class="address" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+                <span itemprop="streetAddress">Rosa-Luxemburg-Strasse 89</span><br>
+                <span itemprop="postalCode">14806</span> <span itemprop="addressLocality">Bad Belzig</span>, <span itemprop="addressCountry">DE</span>
+              </div>
+            </div>
           </a>
 
         </div>
