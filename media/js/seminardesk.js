@@ -8,7 +8,7 @@
     /***************************
      *  Event list and filter  *
      ***************************/
-    if ($('.sd-filter-form').length > 0) {
+    if ($('.sd-events .sd-filter-form').length > 0) {
       //-- Get current date
       let today = new Date()
       let todaysDate = today.toISOString().split('T')[0];
@@ -147,6 +147,53 @@
       $(this).prev().toggleClass('show-all');
     });
 
+    /**********************************
+     *  Facilitators list and filter  *
+     **********************************/
+    if ($('.sd-facilitators .sd-filter-form').length > 0) {
+      
+      //-- Events filter
+      function filterFacilitators() {
+        let filterSearchTerms = $('.sd-facilitators #sd-filter-search-term').val().trim().replace(',', ' ').toLowerCase().split(' ').filter(Boolean);
+        let areSearchTermsEmpty = (filterSearchTerms.length === 0);        
+        console.log(filterSearchTerms);
+
+        // Hide all events not matching ALL of the search terms
+        $('.sd-facilitatorlist .sd-facilitator').each(function() {
+          let searchableText = $(this).data('name');
+          let areSearchTermsMatching = areSearchTermsEmpty || filterSearchTerms.every( 
+            substring=>searchableText.toLowerCase().includes( substring ) 
+          );
+
+          // Show events if filters are matching, otherwise hide them
+          if (areSearchTermsMatching) {
+            $(this).removeClass('hidden');
+          } else {
+            $(this).addClass('hidden');
+          }
+        });
+        
+        // Show "no events found" message if no results are left
+        $('.sd-facilitatorlist').each(function() {
+          if ($(this).find('.sd-facilitator:not(.hidden)').length === 0) {
+            $(this).find('.no-facilitators-found').removeClass('hidden');
+          } else {
+            $(this).find('.no-facilitators-found').addClass('hidden');
+          }
+        });
+      }
+      // Filter on any filter field changed
+      $('.sd-filter-form #sd-filter-search-term').on('keyup blur change', filterFacilitators);
+      // Filter on submit
+      $('.sd-filter-form [type="submit"]').on('click', function(e){
+        e.preventDefault();
+        // Filter
+        filterFacilitators();
+      });
+
+      // Start filtering
+      filterFacilitators();
+    }
   });
   
 })(jQuery);

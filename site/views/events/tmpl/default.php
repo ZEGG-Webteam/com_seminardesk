@@ -38,10 +38,6 @@ $filters = [
 		</div>
 	<?php // endif; ?>
   
-  <!-- <div class="btn-warning"><!-- temporary!!
-    <?= JText::_("COM_SEMINARDESK_TEMP_WARNING");?>
-  </div>-->
-  
   <?php if ($document->countModules('above-events')): ?>
     <section class="above-events-container">
       <div class="row">

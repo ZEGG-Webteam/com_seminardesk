@@ -17,11 +17,11 @@ use \Joomla\CMS\Factory;
 use \Joomla\CMS\Language\Text;
 
 /**
- * View class for a list of SeminarDesk Events
+ * View class for a list of SeminarDesk Facilitators
  *
  * @since  1.6
  */
-class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
+class SeminardeskViewFacilitators extends \Joomla\CMS\MVC\View\HtmlView
 {
 	protected $items;
 	protected $pagination;
@@ -29,7 +29,7 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
 	protected $params;
 
 	/**
-	 * Display the Events view
+	 * Display the Facilitators view
 	 *
 	 * @param   string  $tpl  Name of the template file to parse; automatically searches through the template paths.
 	 * @return void
@@ -43,7 +43,7 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
 		$this->params = $this->state->get('params');
 		
     // Assign data to the view
-    $this->events = SeminardeskHelperSeminardesk::getModel('Events');
+    $this->facilitators = SeminardeskHelperSeminardesk::getModel('Facilitators');
     $this->title = $app->getMenu()->getActive()->title;
     $this->pageclass_sfx = htmlspecialchars($app->input->get('pageclass_sfx'), ENT_COMPAT, 'UTF-8');
 
