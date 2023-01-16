@@ -76,6 +76,18 @@ class SeminardeskRouter extends RouterView
       $segments[] = $query['slug'];
       unset($query['slug']);
     }
+    // Add facilitator id
+    if (isset($query['id']))
+    {
+      $segments[] = $query['id'];
+      unset($query['id']);
+    }
+    // Add facilitator name (for SEO only, not for routing)
+    if (isset($query['name']))
+    {
+      $segments[] = $query['name'];
+      unset($query['name']);
+    }
 
     if (isset($query['view']))
     {
@@ -95,8 +107,21 @@ class SeminardeskRouter extends RouterView
   public function parse(&$segments)
   {
     $vars = [];
-    $vars['eventId']   = $segments[0];
-    $vars['view'] = 'event';
+    $app = Factory::getApplication();
+    $menu = $app->getMenu()->getActive();
+
+    switch($menu->query['view']) {
+      case 'facilitators': 
+        $vars['id']   = $segments[0];
+        $vars['view'] = 'facilitator';
+        break;
+      
+      case 'events': 
+      default:
+        $vars['eventId']   = $segments[0];
+        $vars['view'] = 'event';
+        break;
+    }
 
     return $vars;
   }

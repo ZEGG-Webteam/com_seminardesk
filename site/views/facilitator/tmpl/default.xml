@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+    <layout title="COM_SEMINARDESK_TITLE_ITEM_VIEW_FACILITATOR" option="View">
+        <message>
+            <![CDATA[COM_SEMINARDESK_TITLE_ITEM_VIEW_FACILITATOR_DESC]]>
+        </message>
+    </layout>
+    <fields name="request">
+        <fieldset name="request" label="COM_SEMINARDESK_FIELDSET_ITEM_ID_SELECT_LABEL">
+            <field name="id" query="SELECT 'Please select a Item' as `id`, 'Please select a Item' as `id`" type="sql" key_field="id" value_field="id" label="COM_SEMINARDESK_ITEM_ID_SELECT_LABEL" require="true" description="JGLOBAL_SHOW_TITLE_DESC">
+            </field>
+        </fieldset>
+    </fields>
+    <fields name="params">
+        <fieldset name="basic" label="COM_SEMINARDESK_FIELDSET_ITEM_ID_SELECT_LABEL_DEPRECATED">
+            <field name="item_id" query="SELECT 'Please select a Item' as `id`, 'Please select a Item' as `id`" type="sql" key_field="id" value_field="id" label="COM_SEMINARDESK_ITEM_ID_SELECT_LABEL" require="true" description="JGLOBAL_SHOW_TITLE_DESC">
+            </field>
+        </fieldset>
+    </fields>
+   
+    
+</metadata>

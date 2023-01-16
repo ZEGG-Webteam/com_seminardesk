@@ -68,23 +68,23 @@ class SeminardeskHelperSeminardesk
 		return explode(',', $db->loadResult());
 	}
 
-    /**
-     * Gets the edit permission for an user
-     *
-     * @param   mixed  $item  The item
-     *
-     * @return  bool
-     */
-    public static function canUserEdit($item)
-    {
-        $permission = false;
-        $user       = Factory::getUser();
+  /**
+   * Gets the edit permission for an user
+   *
+   * @param   mixed  $item  The item
+   *
+   * @return  bool
+   */
+  public static function canUserEdit($item)
+  {
+      $permission = false;
+      $user       = Factory::getUser();
 
-        if ($user->authorise('core.edit', 'com_seminardesk') || (isset($item->created_by) && $user->authorise('core.edit.own', 'com_seminardesk') && $item->created_by == $user->id))
-        {
-            $permission = true;
-        }
+      if ($user->authorise('core.edit', 'com_seminardesk') || (isset($item->created_by) && $user->authorise('core.edit.own', 'com_seminardesk') && $item->created_by == $user->id))
+      {
+          $permission = true;
+      }
 
-        return $permission;
-    }
+      return $permission;
+  }
 }

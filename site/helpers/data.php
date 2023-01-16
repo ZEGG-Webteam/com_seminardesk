@@ -212,7 +212,7 @@ class SeminardeskHelperData
               'Õ'=>'O', 'Ö'=>'OE', 'Ø'=>'O', 'Ù'=>'U', 'Ú'=>'U', 'Û'=>'U', 'Ü'=>'UE', 'Ý'=>'Y', 'Þ'=>'B', 'ß'=>'Ss',
               'à'=>'a', 'á'=>'a', 'â'=>'a', 'ã'=>'a', 'ä'=>'ae', 'å'=>'a', 'æ'=>'a', 'ç'=>'c', 'è'=>'e', 'é'=>'e',
               'ê'=>'e', 'ë'=>'e', 'ì'=>'i', 'í'=>'i', 'î'=>'i', 'ï'=>'i', 'ð'=>'o', 'ñ'=>'n', 'ò'=>'o', 'ó'=>'o',
-              'ô'=>'o', 'õ'=>'o', 'ö'=>'oe', 'ø'=>'o', 'ù'=>'u', 'ú'=>'u', 'û'=>'u', 'ý'=>'y', 'ý'=>'y', 'þ'=>'b',
+              'ô'=>'o', 'õ'=>'o', 'ö'=>'oe', 'ø'=>'o', 'ù'=>'u', 'ú'=>'u', 'û'=>'u', 'ü'=>'ue', 'ý'=>'y', 'ý'=>'y', 'þ'=>'b',
               'ÿ'=>'y', 'Ŕ'=>'R', 'ŕ'=>'r'
       );
 
@@ -505,7 +505,58 @@ class SeminardeskHelperData
     }
     return $facilitators;
   }
-  
+    
+  /**
+   * Load a single facilitator from SeminarDesk API
+   *
+   * @param integer $id
+   * @return stdClass Facilitator
+   *
+   * @since   3.0
+   */
+  public static function loadFacilitator($facilitatorId)
+  {
+    $config = self::getConfiguration();
+    $api_uri = self::buildSeminarDeskApiLink('/facilitators/' . $facilitatorId);
+    $facilitatorData = self::getSeminarDeskData($api_uri);
+    $facilitator = null;
+    
+    if (is_object($facilitatorData) && $facilitatorData) {
+      $facilitator = json_decode($facilitatorData->body);
+      
+      //-- Load events of this facilitator
+      $api_uri = self::buildSeminarDeskApiLink('/facilitators/' . $facilitatorId . '/eventDates');
+      $eventDatesData = self::getSeminarDeskData($api_uri);
+
+      if (is_object($eventDatesData) && $eventDatesData) {
+        $facilitator->eventDates = json_decode($eventDatesData->body)->data;
+
+        //-- Get values in current language, with fallback to first language in set
+        foreach ($facilitator->eventDates as $key => &$eventDate) {
+          self::prepareEventDate($eventDate);
+        }
+      }
+      else {
+        $facilitator->eventDates = [];
+      }
+      
+      //-- Get values in current language, with fallback to first language in set
+      self::prepareFacilitator($facilitator);
+    }
+    
+    else {
+      // Error handling
+      JLog::add(
+        'loadFacilitator('.$id.') failed! ($facilitatorData = ' . json_encode($facilitatorData) . ')', 
+        JLog::ERROR, 
+        'com_seminardesk'
+      );
+      $facilitator = [];
+    }
+    
+    return $facilitator;
+  }
+
   /**
    * Preprocess / prepare fields of event date for use in views
    * 
@@ -632,7 +683,7 @@ class SeminardeskHelperData
       
       //-- Prices & fees
       foreach ( $date->attendanceFees as $key => $fee ) {
-        $date->attendanceFees[$key]->name = self::translate($fee->name);
+        $date->attendanceFees[$key]->fullName = self::translate($fee->name);
       }
 //      foreach($date->availableMisc as $key => $misc) {
 //        $date->availableMisc[$key]->title = self::translate($misc->title);
@@ -656,10 +707,9 @@ class SeminardeskHelperData
   {
     $config = self::getConfiguration();
     
-    //-- Translations
-    $facilitator->about = self::translate($facilitator->about, true);
-    
-    //-- URLs
+    //-- Fullname (title + name), translations and URLs
+    $facilitator->fullName = implode(' ', [$facilitator->title, $facilitator->name]);
+    $facilitator->about = self::cleanupFormatting(self::translate($facilitator->about));
     $facilitator->detailsUrl = SeminardeskHelperData::getFacilitatorUrl($facilitator);
   }
   

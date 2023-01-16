@@ -43,7 +43,7 @@
         // Hide all events not matching ALL of the search terms
         $('.sd-eventlist .sd-event').each(function() {
           let isDateMatching = $(this).data('end-date') >= filterStartDate;
-          let eventSearchableText = $(this).data('title') + ' ' + $(this).data('fascilitators') + ' ' + $(this).data('labels');
+          let eventSearchableText = $(this).data('title') + ' ' + $(this).data('facilitators') + ' ' + $(this).data('labels');
           let areSearchTermsMatching = areSearchTermsEmpty || filterSearchTerms.every( 
             substring=>eventSearchableText.toLowerCase().includes( substring ) 
           );
@@ -143,7 +143,7 @@
     }
     
     //-- Read more links
-    $('.readmore').on('click', function(){
+    $('.sd-event-details .readmore').on('click', function(){
       $(this).prev().toggleClass('show-all');
     });
 
@@ -151,16 +151,16 @@
      *  Facilitators list and filter  *
      **********************************/
     if ($('.sd-facilitators .sd-filter-form').length > 0) {
-      
+
       //-- Events filter
       function filterFacilitators() {
         let filterSearchTerms = $('.sd-facilitators #sd-filter-search-term').val().trim().replace(',', ' ').toLowerCase().split(' ').filter(Boolean);
         let areSearchTermsEmpty = (filterSearchTerms.length === 0);        
-        console.log(filterSearchTerms);
 
         // Hide all events not matching ALL of the search terms
-        $('.sd-facilitatorlist .sd-facilitator').each(function() {
-          let searchableText = $(this).data('name');
+        $('.sd-facilitatorlist .facilitator').each(function() {
+          let searchableText = $(this).find('.facilitator-name').text() + $(this).find('.facilitator-about').text();
+          console.log(searchableText);
           let areSearchTermsMatching = areSearchTermsEmpty || filterSearchTerms.every( 
             substring=>searchableText.toLowerCase().includes( substring ) 
           );
@@ -175,7 +175,7 @@
         
         // Show "no events found" message if no results are left
         $('.sd-facilitatorlist').each(function() {
-          if ($(this).find('.sd-facilitator:not(.hidden)').length === 0) {
+          if ($(this).find('.facilitator:not(.hidden)').length === 0) {
             $(this).find('.no-facilitators-found').removeClass('hidden');
           } else {
             $(this).find('.no-facilitators-found').addClass('hidden');
