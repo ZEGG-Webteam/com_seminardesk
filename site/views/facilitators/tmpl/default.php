@@ -31,7 +31,7 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
 		</div>
 	<?php // endif; ?>
   
-  <div class="sd-filter">
+  <div class="sd-filter container">
     <form class="sd-filter-form">
       <input type="text" name="term" id="sd-filter-search-term" value="" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_FACILITATOR_PLACEHOLDER");?>">
       <!--<button class="btn btn-secondary" type="submit"><?= JText::_("COM_SEMINARDESK_FILTER_SUBMIT");?></button>-->
@@ -42,7 +42,7 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
     <div class="row">
     <?php 
       foreach($this->facilitators->getItems() as $facilitator) {
-        $facilitator->classes  = 'col-lg-6';
+        $facilitator->cssClasses  .= ' col-lg-6';
         $facilitator->headings = 'h2';
         $this->facilitator = & $facilitator;
         echo $this->loadTemplate('facilitator');

@@ -11,14 +11,10 @@
 defined('_JEXEC') or die('Restricted access');
 
 //JHtml::_('behavior.modal'); // use with class="modal" and rel="{handler: 'iframe'}" in link
-$classes = implode(' ', ['facilitator', $this->facilitator->classes ?? '']);
 $heading = $this->facilitator->heading ?? 'h2';
-//echo json_encode('<br>' . $classes);
-//echo json_encode($this->facilitator);
-//die();
 ?>
 
-<div class="<?= $classes ?>" itemscope="itemscope" itemtype="https://schema.org/Person">
+<div class="<?= $this->facilitator->cssClasses ?>" itemscope="itemscope" itemtype="https://schema.org/Person">
 
   <div class="facilitator-picture">
     <?= ($this->facilitator->pictureUrl)?'<img src="' . $this->facilitator->pictureUrl . '" alt="' . $this->facilitator->fullName . '">':'' ?>

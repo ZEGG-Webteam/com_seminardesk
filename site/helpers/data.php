@@ -709,6 +709,12 @@ class SeminardeskHelperData
     $facilitator->fullName = implode(' ', [$facilitator->title, $facilitator->name]);
     $facilitator->about = self::cleanupFormatting(self::translate($facilitator->about));
     $facilitator->detailsUrl = SeminardeskHelperData::getFacilitatorUrl($facilitator);
+    
+    //-- Add css classes
+    $classes = ['facilitator'];
+    if (!$facilitator->pictureUrl) { $classes[] = 'no-image'; }
+    if (!$facilitator->about)      { $classes[] = 'no-description'; }
+    $facilitator->cssClasses = implode(' ', $classes);
   }
   
 }
