@@ -30,7 +30,7 @@ $filterMatching = SeminardeskHelperData::fittingFilters($this->eventDate, $this-
      data-categories='<?= json_encode($categoryKeys); ?>'
      data-labels="<?= $this->eventDate->labelsList ?>">
 
-  <a href="<?= $this->eventDate->detailsUrl ?>" itemprop="url" class="<?= $this->eventDate->cssClasses ?>">
+  <a href="<?= $this->eventDate->detailsUrl ?>" itemprop="url" class="<?= $this->eventDate->cssClasses ?>" target="_parent">
     <?php $sameYear = date('Y', $this->eventDate->beginDate) === date('Y', $this->eventDate->endDate); ?>
     <div class="sd-event-date <?= (!$sameYear)?' not-same-year':'' ?>">
       <time itemprop="startDate" 
