@@ -20,7 +20,7 @@ use \Joomla\CMS\Language\Text;
  *
  * @since  1.6
  */
-class SeminardeskViewEvent extends \Joomla\CMS\MVC\View\HtmlView
+class SeminardeskViewFacilitator extends \Joomla\CMS\MVC\View\HtmlView
 {
   protected $state;
   protected $item;
@@ -43,11 +43,11 @@ class SeminardeskViewEvent extends \Joomla\CMS\MVC\View\HtmlView
     $this->params = $this->state->get('params');
 //    $this->item   = $this->get('Item');
 
-    // Get event information from eventDates - to do: get from events
-    $this->eventModel = SeminardeskHelperSeminardesk::getModel('Event');
-    $this->event = $this->eventModel->getItem($app->input->getCmd('eventId', '0'));
+    // Get facilitator information
+    $this->facilitatorModel = SeminardeskHelperSeminardesk::getModel('Facilitator');
+    $this->facilitator = $this->facilitatorModel->getItem($app->input->getCmd('id', '0'));
 
-    if (!empty($this->event))
+    if (!empty($this->facilitator))
     {
 
     }

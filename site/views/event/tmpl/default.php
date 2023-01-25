@@ -14,6 +14,7 @@ use \Joomla\CMS\Uri\Uri;
 use \Joomla\CMS\Language\Text;
 use \Joomla\CMS\Layout\LayoutHelper;
 
+JHtml::_('jquery.framework');
 JHtml::_('behavior.modal'); // use with class="modal" and rel="{handler: 'iframe'}" in link
 
 $config = SeminardeskHelperData::getConfiguration();
@@ -116,21 +117,14 @@ $document->setTitle($title . ' - ' . $facilitators);
     <?php endif; ?>
 
     <?php if (count($this->event->facilitators) > 0) : ?>
-      <div class="facilitators">
-        <h2><?= JText::_("COM_SEMINARDESK_EVENT_FACILITATORS"); ?></h2>
-        <?php foreach($this->event->facilitators as $facilitator) : ?>
-          <div class="fascilitator">
-            <div class="fascilitator-picture"><img src="<?= $facilitator->pictureUrl ?>"></div>
-            <div class="fascilitator-name"><h3><?= $facilitator->title . ' ' . $facilitator->name ?></h3></div>
-            <div class="fascilitator-about"><?= $facilitator->about ?></div>
-            <?php if (strlen($facilitator->about) > 300) : ?>
-              <div class="readmore"><span><i class="fas fa-chevron-down"></i>
-                  <span class="readmore-label"><?= JText::_("COM_SEMINARDESK_EVENT_READMORE"); ?></span>
-                  <span class="readless-label"><?= JText::_("COM_SEMINARDESK_EVENT_READLESS"); ?></span>                  
-                </span></div>
-            <?php endif; ?>
-          </div>
-        <?php endforeach; ?>
+      <div class="sd-facilitators">
+        <h2><?= JText::_("COM_SEMINARDESK_TITLE_FACILITATOR"); ?></h2>
+        <?php foreach($this->event->facilitators as $facilitator) {
+          $this->addTemplatePath(JPATH_COMPONENT . '/views/facilitators/tmpl');
+          $facilitator->headings = "h3";
+          $this->facilitator = $facilitator;
+          echo $this->loadTemplate('facilitator');
+        } ?>
       </div>
     <?php endif; ?>
     

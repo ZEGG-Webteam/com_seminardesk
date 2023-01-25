@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+	<layout title="COM_SEMINARDESK_TITLE_LIST_VIEW_FACILITATORS" option="View">
+    <message>
+      <![CDATA[COM_SEMINARDESK_TITLE_LIST_VIEW_FACILITATORS_DESC]]>
+    </message>
+	</layout>
+  <fields name="request">
+    <fieldset name="request">
+      <field name="events_page" type="menuitem" label="COM_SEMINARDESK_FIELDSET_EVENTS_PAGE_LABEL" description="COM_SEMINARDESK_FIELDSET_EVENTS_PAGE_DESC" />
+    </fieldset>
+  </fields>
+
+</metadata>
