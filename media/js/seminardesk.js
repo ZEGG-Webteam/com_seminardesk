@@ -142,11 +142,6 @@
       });
     }
     
-    //-- Read more links
-    $('.sd-event-details .readmore').on('click', function(){
-      $(this).prev().toggleClass('show-all');
-    });
-
     /**********************************
      *  Facilitators list and filter  *
      **********************************/
@@ -160,7 +155,6 @@
         // Hide all events not matching ALL of the search terms
         $('.sd-facilitatorlist .facilitator').each(function() {
           let searchableText = $(this).find('.facilitator-name').text() + $(this).find('.facilitator-about').text();
-          console.log(searchableText);
           let areSearchTermsMatching = areSearchTermsEmpty || filterSearchTerms.every( 
             substring=>searchableText.toLowerCase().includes( substring ) 
           );
@@ -194,6 +188,12 @@
       // Start filtering
       filterFacilitators();
     }
+    
+    $('.sd-component a.backlink, .sd-component .backlink a').on('click', function(e) {
+      e.preventDefault();
+      history.go(-1);
+    });
+    
   });
   
 })(jQuery);

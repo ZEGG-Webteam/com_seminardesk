@@ -83,7 +83,7 @@ $filters = [
         
         $this->eventDate = & $eventDate;
         $this->filters = $filters;
-        echo $this->loadTemplate('item');
+        echo $this->loadTemplate('event');
       }
     ?>
     </div>

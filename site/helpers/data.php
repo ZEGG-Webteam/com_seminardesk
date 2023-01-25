@@ -56,14 +56,16 @@ class SeminardeskHelperData
 
       //-- Get SeminarDesk API settings
       $tenant_id = $app->input->get('tenant_id', self::DEFAULT_TENANT_ID, 'STRING');
-
-      // Configuration - To do: move into some propper configuration place
+      $events_menu = $app->getMenu()->getActive()->query['events_page']?:$app->getMenu()->getActive()->id;
+      $facilitators_menu = $app->getMenu()->getActive()->query['facilitators_page']?:$app->getMenu()->getActive()->id;
+      
       self::$config = [
         'tenant_id' => $tenant_id,
         'langKey' => $langKey,
         'api' => 'https://' . $tenant_id . '.seminardesk.de/api',
         'booking_base' => 'https://booking.seminardesk.de/' . strtolower($langKey) . '/' . $tenant_id . '/',
-        'eventlist_url' => 'index.php?option=com_seminardesk&view=events&Itemid=' . $app->getMenu()->getActive()->id . '&lang=' . strtolower($langKey) , 
+        'eventlist_base' => 'index.php?option=com_seminardesk&Itemid=' . $events_menu . '&lang=' . strtolower($langKey) , 
+        'facilitators_base' => 'index.php?option=com_seminardesk&Itemid=' . $facilitators_menu . '&lang=' . strtolower($langKey) , 
       ];
     }
     
@@ -260,7 +262,8 @@ class SeminardeskHelperData
    */
   public static function getEventUrl($event)
   {
-    return JRoute::_("index.php?option=com_seminardesk&view=event&eventId=" . $event->eventId . '&slug=' . $event->titleSlug);
+    $config = self::getConfiguration();
+    return JRoute::_($config['eventlist_base'] . "&view=event&eventId=" . $event->eventId . '&slug=' . $event->titleSlug);
   }
   
   /**
@@ -271,7 +274,8 @@ class SeminardeskHelperData
    */
   public static function getFacilitatorUrl($facilitator)
   {
-    return JRoute::_("index.php?option=com_seminardesk&view=facilitator&id=" . $facilitator->id . '&name=' . self::createSlug($facilitator->name));
+    $config = self::getConfiguration();
+    return JRoute::_($config['facilitators_base'] . "&view=facilitator&id=" . $facilitator->id . '&name=' . self::createSlug($facilitator->name));
   }
   
   /**
@@ -561,7 +565,6 @@ class SeminardeskHelperData
    * Preprocess / prepare fields of event date for use in views
    * 
    * @param stdClass $eventDate
-   * @return stdClass - $eventDate with preprocessed fields (e.g. translations)
    */
   public static function prepareEventDate(&$eventDate)
   {
@@ -614,7 +617,6 @@ class SeminardeskHelperData
    * Preprocess / prepare fields of event for use in views
    * 
    * @param stdClass $event
-   * @return stdClass - $event with preprocessed fields (e.g. translations)
    */
   public static function prepareEvent(&$event)
   {
@@ -636,7 +638,7 @@ class SeminardeskHelperData
     //-- Prepare event labels list (categories)
     $event->catLinks = [];
     foreach( $event->categories as $cat_id => $cat_name) { 
-      $event->catLinks[] = '<a href="' . JRoute::_($config['eventlist_url']) . '?cat=' . $cat_id . '">' . $cat_name . '</a>';
+      $event->catLinks[] = '<a href="' . JRoute::_($config['eventlist_base'] . '&view=events') . '?cat=' . $cat_id . '">' . $cat_name . '</a>';
     }
     $event->catLinks = implode(', ', $event->catLinks);
     
@@ -655,8 +657,7 @@ class SeminardeskHelperData
     $event->infoMisc = self::translate($event->infoMisc);
     $event->bookingUrl = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug);
     foreach($event->facilitators as $key => $facilitator) {
-      $about = self::translate($facilitator->about);
-      $event->facilitators[$key]->about = self::cleanupFormatting($about);
+      self::prepareFacilitator($event->facilitators[$key]);
     }
     //-- Prepare event dates
     foreach($event->dates as $key => $date) {
@@ -701,12 +702,9 @@ class SeminardeskHelperData
    * Preprocess fields of facilitator for use in views
    * 
    * @param stdClass $facilitator
-   * @return stdClass - $facilitator with preprocessed fields (e.g. translations)
    */
   public static function prepareFacilitator(&$facilitator)
   {
-    $config = self::getConfiguration();
-    
     //-- Fullname (title + name), translations and URLs
     $facilitator->fullName = implode(' ', [$facilitator->title, $facilitator->name]);
     $facilitator->about = self::cleanupFormatting(self::translate($facilitator->about));

@@ -8,6 +8,7 @@
  */
 // No direct access
 defined('_JEXEC') or die;
+
 use \Joomla\CMS\HTML\HTMLHelper;
 use \Joomla\CMS\Factory;
 use \Joomla\CMS\Uri\Uri;
@@ -29,6 +30,9 @@ $document->setTitle($this->facilitator->fullName);
 ?>
 
 <div class="sd-component sd-facilitator-details">
+  <div class="backlink">
+    <a href="#"><i class="fas fa-chevron-left"></i><?= JText::_("COM_SEMINARDESK_BACK") ?></a>
+  </div>
   <div class="facilitator" 
        itemscope="itemscope" 
        itemtype="https://schema.org/Person">
@@ -52,7 +56,7 @@ $document->setTitle($this->facilitator->fullName);
           $this->eventDate = & $eventDate;
           $this->filters = [];
           $this->addTemplatePath(JPATH_COMPONENT . '/views/events/tmpl');
-          echo $this->loadTemplate('item');
+          echo $this->loadTemplate('event');
         }
       ?>
       </div>

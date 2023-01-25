@@ -5,5 +5,10 @@
                         <![CDATA[COM_SEMINARDESK_TITLE_LIST_VIEW_EVENTS_DESC]]>
         </message>
 	</layout>
+  <fields name="request">
+    <fieldset name="request">
+      <field name="facilitators_page" type="menuitem" label="COM_SEMINARDESK_FIELDSET_FACILITATORS_PAGE_LABEL" description="COM_SEMINARDESK_FIELDSET_FACILITATORS_PAGE_DESC" />
+    </fieldset>
+  </fields>
 	
 </metadata>
