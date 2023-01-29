@@ -49,7 +49,7 @@ $document->setTitle($this->facilitator->fullName);
     
     <?php if ($this->facilitator->eventDates) : ?>
       <div class="sd-events">
-        <h2><?= JText::_("COM_SEMINARDESK_TITLE_LIST_VIEW_EVENTS") ?></h2>
+        <h2><?= JText::_("COM_SEMINARDESK_TITLE_ITEM_VIEW_FACILITATOR_EVENTS") . ' ' . $this->facilitator->fullName ?></h2>
       <?php 
         foreach($this->facilitator->eventDates as $eventDate) {
           // Load event item using /view/events/tmpl/default_item.php

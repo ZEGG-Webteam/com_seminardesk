@@ -24,8 +24,9 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
 $previousEventMonth = '';
 $filters = [
   'date' => $app->input->get('date', '', 'string'), 
-  'cat' => $app->input->get('cat', 0, 'integer'), 
-  'org' => $app->input->get('org', '', 'string'), 
+  'cat'  => $app->input->get('cat',  0,  'integer'), 
+  'org'  => $app->input->get('org',  '', 'string'), 
+  'term' => $app->input->get('term', '', 'string'), 
 ];
 ?>
 

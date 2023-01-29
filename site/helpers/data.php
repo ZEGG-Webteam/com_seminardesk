@@ -173,7 +173,7 @@ class SeminardeskHelperData
    * @return  string Json data from Seminardesk
    * @since   3.0
    */
-  public static function buildSeminarDeskApiLink($route) {
+  public static function getSeminarDeskApiUri($route) {
     $config = self::getConfiguration();
     return $config['api'] . $route;
   }
@@ -352,11 +352,23 @@ class SeminardeskHelperData
   /**
    * 
    * @param stdClass $eventDate
-   * @param array $filters - containing keys 'date', 'cat' and 'org'
+   * @param array $filters - containing keys 'date', 'cat', 'org' and/or 'term'
    * @return boolean - true if eventDate matches all filters, false if not.
    */
-  public static function fittingFilters($eventDate, $filters) {
-    //-- Matching current filter? => Hide event it no
+  public static function matchingFilters($eventDate, $filters) {
+    //-- If term is set: Match them
+    if ($filters['term']) {
+      $terms = explode(' ', strtolower(trim(str_replace('  ', ' ', $filters['term']))));
+      $eventSearchableText = strtolower(
+        $eventDate->title . ' ' . 
+        implode($eventDate->facilitators) . ' ' . 
+        implode($eventDate->categories));
+      $terms_matching = array_filter($terms, function ($term) use ($eventSearchableText) {
+        return strpos($eventSearchableText, $term) !== false;
+      });
+    }
+
+    //-- Matching current filters?
     return
       // Check date filter
       (
@@ -370,25 +382,30 @@ class SeminardeskHelperData
         in_array($filters['cat'], array_keys($eventDate->categories))
       )
       &&
-      // Check organisator Filter
+      // Check organisator filter
       (
         !in_array($filters['org'], ['zegg', 'external']) ||
         ($filters['org'] == 'zegg' && !$eventDate->isExternal) ||
         ($filters['org'] == 'external' && $eventDate->isExternal)
+      )
+      &&
+      // Check search term filter (full text search)
+      (
+        !$filters['term'] || count($terms_matching) == count($terms)
       );
   }
 
   /**
    * Load EventDates from SeminarDesk API
    *
-   * @param $filter array - e.g. ['labels' => '1,2,3'] or ['labels' => [1],[2],[3]]
+   * @param $filters array - e.g. ['labels' => '1,2,3'] or ['labels' => [1],[2],[3]] or ['limit' => 5]
    * @return  array Event Dates (stdClass)
    * @since   3.0
    */
-  public static function loadEventDates($filter = [])
+  public static function loadEventDates($filters = [])
   {
     $config = self::getConfiguration();
-    $api_uri = self::buildSeminarDeskApiLink('/eventDates');
+    $api_uri = self::getSeminarDeskApiUri('/eventDates');
     $eventDatesData = self::getSeminarDeskData($api_uri);
     
     if (is_object($eventDatesData) && $eventDatesData) {
@@ -401,16 +418,16 @@ class SeminardeskHelperData
       
       //-- Apply filters
       // convert labels to array and trim each label value
-      $filter['labels'] = isset($filter['labels'])?array_map('trim', explode(',', $filter['labels'])):[];
+      $filters['labels'] = isset($filters['labels'])?array_map('trim', explode(',', $filters['labels'])):[];
 
-      $eventDates = array_filter($eventDates, function ($eventDate) use ($filter) {
+      $eventDates = array_filter($eventDates, function ($eventDate) use ($filters) {
         
         //-- Filter by labels (IDs or labels)
-        if ($filter['labels']) {
+        if ($filters['labels']) {
           // Allow both IDs or label text as filter
-          $eventLabels = (is_numeric($filter['labels'][0]))?array_keys($eventDate->labels):$eventDate->labels;
+          $eventLabels = (is_numeric($filters['labels'][0]))?array_keys($eventDate->labels):$eventDate->labels;
           // Compare labels with filter. If some are matching, return event
-          return array_intersect($eventLabels, $filter['labels']);
+          return array_intersect($eventLabels, $filters['labels']);
         }
         else {
           return true;
@@ -418,8 +435,8 @@ class SeminardeskHelperData
       });
       
       //-- Limit
-      if (isset($filter['limit']) && $filter['limit'] > 0) {
-        $eventDates = array_slice($eventDates, 0, $filter['limit']);
+      if (isset($filters['limit']) && $filters['limit'] > 0) {
+        $eventDates = array_slice($eventDates, 0, $filters['limit']);
       }
     }
     else {
@@ -445,7 +462,7 @@ class SeminardeskHelperData
   public static function loadEvent($eventId)
   {
     $config = self::getConfiguration();
-    $api_uri = self::buildSeminarDeskApiLink('/events/' . $eventId);
+    $api_uri = self::getSeminarDeskApiUri('/events/' . $eventId);
     $eventData = self::getSeminarDeskData($api_uri);
     
     if (is_object($eventData) && $eventData) {
@@ -477,7 +494,7 @@ class SeminardeskHelperData
   public static function loadFacilitators()
   {
     $config = self::getConfiguration();
-    $api_uri = self::buildSeminarDeskApiLink('/facilitators');
+    $api_uri = self::getSeminarDeskApiUri('/facilitators');
     $facilitatorsData = self::getSeminarDeskData($api_uri);
     
     if (is_object($facilitatorsData) && $facilitatorsData) {
@@ -521,7 +538,7 @@ class SeminardeskHelperData
   public static function loadFacilitator($facilitatorId)
   {
     $config = self::getConfiguration();
-    $api_uri = self::buildSeminarDeskApiLink('/facilitators/' . $facilitatorId);
+    $api_uri = self::getSeminarDeskApiUri('/facilitators/' . $facilitatorId);
     $facilitatorData = self::getSeminarDeskData($api_uri);
     $facilitator = null;
     
@@ -529,7 +546,7 @@ class SeminardeskHelperData
       $facilitator = json_decode($facilitatorData->body);
       
       //-- Load events of this facilitator
-      $api_uri = self::buildSeminarDeskApiLink('/facilitators/' . $facilitatorId . '/eventDates');
+      $api_uri = self::getSeminarDeskApiUri('/facilitators/' . $facilitatorId . '/eventDates');
       $eventDatesData = self::getSeminarDeskData($api_uri);
 
       if (is_object($eventDatesData) && $eventDatesData) {
@@ -684,7 +701,7 @@ class SeminardeskHelperData
       
       //-- Prices & fees
       foreach ( $date->attendanceFees as $key => $fee ) {
-        $date->attendanceFees[$key]->fullName = self::translate($fee->name);
+        $date->attendanceFees[$key]->name = self::translate($fee->name);
       }
 //      foreach($date->availableMisc as $key => $misc) {
 //        $date->availableMisc[$key]->title = self::translate($misc->title);

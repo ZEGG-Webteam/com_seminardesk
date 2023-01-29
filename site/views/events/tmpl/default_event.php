@@ -17,17 +17,16 @@ if ($this->eventDate->facilitatorsList) { $eventClasses[] = 'has-facilitators'; 
 if ($this->eventDate->isExternal)       { $eventClasses[] = 'external-event';   } 
 if (!$this->eventDate->isExternal)      { $eventClasses[] = 'zegg-event';       }
 
-//-- Matching current filter? => Hide event it no
-$categoryKeys = array_keys($this->eventDate->categories);
-$filterMatching = SeminardeskHelperData::fittingFilters($this->eventDate, $this->filters);
+//-- Matching current filter? => Hide event if no
+$matchingFilters = SeminardeskHelperData::matchingFilters($this->eventDate, $this->filters);
 ?>
-<div class="sd-event loading<?= (!$filterMatching)?' hidden':'' ?>" 
+<div class="sd-event loading<?= (!$matchingFilters)?' hidden':'' ?>" 
      itemscope="itemscope" itemtype="https://schema.org/Event" 
      data-start-date="<?= date('Y-m-d', $this->eventDate->beginDate) ?>"
      data-end-date="<?= date('Y-m-d', $this->eventDate->endDate) ?>"
      data-title="<?= $this->eventDate->title . (($this->eventDate->showDateTitle)?(' ' . $this->eventDate->eventDateTitle):'') ?>"
      data-fascilitators="<?= $this->eventDate->facilitatorsList ?>"
-     data-categories='<?= json_encode($categoryKeys); ?>'
+     data-categories='<?= json_encode(array_keys($this->eventDate->categories)); ?>'
      data-labels="<?= $this->eventDate->labelsList ?>">
 
   <a href="<?= $this->eventDate->detailsUrl ?>" itemprop="url" class="<?= $this->eventDate->cssClasses ?>" target="_parent">
