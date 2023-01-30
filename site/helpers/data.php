@@ -648,6 +648,7 @@ class SeminardeskHelperData
       array_column($event->labels, 'id'), 
       array_column($event->labels, 'name')
     );
+    $event->isExternal = array_key_exists(SeminardeskHelperData::LABELS_EXTERNAL_ID, $event->labels);
     // Get categories: Labels except LABELS_TO_HIDE
     $event->categories = array_filter($event->labels, function($key){
       return !in_array($key, self::LABELS_TO_HIDE);
@@ -709,8 +710,10 @@ class SeminardeskHelperData
 //      }
 
       //-- Booking
+      $date->isExternal = array_key_exists(SeminardeskHelperData::LABELS_EXTERNAL_ID, $date->labels);
       $date->bookingUrl = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, $date->id);
       $date->statusLabel = SeminardeskHelperData::getStatusLabel($date);
+      $event->isExternal = $event->isExternal || $date->isExternal; 
     }
 
   }
