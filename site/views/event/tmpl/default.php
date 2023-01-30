@@ -41,7 +41,7 @@ $document->setTitle($title . ' - ' . $facilitators);
     <?php endif; ?>
     <div class="teaser"><?= $this->event->teaser; ?></div>
 
-    <?php if ($this->event->settings->registrationAvailable) : ?>
+    <?php if ($this->event->settings->registrationAvailable && !$this->event->isExternal) : ?>
     <div class="registration">
       <a href="<?= $this->event->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}">
         <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION"); ?>
@@ -96,7 +96,7 @@ $document->setTitle($title . ' - ' . $facilitators);
             <div class="date-registration">
             <?php if ($this->event->settings->registrationAvailable && $date->registrationAvailable) : ?>
               <a href="<?= $date->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}">
-                <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION"); ?>
+                <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($date->isExternal?"_A_M":"")); ?>
               </a>
             <?php else : ?>
               *) <?php $showRegNotice = true; ?>
