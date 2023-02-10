@@ -16,9 +16,9 @@ $heading = $this->facilitator->heading ?? 'h2';
 
 <div class="<?= $this->facilitator->cssClasses ?>" itemscope="itemscope" itemtype="https://schema.org/Person">
 
-  <div class="facilitator-picture">
+  <a class="facilitator-picture noicon wfpopup" href="<?= $this->facilitator->detailsUrl ?>" itemprop="url" rel="{handler: 'iframe'}">
     <?= ($this->facilitator->pictureUrl)?'<img src="' . $this->facilitator->pictureUrl . '" alt="' . $this->facilitator->fullName . '">':'' ?>
-  </div>
+  </a>
   <div class="facilitator-description">
     <<?= $heading ?> class="facilitator-name"><?= $this->facilitator->title ?> <span itemprop="givenName"><?= $this->facilitator->firstName ?></span> <span itemprop="familyName"><?= $this->facilitator->lastName ?></span></<?= $heading ?>>
     <div class="facilitator-about">

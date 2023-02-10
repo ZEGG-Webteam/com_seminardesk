@@ -41,10 +41,11 @@ $document->setTitle($title . ' - ' . $facilitators);
     <?php endif; ?>
     <div class="teaser"><?= $this->event->teaser; ?></div>
 
-    <?php if ($this->event->settings->registrationAvailable && !$this->event->isExternal) : ?>
+    <?php if ($this->event->settings->registrationAvailable) : ?>
     <div class="registration">
-      <a href="<?= $this->event->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}">
-        <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION"); ?>
+      <a href="<?= $this->event->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}"
+         <?= ($this->event->isExternal)?(' title="' . JText::_("COM_SEMINARDESK_EVENT_REGISTRATION_A_M_FULL") . '"'):'' ?>>
+        <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($this->event->isExternal?"_A_M":"")); ?>
       </a>
     </div>
     <?php endif; ?>
@@ -95,7 +96,8 @@ $document->setTitle($title . ' - ' . $facilitators);
 
             <div class="date-registration">
             <?php if ($this->event->settings->registrationAvailable && $date->registrationAvailable) : ?>
-              <a href="<?= $date->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}">
+              <a href="<?= $date->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}"
+                 <?= ($this->event->isExternal)?(' title="' . JText::_("COM_SEMINARDESK_EVENT_REGISTRATION_A_M_FULL") . '"'):'' ?>>
                 <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($date->isExternal?"_A_M":"")); ?>
               </a>
             <?php else : ?>
