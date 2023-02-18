@@ -644,12 +644,14 @@ class SeminardeskHelperData
     $event->titleSlug = self::translate($event->titleSlug);
     $event->subtitle = self::translate($event->subtitle, true);
     $event->teaser = self::translate($event->teaser);
+    
     $event->labels = array_combine(
       array_column($event->labels, 'id'), 
       array_column($event->labels, 'name')
     );
     $event->isExternal = array_key_exists(SeminardeskHelperData::LABELS_EXTERNAL_ID, $event->labels);
-    // Get categories: Labels except LABELS_TO_HIDE
+    
+    //-- Get categories: Labels except LABELS_TO_HIDE
     $event->categories = array_filter($event->labels, function($key){
       return !in_array($key, self::LABELS_TO_HIDE);
     }, ARRAY_FILTER_USE_KEY);
@@ -715,7 +717,15 @@ class SeminardeskHelperData
       $date->statusLabel = SeminardeskHelperData::getStatusLabel($date);
       $event->isExternal = $event->isExternal || $date->isExternal; 
     }
-
+    
+    //-- Get list of dates, limit to 5
+    $datesList = array_column($event->dates, 'dateFormatted');
+    $count = count($datesList);
+    if ($count > 5) {
+      $datesList = array_slice($datesList, 0, 5);
+      array_push($datesList, '...');
+    }
+    $event->datesList = implode(' / ', $datesList);
   }
   
   /**
