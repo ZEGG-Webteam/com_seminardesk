@@ -343,8 +343,13 @@ class SeminardeskHelperData
   public static function getStatusLabel($event)
   {
     $label = '';
-    if ($event->registrationAvailable && $event->status) {
-      $label = JText::_("COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($event->status));
+    if (/*$event->registrationAvailable && */$event->status) {
+      $key = "COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($event->status);
+      $label = JText::_($key);
+      // No translation found? Use status as label
+      if ($label == $key) {
+        $label = ucwords($event->status, "_");
+      }
     }
     return $label;
   }
@@ -407,6 +412,7 @@ class SeminardeskHelperData
     $config = self::getConfiguration();
     $api_uri = self::getSeminarDeskApiUri('/eventDates');
     $eventDatesData = self::getSeminarDeskData($api_uri);
+    $filtersMatching = true;
     
     if (is_object($eventDatesData) && $eventDatesData) {
       $eventDates = json_decode($eventDatesData->body)->dates;
@@ -421,17 +427,28 @@ class SeminardeskHelperData
       $filters['labels'] = isset($filters['labels'])?array_map('trim', explode(',', $filters['labels'])):[];
 
       $eventDates = array_filter($eventDates, function ($eventDate) use ($filters) {
-        
+
         //-- Filter by labels (IDs or labels)
         if ($filters['labels']) {
           // Allow both IDs or label text as filter
           $eventLabels = (is_numeric($filters['labels'][0]))?array_keys($eventDate->labels):$eventDate->labels;
           // Compare labels with filter. If some are matching, return event
-          return array_intersect($eventLabels, $filters['labels']);
+          $labelsMatching = array_intersect($eventLabels, $filters['labels']);
         }
         else {
-          return true;
+          $labelsMatching = true;
         }
+        if ($filters['term']) {
+          $terms = explode(' ', $filters['term']);
+          $termsMatching = false;
+          foreach ($terms as $term) {
+            $termsMatching |= (strpos($eventDate->title . ' ' . $eventDate->facilitatorsList . ' ' . $eventDate->labelsList, $term) !== false);
+          }
+        }
+        else {
+          $termsMatching = true;
+        }
+        return $labelsMatching && $termsMatching;
       });
       
       //-- Limit
