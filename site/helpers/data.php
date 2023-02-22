@@ -343,8 +343,13 @@ class SeminardeskHelperData
   public static function getStatusLabel($event)
   {
     $label = '';
-    if ($event->registrationAvailable && $event->status) {
-      $label = JText::_("COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($event->status));
+    if (/*$event->registrationAvailable && */$event->status) {
+      $key = "COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($event->status);
+      $label = JText::_($key);
+      // No translation found? Use status as label
+      if ($label == $key) {
+        $label = ucwords($event->status, "_");
+      }
     }
     return $label;
   }
@@ -407,6 +412,7 @@ class SeminardeskHelperData
     $config = self::getConfiguration();
     $api_uri = self::getSeminarDeskApiUri('/eventDates');
     $eventDatesData = self::getSeminarDeskData($api_uri);
+    $filtersMatching = true;
     
     if (is_object($eventDatesData) && $eventDatesData) {
       $eventDates = json_decode($eventDatesData->body)->dates;
@@ -421,17 +427,28 @@ class SeminardeskHelperData
       $filters['labels'] = isset($filters['labels'])?array_map('trim', explode(',', $filters['labels'])):[];
 
       $eventDates = array_filter($eventDates, function ($eventDate) use ($filters) {
-        
+
         //-- Filter by labels (IDs or labels)
         if ($filters['labels']) {
           // Allow both IDs or label text as filter
           $eventLabels = (is_numeric($filters['labels'][0]))?array_keys($eventDate->labels):$eventDate->labels;
           // Compare labels with filter. If some are matching, return event
-          return array_intersect($eventLabels, $filters['labels']);
+          $labelsMatching = array_intersect($eventLabels, $filters['labels']);
         }
         else {
-          return true;
+          $labelsMatching = true;
         }
+        if ($filters['term']) {
+          $terms = explode(' ', $filters['term']);
+          $termsMatching = false;
+          foreach ($terms as $term) {
+            $termsMatching |= (strpos($eventDate->title . ' ' . $eventDate->facilitatorsList . ' ' . $eventDate->labelsList, $term) !== false);
+          }
+        }
+        else {
+          $termsMatching = true;
+        }
+        return $labelsMatching && $termsMatching;
       });
       
       //-- Limit
@@ -644,12 +661,14 @@ class SeminardeskHelperData
     $event->titleSlug = self::translate($event->titleSlug);
     $event->subtitle = self::translate($event->subtitle, true);
     $event->teaser = self::translate($event->teaser);
+    
     $event->labels = array_combine(
       array_column($event->labels, 'id'), 
       array_column($event->labels, 'name')
     );
     $event->isExternal = array_key_exists(SeminardeskHelperData::LABELS_EXTERNAL_ID, $event->labels);
-    // Get categories: Labels except LABELS_TO_HIDE
+    
+    //-- Get categories: Labels except LABELS_TO_HIDE
     $event->categories = array_filter($event->labels, function($key){
       return !in_array($key, self::LABELS_TO_HIDE);
     }, ARRAY_FILTER_USE_KEY);
@@ -715,7 +734,15 @@ class SeminardeskHelperData
       $date->statusLabel = SeminardeskHelperData::getStatusLabel($date);
       $event->isExternal = $event->isExternal || $date->isExternal; 
     }
-
+    
+    //-- Get list of dates, limit to 5
+    $datesList = array_column($event->dates, 'dateFormatted');
+    $count = count($datesList);
+    if ($count > 5) {
+      $datesList = array_slice($datesList, 0, 5);
+      array_push($datesList, '...');
+    }
+    $event->datesList = implode(' / ', $datesList);
   }
   
   /**
