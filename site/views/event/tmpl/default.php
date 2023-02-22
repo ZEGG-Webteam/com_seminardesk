@@ -40,7 +40,7 @@ $document->setTitle($title . ' - ' . $facilitators);
       <h2 class="subtitle"><?= $this->event->subtitle; ?></h2>
     <?php endif; ?>
     <div class="teaser"><?= $this->event->teaser; ?></div>
-    <div class="dates-list"><?= $this->event->datesList; ?></div>
+    <div class="dates-list"><?= implode(' / ', $this->event->datesList); ?></div>
 
     <?php if ($this->event->settings->registrationAvailable) : ?>
     <div class="registration">

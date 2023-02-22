@@ -630,11 +630,12 @@ class SeminardeskHelperData
 
     //-- Set event classes
     $classes = ['registration-available'];
-    if ($eventDate->isFeatured)       { $classes[] = 'featured';         }
-//    if ($eventDate->categoriesList)   { $classes[] = 'has-categories';   } // Hide categories in List for now
-    if ($eventDate->facilitatorsList) { $classes[] = 'has-facilitators'; }
-    if ($eventDate->isExternal)       { $classes[] = 'external-event';   } 
-    if (!$eventDate->isExternal)      { $classes[] = 'zegg-event';       }
+    if ($eventDate->isFeatured)           { $classes[] = 'featured';         }
+//    if ($eventDate->categoriesList)     { $classes[] = 'has-categories';   } // Hide categories in List for now
+    if ($eventDate->facilitatorsList)     { $classes[] = 'has-facilitators'; }
+    if ($eventDate->isExternal)           { $classes[] = 'external-event';   } 
+    if (!$eventDate->isExternal)          { $classes[] = 'zegg-event';       }
+    if ($eventDate->status == 'canceled') { $classes[] = 'is-canceled'; }
     $eventDate->cssClasses = implode(' ', $classes);
 
     //-- Format date
@@ -697,6 +698,7 @@ class SeminardeskHelperData
       self::prepareFacilitator($event->facilitators[$key]);
     }
     //-- Prepare event dates
+    $count_canceled = 0;
     foreach($event->dates as $key => $date) {
       $date->title = self::translate($date->title);
       $date->labels = array_combine(
@@ -732,17 +734,30 @@ class SeminardeskHelperData
       $date->isExternal = array_key_exists(SeminardeskHelperData::LABELS_EXTERNAL_ID, $date->labels);
       $date->bookingUrl = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, $date->id);
       $date->statusLabel = SeminardeskHelperData::getStatusLabel($date);
-      $event->isExternal = $event->isExternal || $date->isExternal; 
+      $event->isExternal = $event->isExternal || $date->isExternal;
+      if ($date->status == 'canceled') $count_canceled++;
     }
     
     //-- Get list of dates, limit to 5
-    $datesList = array_column($event->dates, 'dateFormatted');
-    $count = count($datesList);
+    $event->datesList = array_column($event->dates, 'dateFormatted');
+    $count = count($event->datesList);
     if ($count > 5) {
-      $datesList = array_slice($datesList, 0, 5);
-      array_push($datesList, '...');
+      $event->datesList = array_slice($event->datesList, 0, 5);
+      array_push($event->datesList, '...');
     }
-    $event->datesList = implode(' / ', $datesList);
+    //-- Add labels to dates list for canceled dates
+    if (count($event->dates) > 1 && $count_canceled == count($event->dates)) {
+      // >1 dates and ALL canceled: ONE label for all dates
+      $event->datesList[0] = JText::_("COM_SEMINARDESK_EVENT_ALL_CANCELED") . ': ' . $event->datesList[0];
+    } elseif ($count_canceled > 0) {
+      // Only one date, or >1 and some events canceled, others not 
+      // => Individual labels per date
+      foreach($event->dates as $key => $date) {
+        if ($date->status == 'canceled') {
+          $event->datesList[$key] .= ' (' . JText::_("COM_SEMINARDESK_EVENT_CANCELED") . ')';
+        }
+      }
+    }
   }
   
   /**

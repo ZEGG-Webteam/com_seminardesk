@@ -9,14 +9,6 @@
  */
 defined('_JEXEC') or die;
 
-//-- Set event classes
-$eventClasses = ['registration-available'];
-if ($this->eventDate->isFeatured)       { $eventClasses[] = 'featured';         }
-// if ($this->eventDate->categoriesList)   { $eventClasses[] = 'has-categories';   } // Hide categories in List for now
-if ($this->eventDate->facilitatorsList) { $eventClasses[] = 'has-facilitators'; }
-if ($this->eventDate->isExternal)       { $eventClasses[] = 'external-event';   } 
-if (!$this->eventDate->isExternal)      { $eventClasses[] = 'zegg-event';       }
-
 //-- Matching current filter? => Hide event if no
 $matchingFilters = SeminardeskHelperData::matchingFilters($this->eventDate, $this->filters);
 ?>
