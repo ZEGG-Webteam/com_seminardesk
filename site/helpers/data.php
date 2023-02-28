@@ -403,7 +403,7 @@ class SeminardeskHelperData
   /**
    * Load EventDates from SeminarDesk API
    *
-   * @param $filters array - e.g. ['labels' => '1,2,3'] or ['labels' => [1],[2],[3]] or ['limit' => 5]
+   * @param $filters array - e.g. ['labels' => '1,2,3'] or ['labels' => [1],[2],[3]] or ['limit' => 5] or ['show_canceled' => true]
    * @return  array Event Dates (stdClass)
    * @since   3.0
    */
@@ -427,6 +427,11 @@ class SeminardeskHelperData
       $filters['labels'] = isset($filters['labels'])?array_map('trim', explode(',', $filters['labels'])):[];
 
       $eventDates = array_filter($eventDates, function ($eventDate) use ($filters) {
+        //-- Show canceled events?
+        $show_canceled = $filters['show_canceled'] ?? false;
+        if (!$show_canceled && $eventDate->status == "canceled") {
+          return false;
+        }
 
         //-- Filter by labels (IDs or labels)
         if ($filters['labels']) {
