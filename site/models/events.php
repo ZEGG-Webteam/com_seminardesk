@@ -145,7 +145,8 @@ class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
         self::$categories += $event->categories;
       }
       self::$categories = array_unique(self::$categories);
-      asort(self::$categories);
+      $collator = new Collator('de_DE');
+      $collator->asort( self::$categories );
     }
     
     return self::$categories;

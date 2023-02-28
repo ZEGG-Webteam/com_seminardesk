@@ -25,7 +25,7 @@ $document->addStyleSheet('/media/com_seminardesk/css/styles.css');
 $document->addScript('/media/com_seminardesk/js/seminardesk.js');
 
 //-- Set document title
-$title = str_replace(['&ndash;', '&amp;'], ['-', '&'], $this->event->title);
+$title = str_replace(['&ndash;', '&amp;'], ['-', '&'], html_entity_decode($this->event->title));
 $facilitators = implode(', ', array_column($this->event->facilitators, 'name'));
 $document->setTitle($title . ' - ' . $facilitators);
 ?>
@@ -44,7 +44,7 @@ $document->setTitle($title . ' - ' . $facilitators);
 
     <?php if ($this->event->settings->registrationAvailable) : ?>
     <div class="registration">
-      <a href="<?= $this->event->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}"
+      <a href="<?= $this->event->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'} nofollow"
          <?= ($this->event->isExternal)?(' title="' . JText::_("COM_SEMINARDESK_EVENT_REGISTRATION_A_M_FULL") . '"'):'' ?>>
         <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($this->event->isExternal?"_A_M":"")); ?>
       </a>
