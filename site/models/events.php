@@ -120,10 +120,11 @@ class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
 	 */
 	public function getItems()
 	{
+    $filters['show_canceled'] = true;
     // $items = parent::getItems();
     // If not yet loaded: Get events from API
     if (!self::$events) {
-      self::$events = SeminardeskHelperData::loadEventDates();
+      self::$events = SeminardeskHelperData::loadEventDates($filters);
     }
 		return self::$events;
 	}
