@@ -44,7 +44,7 @@ $document->setTitle($title . ' - ' . $facilitators);
 
     <?php if ($this->event->settings->registrationAvailable) : ?>
     <div class="registration">
-      <a href="<?= $this->event->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'} nofollow"
+      <a href="<?= $this->event->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}"
          <?= ($this->event->isExternal)?(' title="' . JText::_("COM_SEMINARDESK_EVENT_REGISTRATION_A_M_FULL") . '"'):'' ?>>
         <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($this->event->isExternal?"_A_M":"")); ?>
       </a>
