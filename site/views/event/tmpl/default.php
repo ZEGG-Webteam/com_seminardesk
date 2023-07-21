@@ -81,12 +81,16 @@ $document->setTitle($title . ' - ' . $facilitators);
             <div class="date-title"><?= $date->title ?></div>
             <div class="date-prices">
               <?php if ($date->attendanceFees) : ?>
+                <?php if ($this->event->settings->showAttendanceFees) : ?>
                 <div class="date-fees">
-                  <?php foreach ($date->attendanceFees as $fee) : ?>
-                    <?= $fee->name . ': <strong>' . $fee->priceDefault . ' €</strong><br>'; ?>
-                  <?php endforeach; ?>
-                </div>
-                <div class="date-accom-meals"><?= JText::_("COM_SEMINARDESK_EVENT_ACC_MEALS_ADDITIONAL"); ?></div>
+                    <?php foreach ($date->attendanceFees as $fee) : ?>
+                      <?= $fee->name . ': <strong>' . $fee->priceDefault . ' €</strong><br>'; ?>
+                    <?php endforeach; ?>
+                  </div>
+                  <div class="date-accom-meals"><?= JText::_("COM_SEMINARDESK_EVENT_ACC_MEALS_ADDITIONAL"); ?></div>
+                <?php else : ?>
+                  <div class="date-fees"><?= JText::_("COM_SEMINARDESK_EVENT_NO_FEES_TO_DISPLAY"); ?></div>
+                <?php endif; ?>
               <?php elseif ($date->availableLodging || $date->availableBoard) : ?>
                 <div class="date-accom-meals"><?= JText::_("COM_SEMINARDESK_EVENT_ACC_MEALS_AVAILABLE"); ?></div>
               <?php endif; ?>
@@ -96,7 +100,7 @@ $document->setTitle($title . ' - ' . $facilitators);
             <div class="date-status"><?= $date->statusLabel ?></div>
 
             <div class="date-registration">
-            <?php if ($this->event->settings->registrationAvailable && $date->registrationAvailable) : ?>
+            <?php if ($this->event->settings->registrationAvailable && $date->registrationAvailable && $date->status != "fully_booked") : ?>
               <a href="<?= $date->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}"
                  <?= ($this->event->isExternal)?(' title="' . JText::_("COM_SEMINARDESK_EVENT_REGISTRATION_A_M_FULL") . '"'):'' ?>>
                 <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($date->isExternal?"_A_M":"")); ?>
