@@ -88,10 +88,14 @@ class SeminardeskHelperData
    * 
    * @param string $text
    * @param string|boolean $stripTagsExceptions - Tags or false = do not strip tags)
+   * @param boolean $stripAttrs - remove all arributes within tags? e.g. style, etc.
    * @return string
    */
-  public static function cleanupHtml($text, $stripTagsExceptions = '<h1><h2><h3><h4><p><br><b><hr><strong>') {
-    $text = strip_tags(preg_replace("/<([a-z][a-z0-9]*)[^>]*?(\/?)>/si",'<$1$2>', $text), $stripTagsExceptions);
+  public static function cleanupHtml($text, $stripTagsExceptions = '<h1><h2><h3><h4><p><br><b><hr><strong>', $stripAttrs = true) {
+    if ($stripAttrs) {
+      $text = preg_replace("/<([a-z][a-z0-9]*)[^>]*?(\/?)>/si",'<$1$2>', $text);
+    }
+    $text = strip_tags($text, $stripTagsExceptions);
     return self::replaceHR($text);
   }
 
@@ -572,11 +576,17 @@ class SeminardeskHelperData
       $eventDatesData = self::getSeminarDeskData($api_uri);
 
       if (is_object($eventDatesData) && $eventDatesData) {
-        $facilitator->eventDates = json_decode($eventDatesData->body)->data;
+        $eventDatesBody = json_decode($eventDatesData->body);
+        if ($eventDatesBody && $eventDatesBody->data) {
+          $facilitator->eventDates = $eventDatesBody->data;
 
-        //-- Get values in current language, with fallback to first language in set
-        foreach ($facilitator->eventDates as $key => &$eventDate) {
-          self::prepareEventDate($eventDate);
+          //-- Get values in current language, with fallback to first language in set
+          foreach ($facilitator->eventDates as $key => &$eventDate) {
+            self::prepareEventDate($eventDate);
+          }
+        }
+        else {
+          $facilitator->eventDates = null;
         }
       }
       else {
@@ -695,7 +705,7 @@ class SeminardeskHelperData
     $event->description = self::cleanupFormatting($event->description);
     
     $event->headerPictureUrl = self::translate($event->headerPictureUrl);
-    $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices));
+    $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices), '<h1><h2><h3><h4><p><br><b><hr><strong><a>', false);
     $event->infoBoardLodging = self::translate($event->infoBoardLodging);
     $event->infoMisc = self::translate($event->infoMisc);
     $event->bookingUrl = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug);
@@ -782,6 +792,11 @@ class SeminardeskHelperData
     if (!$facilitator->pictureUrl) { $classes[] = 'no-image'; }
     if (!$facilitator->about)      { $classes[] = 'no-description'; }
     $facilitator->cssClasses = implode(' ', $classes);
+
+    //-- Sort event dates by beginDate (not done by SeminarDesk, has been announced 2022)
+    usort($facilitator->eventDates, function($a, $b) {
+        return strcmp($a->beginDate, $b->beginDate);
+    });
   }
   
 }
