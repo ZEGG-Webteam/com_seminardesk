@@ -96,6 +96,7 @@ class SeminardeskHelperData
       $text = preg_replace("/<([a-z][a-z0-9]*)[^>]*?(\/?)>/si",'<$1$2>', $text);
     }
     $text = strip_tags($text, $stripTagsExceptions);
+    $text = str_replace('&nbsp;' , ' ', $text); // Current font does not support &nbsp;
     return self::replaceHR($text);
   }
 
@@ -294,6 +295,7 @@ class SeminardeskHelperData
   {
     $dateParts = [];
     $sameYear = date('Y', $beginDate) == date('Y', $endDate);
+    $withYear = $withYear || (date('Y', $beginDate) != date('Y')); // If event is in future / past year, add year
     
     //-- Set formatted start date if different from end date
     if (date('d.m.Y', $beginDate) !== date('d.m.Y', $endDate)) {
@@ -341,13 +343,13 @@ class SeminardeskHelperData
    * translation has been found (e.g. fully_booked => Fully Booked), 
    * or empty, if no status is set. 
    * 
-   * @param stdClass $event - must contain registrationAvailable and status
+   * @param stdClass $event - containing status field
    * @return string - Status label translated
    */
   public static function getStatusLabel($event)
   {
     $label = '';
-    if (/*$event->registrationAvailable && */$event->status) {
+    if ($event->status) {
       $key = "COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($event->status);
       $label = JText::_($key);
       // No translation found? Use status as label
@@ -637,11 +639,16 @@ class SeminardeskHelperData
     $eventDate->categoriesList = htmlentities(implode(', ', $eventDate->categories), ENT_QUOTES);
 //    $eventDate->categoryLinks = implode(', ', SeminardeskHelperData::getCategoryLinks($eventDate->categories));
     $eventDate->statusLabel = SeminardeskHelperData::getStatusLabel($eventDate);
+    
+    // Fix event date / time
+    $eventDate->beginDate = $eventDate->beginDate / 1000;
+    $eventDate->endDate = $eventDate->endDate / 1000;
 
     //-- Set special event flags (festivals, external organisers)
     $eventDate->isFeatured = array_key_exists(SeminardeskHelperData::LABELS_FESTIVALS_ID, $eventDate->labels);
     $eventDate->isExternal = array_key_exists(SeminardeskHelperData::LABELS_EXTERNAL_ID, $eventDate->labels);
     $eventDate->showDateTitle = ($eventDate->eventDateTitle && $eventDate->eventDateTitle != $eventDate->title);
+    $eventDate->isPastEvent = $eventDate->endDate < time();
 
     //-- Set event classes
     $classes = ['registration-available'];
@@ -650,12 +657,11 @@ class SeminardeskHelperData
     if ($eventDate->facilitatorsList)     { $classes[] = 'has-facilitators'; }
     if ($eventDate->isExternal)           { $classes[] = 'external-event';   } 
     if (!$eventDate->isExternal)          { $classes[] = 'zegg-event';       }
-    if ($eventDate->status == 'canceled') { $classes[] = 'is-canceled'; }
+    if ($eventDate->isPastEvent)          { $classes[] = 'past-event';       }
+    if ($eventDate->status == 'canceled') { $classes[] = 'is-canceled';      }
     $eventDate->cssClasses = implode(' ', $classes);
 
     //-- Format date
-    $eventDate->beginDate = $eventDate->beginDate / 1000;
-    $eventDate->endDate = $eventDate->endDate / 1000;
     $eventDate->dateFormatted = SeminardeskHelperData::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
 
     //-- URLs
@@ -714,6 +720,7 @@ class SeminardeskHelperData
     }
     //-- Prepare event dates
     $count_canceled = 0;
+    $event->isBookable = false;
     foreach($event->dates as $key => $date) {
       $date->title = self::translate($date->title);
       $date->labels = array_combine(
@@ -750,6 +757,8 @@ class SeminardeskHelperData
       $date->bookingUrl = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, $date->id);
       $date->statusLabel = SeminardeskHelperData::getStatusLabel($date);
       $event->isExternal = $event->isExternal || $date->isExternal;
+      $date->isBookable = ($event->settings->registrationAvailable && $date->registrationAvailable && $date->status != "fully_booked" && $date->status != "canceled" && !$date->isPastEvent);
+      $event->isBookable = $event->isBookable || $date->isBookable;
       if ($date->status == 'canceled') $count_canceled++;
     }
     
@@ -783,7 +792,7 @@ class SeminardeskHelperData
   public static function prepareFacilitator(&$facilitator)
   {
     //-- Fullname (title + name), translations and URLs
-    $facilitator->fullName = implode(' ', [$facilitator->title, $facilitator->name]);
+    $facilitator->fullName = trim(implode(' ', [$facilitator->title, $facilitator->name]));
     $facilitator->about = self::cleanupFormatting(self::translate($facilitator->about));
     $facilitator->detailsUrl = SeminardeskHelperData::getFacilitatorUrl($facilitator);
     
@@ -796,6 +805,14 @@ class SeminardeskHelperData
     //-- Sort event dates by beginDate (not done by SeminarDesk, has been announced 2022)
     usort($facilitator->eventDates, function($a, $b) {
         return strcmp($a->beginDate, $b->beginDate);
+    });
+    
+    //-- Separate past and future events
+    $facilitator->pastEventDates = array_filter($facilitator->eventDates, function($eventDate) {
+      return $eventDate->endDate < time();
+    });
+    $facilitator->eventDates = array_filter($facilitator->eventDates, function($eventDate) {
+      return $eventDate->endDate >= time();
     });
   }
   

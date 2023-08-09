@@ -61,6 +61,25 @@ $document->setTitle($this->facilitator->fullName);
       ?>
       </div>
     <?php endif; ?>
+    
+    <?php if ($this->facilitator->pastEventDates) : ?>
+      <div class="sd-events">
+        <?php if (!$this->facilitator->eventDates) : ?>
+          <h2><?= JText::_("COM_SEMINARDESK_TITLE_ITEM_VIEW_FACILITATOR_PAST_EVENTS_WITH") . ' ' . $this->facilitator->fullName ?></h2>
+        <?php else : ?>
+          <h3><?= JText::_("COM_SEMINARDESK_TITLE_ITEM_VIEW_FACILITATOR_PAST_EVENTS") ?></h3>
+        <?php endif; ?>
+      <?php 
+        foreach($this->facilitator->pastEventDates as $eventDate) {
+          // Load event item using /view/events/tmpl/default_item.php
+          $this->eventDate = & $eventDate;
+          $this->filters = [];
+          $this->addTemplatePath(JPATH_COMPONENT . '/views/events/tmpl');
+          echo $this->loadTemplate('event');
+        }
+      ?>
+      </div>
+    <?php endif; ?>
   
   </div>
 </div>
