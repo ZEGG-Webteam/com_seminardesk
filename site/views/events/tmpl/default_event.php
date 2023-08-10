@@ -47,7 +47,7 @@ $matchingFilters = SeminardeskHelperData::matchingFilters($this->eventDate, $thi
       <?php endif; ?>
     </div>
     <div class="sd-event-external">
-      <?= ($this->eventDate->isExternal)?JText::_("COM_SEMINARDESK_EVENTS_LABEL_EXTERNAL"):''; ?>
+      <?= ($this->eventDate->isExternal)?JText::_("COM_SEMINARDESK_EVENTS_LABEL_EXTERNAL_EVENT"):''; ?>
     </div>
     <div class="sd-event-location hidden" itemprop="location" itemscope itemtype="https://schema.org/Place">
       <span itemprop="name">ZEGG Bildungszentrum gGmbH</span>
