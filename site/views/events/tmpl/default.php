@@ -38,14 +38,6 @@ $filters = [
 		</div>
 	<?php // endif; ?>
   
-  <?php if ($document->countModules('above-events')): ?>
-    <section class="above-events-container">
-      <div class="row">
-        <?= JHtml::_('content.prepare', '{loadposition above-events, column}') ?>
-      </div>
-    </section>
-  <?php endif ; ?>
-
   <div class="sd-filter">
     <form class="sd-filter-form">
       <input type="date" name="from" id="sd-filter-date-from" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_DATE_PLACEHOLDER");?>" value="<?= $filters['date'] ?>">
@@ -65,6 +57,14 @@ $filters = [
     </form>
   </div>
   
+  <?php if ($document->countModules('above-events')): ?>
+    <section class="above-events-container">
+      <div class="row">
+        <?= JHtml::_('content.prepare', '{loadposition above-events, column}') ?>
+      </div>
+    </section>
+  <?php endif ; ?>
+
   <div class="sd-eventlist">
     <div class="sd-month">
     <?php 

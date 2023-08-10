@@ -40,6 +40,14 @@
         updateUrlParam('cat',  filterCategory,    filterCategory > 0);
         window.history.pushState({}, '', url);
 
+        // Update page title
+        $('.page-header h1').text($( "#sd-filter-organisers option:selected" ).text());
+        
+        // Show / hide info block above event list according to organisers
+        // * Note: Requires <div> blocks with id="organiser-notes-all" / organiser-notes-zegg / organiser-notes-external
+        $('.above-events-container [id^=organiser-notes-]').hide();
+        $('.above-events-container #organiser-notes-' + filterOrganisers).show();
+
         // Hide all events not matching ALL of the search terms
         $('.sd-eventlist .sd-event').each(function() {
           let isDateMatching = $(this).data('end-date') >= filterStartDate;
