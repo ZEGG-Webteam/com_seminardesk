@@ -42,7 +42,9 @@ $matchingFilters = SeminardeskHelperData::matchingFilters($this->eventDate, $thi
       <!--<?= $this->eventDate->categoriesList; ?> <!-- hide categories for now -->
     </div>
     <div class="sd-event-registration">
-      <?= $this->eventDate->statusLabel; ?>
+      <?php if ($this->eventDate->endDate > time()) : ?>
+        <?= $this->eventDate->statusLabel; ?> <!-- show status for future events only -->
+      <?php endif; ?>
     </div>
     <div class="sd-event-external">
       <?= ($this->eventDate->isExternal)?JText::_("COM_SEMINARDESK_EVENTS_LABEL_EXTERNAL"):''; ?>

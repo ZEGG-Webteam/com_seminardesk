@@ -20,7 +20,11 @@ $heading = $this->facilitator->heading ?? 'h2';
     <?= ($this->facilitator->pictureUrl)?'<img src="' . $this->facilitator->pictureUrl . '" alt="' . $this->facilitator->fullName . '">':'' ?>
   </a>
   <div class="facilitator-description">
-    <<?= $heading ?> class="facilitator-name"><?= $this->facilitator->title ?> <span itemprop="givenName"><?= $this->facilitator->firstName ?></span> <span itemprop="familyName"><?= $this->facilitator->lastName ?></span></<?= $heading ?>>
+    <<?= $heading ?> class="facilitator-name">
+      <a href="<?= $this->facilitator->detailsUrl ?>" itemprop="url" rel="{handler: 'iframe'}">
+        <?= $this->facilitator->title ?> <span itemprop="givenName"><?= $this->facilitator->firstName ?></span> <span itemprop="familyName"><?= $this->facilitator->lastName ?></span>
+      </a>
+    </<?= $heading ?>>
     <div class="facilitator-about">
       <?= SeminardeskHelperData::cleanupHtml($this->facilitator->about, '<p><br>') ?>
     </div>
