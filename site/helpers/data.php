@@ -407,9 +407,69 @@ class SeminardeskHelperData
   }
 
   /**
+   * Apply filters to event list
+   * @param type $eventDates
+   * @param type $filters
+   */
+  public static function filterEvents(&$eventDates, $filters = [])
+  {
+    //-- Apply filters
+    // convert labels to array and trim each label value
+    $filters['labels'] = isset($filters['labels'])?array_map('trim', explode(',', $filters['labels'])):[];
+    $filters['label_exceptions'] = isset($filters['label_exceptions'])?array_map('trim', explode(',', $filters['label_exceptions'])):[];
+
+    $eventDates = array_filter($eventDates, function ($eventDate) use ($filters) {
+      //-- Show canceled events?
+      $show_canceled = $filters['show_canceled'] ?? false;
+      if (!$show_canceled && $eventDate->status == "canceled") {
+        return false;
+      }
+
+      //-- Filter by labels (IDs or labels)
+      if ($filters['labels']) {
+        // Allow both IDs or label text as filter
+        $eventLabels = (is_numeric($filters['labels'][0]))?array_keys($eventDate->labels):$eventDate->labels;
+        // Compare labels with filter. If some are matching, return event
+        $labelsMatching = count(array_intersect($eventLabels, $filters['labels'])) > 0;
+      }
+      else {
+        $labelsMatching = true;
+      }
+
+      //-- Filter by label exceptions (IDs or labels)
+      if ($filters['label_exceptions'] && $eventDate->labels) {
+        // Allow both IDs or label text as filter
+        $eventLabels = (is_numeric($filters['label_exceptions'][0]))?array_keys($eventDate->labels):$eventDate->labels;
+        // Compare labels with filter. If some are matching, return event
+        $labelExceptionsMatching = count(array_intersect($eventLabels, $filters['label_exceptions'])) > 0;
+      }
+      else {
+        $labelExceptionsMatching = false;
+      }
+
+      if ($filters['term']) {
+        $terms = explode(' ', $filters['term']);
+        $termsMatching = false;
+        foreach ($terms as $term) {
+          $termsMatching |= (strpos($eventDate->title . ' ' . $eventDate->facilitatorsList . ' ' . $eventDate->labelsList, $term) !== false);
+        }
+      }
+      else {
+        $termsMatching = true;
+      }
+      return $labelsMatching && !$labelExceptionsMatching && $termsMatching;
+    });
+
+    //-- Limit
+    if (isset($filters['limit']) && $filters['limit'] > 0) {
+      $eventDates = array_slice($eventDates, 0, $filters['limit']);
+    }
+  }
+
+  /**
    * Load EventDates from SeminarDesk API
    *
-   * @param $filters array - e.g. ['labels' => '1,2,3'] or ['labels' => [1],[2],[3]] or ['limit' => 5] or ['show_canceled' => true]
+   * @param $filters array - e.g. ['labels' => '1,2,3'] or ['labels' => [1],[2],[3]] or ['labels_exceptions' => 1,2,3'] or ['limit' => 5] or ['show_canceled' => true]
    * @return  array Event Dates (stdClass)
    * @since   3.0
    */
@@ -428,44 +488,8 @@ class SeminardeskHelperData
         self::prepareEventDate($eventDate);
       }
       
-      //-- Apply filters
-      // convert labels to array and trim each label value
-      $filters['labels'] = isset($filters['labels'])?array_map('trim', explode(',', $filters['labels'])):[];
-
-      $eventDates = array_filter($eventDates, function ($eventDate) use ($filters) {
-        //-- Show canceled events?
-        $show_canceled = $filters['show_canceled'] ?? false;
-        if (!$show_canceled && $eventDate->status == "canceled") {
-          return false;
-        }
-
-        //-- Filter by labels (IDs or labels)
-        if ($filters['labels']) {
-          // Allow both IDs or label text as filter
-          $eventLabels = (is_numeric($filters['labels'][0]))?array_keys($eventDate->labels):$eventDate->labels;
-          // Compare labels with filter. If some are matching, return event
-          $labelsMatching = array_intersect($eventLabels, $filters['labels']);
-        }
-        else {
-          $labelsMatching = true;
-        }
-        if ($filters['term']) {
-          $terms = explode(' ', $filters['term']);
-          $termsMatching = false;
-          foreach ($terms as $term) {
-            $termsMatching |= (strpos($eventDate->title . ' ' . $eventDate->facilitatorsList . ' ' . $eventDate->labelsList, $term) !== false);
-          }
-        }
-        else {
-          $termsMatching = true;
-        }
-        return $labelsMatching && $termsMatching;
-      });
-      
-      //-- Limit
-      if (isset($filters['limit']) && $filters['limit'] > 0) {
-        $eventDates = array_slice($eventDates, 0, $filters['limit']);
-      }
+      // Apply filters
+      self::filterEvents($eventDates, $filters);
     }
     else {
       // Error handling
