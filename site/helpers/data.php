@@ -646,6 +646,7 @@ class SeminardeskHelperData
     $eventDate->title = self::translate($eventDate->title, true);
     $eventDate->titleSlug = self::translate($eventDate->titleSlug);
     $eventDate->eventDateTitle = self::translate($eventDate->eventDateTitle, true);
+    $eventDate->teaserPictureUrl = self::translate($eventDate->teaserPictureUrl);
     $eventDate->facilitators = array_combine(
       array_column($eventDate->facilitators, 'id'), 
       array_column($eventDate->facilitators, 'name')
