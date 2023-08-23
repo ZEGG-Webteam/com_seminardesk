@@ -92,7 +92,13 @@ $document->setTitle($title . ' - ' . $facilitators);
                   <div class="date-fees"><?= JText::_("COM_SEMINARDESK_EVENT_NO_FEES_TO_DISPLAY"); ?></div>
                 <?php endif; ?>
               <?php elseif ($this->event->settings->onlyBoardAndLodging && ($date->availableLodging || $date->availableBoard)) : ?>
-                <div class="date-accom-meals"><?= JText::_("COM_SEMINARDESK_EVENT_ACC_MEALS_AVAILABLE"); ?></div>
+                <div class="date-accom-meals">
+                  <?php if ($date->isExternal) : ?>
+                    <?= JText::_("COM_SEMINARDESK_EVENT_ACC_MEALS_AVAILABLE_BOOKING"); ?>
+                  <?php else : ?>
+                    <?= JText::_("COM_SEMINARDESK_EVENT_ACC_MEALS_AVAILABLE"); ?>
+                  <?php endif; ?>
+                </div>
               <?php else : ?>
                 <div class="date-accom-meals"><?= JText::_("COM_SEMINARDESK_EVENT_ACC_MEALS_FREE"); ?></div>
               <?php endif; ?>
