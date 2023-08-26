@@ -424,6 +424,12 @@ class SeminardeskHelperData
       if (!$show_canceled && $eventDate->status == "canceled") {
         return false;
       }
+      
+      //-- Show ongoing events (that have already started)
+      $hide_ongoing = $filters['hide_ongoing'] ?? false;
+      if ($hide_ongoing && $eventDate->beginDate < time()) {
+        return false;
+      }
 
       //-- Filter by labels (IDs or labels)
       if ($filters['labels']) {
