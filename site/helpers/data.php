@@ -425,9 +425,9 @@ class SeminardeskHelperData
         return false;
       }
       
-      //-- Show ongoing events (that have already started)
+      //-- Show ongoing events (that have already started >= 1 day ago)
       $hide_ongoing = $filters['hide_ongoing'] ?? false;
-      if ($hide_ongoing && $eventDate->beginDate < time()) {
+      if ($hide_ongoing && $eventDate->beginDate < strtotime('tomorrow')) {
         return false;
       }
 
