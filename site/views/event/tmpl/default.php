@@ -84,7 +84,7 @@ $document->setTitle($title . ' - ' . $facilitators);
                 <?php if ($this->event->settings->showAttendanceFees) : ?>
                 <div class="date-fees">
                     <?php foreach ($date->attendanceFees as $fee) : ?>
-                      <?= $fee->name . ': <strong>' . $fee->priceDefault . ' €</strong><br>'; ?>
+                      <?= $fee->name . ': <strong>' . (($fee->isSelfAssessment)?($fee->priceRangeFrom . '-' . $fee->priceRangeTo):$fee->priceDefault) . '€</strong><br>'; ?>
                     <?php endforeach; ?>
                   </div>
                   <div class="date-accom-meals"><?= JText::_("COM_SEMINARDESK_EVENT_ACC_MEALS_ADDITIONAL"); ?></div>
