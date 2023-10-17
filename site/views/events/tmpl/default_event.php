@@ -21,7 +21,7 @@ $matchingFilters = SeminardeskHelperData::matchingFilters($this->eventDate, $thi
      data-categories='<?= json_encode(array_keys($this->eventDate->categories)); ?>'
      data-labels="<?= $this->eventDate->labelsList ?>">
 
-  <a href="<?= $this->eventDate->detailsUrl ?>" itemprop="url" class="<?= $this->eventDate->cssClasses ?>" target="_parent">
+  <a <?= ($this->eventDate->detailpageAvailable)?('href="' . $this->eventDate->detailsUrl . '" itemprop="url" target="_parent" '):'' ?>class="<?= $this->eventDate->cssClasses ?>">
     <?php $sameYear = date('Y', $this->eventDate->beginDate) === date('Y', $this->eventDate->endDate); ?>
     <div class="sd-event-date <?= (!$sameYear)?' not-same-year':'' ?>">
       <time itemprop="startDate" 

@@ -652,6 +652,7 @@ class SeminardeskHelperData
     $eventDate->title = self::translate($eventDate->title, true);
     $eventDate->titleSlug = self::translate($eventDate->titleSlug);
     $eventDate->eventDateTitle = self::translate($eventDate->eventDateTitle, true);
+    $eventDate->teaser = self::translate($eventDate->teaser);
     $eventDate->teaserPictureUrl = self::translate($eventDate->teaserPictureUrl);
     $eventDate->facilitators = array_combine(
       array_column($eventDate->facilitators, 'id'), 
@@ -684,6 +685,7 @@ class SeminardeskHelperData
     //-- Set event classes
     $classes = ['registration-available'];
     if ($eventDate->isFeatured)           { $classes[] = 'featured';         }
+    if (!$eventDate->detailpageAvailable)  { $classes[] = 'no-detail-page';  }
 //    if ($eventDate->categoriesList)     { $classes[] = 'has-categories';   } // Hide categories in List for now
     if ($eventDate->facilitatorsList)     { $classes[] = 'has-facilitators'; }
     if ($eventDate->isExternal)           { $classes[] = 'external-event';   } 
@@ -696,7 +698,7 @@ class SeminardeskHelperData
     $eventDate->dateFormatted = SeminardeskHelperData::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
 
     //-- URLs
-    $eventDate->detailsUrl = SeminardeskHelperData::getEventUrl($eventDate);
+    $eventDate->detailsUrl = ($eventDate->detailpageAvailable)?SeminardeskHelperData::getEventUrl($eventDate):'';
     $eventDate->bookingUrl = SeminardeskHelperData::getBookingUrl($eventDate->eventId, $eventDate->titleSlug, $eventDate->id);
   }
   
