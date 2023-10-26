@@ -80,11 +80,12 @@ $document->setTitle($title . ' - ' . $facilitators);
             <div class="date-date"><?= $date->dateFormatted ?></div>
             <div class="date-title"><?= $date->title ?></div>
             <div class="date-prices">
+              <?php // NEU: if ($date->priceEarlyBird) : earlyBirdDate ?>
               <?php if ($date->attendanceFees) : ?>
                 <?php if ($this->event->settings->showAttendanceFees) : ?>
                 <div class="date-fees">
                     <?php foreach ($date->attendanceFees as $fee) : ?>
-                      <?= $fee->name . ': <strong>' . (($fee->isSelfAssessment)?($fee->priceRangeFrom . '-' . $fee->priceRangeTo):$fee->priceDefault) . '€</strong><br>'; ?>
+                      <?= ($fee->name?:JText::_("COM_SEMINARDESK_EVENT_ATT_FEE_LABEL")) . ': <strong>' . (($fee->isSelfAssessment)?($fee->priceRangeFrom . '-' . $fee->priceRangeTo):$fee->priceDefault) . '€</strong><br>'; ?>
                     <?php endforeach; ?>
                   </div>
                   <div class="date-accom-meals"><?= JText::_("COM_SEMINARDESK_EVENT_ACC_MEALS_ADDITIONAL"); ?></div>
