@@ -78,9 +78,19 @@
         });
 
         // Show "no events found" message if no results are left
+        url = window.location.href.split('?')[0];
+        var url_params = new URL(document.location).searchParams;
         $('.sd-eventlist').each(function() {
           if ($(this).find('.sd-event:not(.hidden)').length === 0) {
-            $(this).find('.no-events-found').removeClass('hidden');
+            if (url_params.get('org') || url_params.get('cat')) {
+              $(this).find('.no-events-found.all').addClass('hidden');
+              $(this).find('.no-events-found.filtered').removeClass('hidden');
+              $(this).find('.no-events-found.filtered a').attr('href', url.split('?')[0] + '?term=' + url_params.get('term'));
+            }
+            else {
+              $(this).find('.no-events-found.filtered').addClass('hidden');
+              $(this).find('.no-events-found.all').removeClass('hidden');
+            }
           } else {
             $(this).find('.no-events-found').addClass('hidden');
           }
