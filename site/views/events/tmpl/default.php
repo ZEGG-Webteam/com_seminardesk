@@ -88,7 +88,13 @@ $filters = [
       }
     ?>
     </div>
-    <div class="no-events-found<?= ($this->events->getItems())?' hidden':'' ?>">
+    <div class="no-events-found filtered<?= ($this->events->getItems())?' hidden':'' ?>">
+      <p>
+        <?= JText::_("COM_SEMINARDESK_EVENTS_NO_EVENTS_FOUND_IN");?><br>
+        &gt; <a href="?term=<?= $this->filters['term'] ?>"><?= JText::_("COM_SEMINARDESK_EVENTS_SEARCH_ALL");?></a>
+      </p>
+    </div>
+    <div class="no-events-found all<?= ($this->events->getItems())?' hidden':'' ?>">
       <p><?= JText::_("COM_SEMINARDESK_EVENTS_NO_EVENTS_FOUND");?></p>
     </div>
   </div>
