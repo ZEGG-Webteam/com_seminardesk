@@ -92,7 +92,21 @@ $document->setTitle($title . ' - ' . $facilitators);
                       <?php endif; ?>
                     <?php endforeach; ?>
                   </div>
-                  <div class="date-accom-meals"><?= JText::_("COM_SEMINARDESK_EVENT_ACC_MEALS_ADDITIONAL"); ?></div>
+                  <div class="date-accom-meals">
+                    <?php 
+                    // Get all accomodation prices excluding given config list (exÜn)
+                    $lodgingPrices = [];
+                    foreach ($date->availableLodging as $lodging) {
+                      if (!in_array($lodging->id, $config['lodging_to_exclude'])) {
+                        $lodgingPrices = array_merge($lodgingPrices, array_column($lodging->prices, 'price'));
+                      }
+                    }
+                    // Get min / max price, removing unnecessary decimals
+                    $min_price = str_replace(['.00', ',00'], '', sprintf('%.2f', min($lodgingPrices)));
+                    $max_price = str_replace(['.00', ',00'], '', sprintf('%.2f', max($lodgingPrices)));
+                    ?>
+                    <?= sprintf(JText::_("COM_SEMINARDESK_EVENT_ACC_MEALS_ADDITIONAL"), $min_price, $max_price); ?>
+                  </div>
                 <?php else : ?>
                   <div class="date-fees"><?= JText::_("COM_SEMINARDESK_EVENT_NO_FEES_TO_DISPLAY"); ?></div>
                 <?php endif; ?>

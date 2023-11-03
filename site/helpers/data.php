@@ -36,6 +36,7 @@ class SeminardeskHelperData
   const FACILITATORS_TO_HIDE = [
       '& Team',
   ];
+  const LODGING_TO_EXCLUDE = ['exÜN'];
   
   /** Custom config, other than https://api.joomla.org/cms-3/classes/Joomla.CMS.MVC.Model.ListModel.html
    *
@@ -64,8 +65,9 @@ class SeminardeskHelperData
         'langKey' => $langKey,
         'api' => 'https://' . $tenant_id . '.seminardesk.de/api',
         'booking_base' => 'https://booking.seminardesk.de/' . strtolower($langKey) . '/' . $tenant_id . '/',
-        'eventlist_base' => 'index.php?option=com_seminardesk&Itemid=' . $events_menu . '&lang=' . strtolower($langKey) , 
-        'facilitators_base' => 'index.php?option=com_seminardesk&Itemid=' . $facilitators_menu . '&lang=' . strtolower($langKey) , 
+        'eventlist_base' => 'index.php?option=com_seminardesk&Itemid=' . $events_menu . '&lang=' . strtolower($langKey), 
+        'facilitators_base' => 'index.php?option=com_seminardesk&Itemid=' . $facilitators_menu . '&lang=' . strtolower($langKey), 
+        'lodging_to_exclude' => self::LODGING_TO_EXCLUDE, 
       ];
     }
     
