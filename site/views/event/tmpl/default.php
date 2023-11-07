@@ -96,8 +96,8 @@ $document->setTitle($title . ' - ' . $facilitators);
                     <?php 
                     // Get accomodation and meals (board) price range: 
                     // Get min / max price, removing unnecessary decimals, including full board (always) and taxes
-                    $min_price = min($date->lodgingPrices) + max($date->boardPrices) /*+ min($date->tourist_taxes)*/;
-                    $max_price = max($date->lodgingPrices) + max($date->boardPrices) /*+ max($date->tourist_taxes)*/;
+                    $min_price = min($date->lodgingPrices) + max($date->boardPrices);
+                    $max_price = max($date->lodgingPrices) + max($date->boardPrices);
                     $min_price = str_replace(['.00', ',00', '.'], ['', '', ','], sprintf('%.2f', $min_price));
                     $max_price = str_replace(['.00', ',00', '.'], ['', '', ','], sprintf('%.2f', $max_price));
                     ?>

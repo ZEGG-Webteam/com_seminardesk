@@ -813,6 +813,8 @@ class SeminardeskHelperData
       foreach ( $date->attendanceFees as $key => $fee ) {
         $date->attendanceFees[$key]->name = self::translate($fee->name);
       }
+      $date->lodgingPrices = self::getLodgingPrices($date);
+      $date->boardPrices = self::getBoardPrices($date);
 //      foreach($date->availableMisc as $key => $misc) {
 //        $date->availableMisc[$key]->title = self::translate($misc->title);
 //        $date->availableMisc[$key]->prices = self::translate($misc->prices);
