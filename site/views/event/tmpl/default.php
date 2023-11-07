@@ -94,16 +94,12 @@ $document->setTitle($title . ' - ' . $facilitators);
                   </div>
                   <div class="date-accom-meals">
                     <?php 
-                    // Get all accomodation prices excluding given config list (exÜn)
-                    $lodgingPrices = [];
-                    foreach ($date->availableLodging as $lodging) {
-                      if (!in_array($lodging->id, $config['lodging_to_exclude'])) {
-                        $lodgingPrices = array_merge($lodgingPrices, array_column($lodging->prices, 'price'));
-                      }
-                    }
-                    // Get min / max price, removing unnecessary decimals
-                    $min_price = str_replace(['.00', ',00'], '', sprintf('%.2f', min($lodgingPrices)));
-                    $max_price = str_replace(['.00', ',00'], '', sprintf('%.2f', max($lodgingPrices)));
+                    // Get accomodation and meals (board) price range: 
+                    // Get min / max price, removing unnecessary decimals, including full board (always) and taxes
+                    $min_price = min($date->lodgingPrices) + max($date->boardPrices);
+                    $max_price = max($date->lodgingPrices) + max($date->boardPrices);
+                    $min_price = str_replace(['.00', ',00', '.'], ['', '', ','], sprintf('%.2f', $min_price));
+                    $max_price = str_replace(['.00', ',00', '.'], ['', '', ','], sprintf('%.2f', $max_price));
                     ?>
                     <?= sprintf(JText::_("COM_SEMINARDESK_EVENT_ACC_MEALS_ADDITIONAL"), $min_price, $max_price); ?>
                   </div>

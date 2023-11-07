@@ -363,6 +363,37 @@ class SeminardeskHelperData
   }
   
   /**
+   * Get all accomodation prices excluding given config list (exÜn).
+   * 
+   * @param object $date - A single date of an event - event->date
+   * @return array - List of all lodging prices, except for $config['lodging_to_exclude']
+   */
+  public function getLodgingPrices($date) {
+    $config = self::getConfiguration();
+    $lodgingPrices = [];
+    foreach ($date->availableLodging as $lodging) {
+      if (!in_array($lodging->id, $config['lodging_to_exclude'])) {
+        $lodgingPrices = array_merge($lodgingPrices, array_column($lodging->prices, 'price'));
+      }
+    }
+    return $lodgingPrices;
+  }
+  
+  /**
+   * Get prices for meals etc. excluding given config list
+   * 
+   * @param object $date - A single date of an event - event->date
+   * @return array - List of min/max boarding prices
+   */
+  public function getBoardPrices($date) {
+    $boardPrices = [];
+    foreach ($date->availableBoard as $board) {
+      $boardPrices = array_merge($boardPrices, array_column($board->prices, 'price'));
+    }
+    return $boardPrices;
+  }
+  
+  /**
    * 
    * @param stdClass $eventDate
    * @param array $filters - containing keys 'date', 'cat', 'org' and/or 'term'
@@ -782,6 +813,8 @@ class SeminardeskHelperData
       foreach ( $date->attendanceFees as $key => $fee ) {
         $date->attendanceFees[$key]->name = self::translate($fee->name);
       }
+      $date->lodgingPrices = self::getLodgingPrices($date);
+      $date->boardPrices = self::getBoardPrices($date);
 //      foreach($date->availableMisc as $key => $misc) {
 //        $date->availableMisc[$key]->title = self::translate($misc->title);
 //        $date->availableMisc[$key]->prices = self::translate($misc->prices);
