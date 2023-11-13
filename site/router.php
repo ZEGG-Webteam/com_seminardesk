@@ -110,8 +110,7 @@ class SeminardeskRouter extends RouterView
     $app = Factory::getApplication();
     $menu = $app->getMenu()->getActive();
 
-    $view = $menu?(array_key_exists('view', $menu->query)?:'events'):'events';
-    switch($view) {
+    switch($menu->query['view']) {
       case 'facilitators': 
         $vars['id']   = $segments[0];
         $vars['view'] = 'facilitator';
