@@ -10,13 +10,13 @@
 // No direct access
 defined('_JEXEC') or die;
 
-use Joomla\CMS\Component\Router\RouterViewConfiguration;
+//use Joomla\CMS\Component\Router\RouterViewConfiguration;
 use Joomla\CMS\Component\Router\RouterView;
 use Joomla\CMS\Component\Router\Rules\StandardRules;
 use Joomla\CMS\Component\Router\Rules\NomenuRules;
 use Joomla\CMS\Component\Router\Rules\MenuRules;
 use Joomla\CMS\Factory;
-use Joomla\CMS\Categories\Categories;
+//use Joomla\CMS\Categories\Categories;
 
 /**
  * Class SeminardeskRouter
@@ -110,7 +110,8 @@ class SeminardeskRouter extends RouterView
     $app = Factory::getApplication();
     $menu = $app->getMenu()->getActive();
 
-    switch($menu->query['view']) {
+    $view = $menu?(array_key_exists('view', $menu->query)?:'events'):'events';
+    switch($view) {
       case 'facilitators': 
         $vars['id']   = $segments[0];
         $vars['view'] = 'facilitator';
