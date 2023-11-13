@@ -57,8 +57,8 @@ class SeminardeskHelperData
 
       //-- Get SeminarDesk API settings
       $tenant_id = $app->input->get('tenant_id', self::DEFAULT_TENANT_ID, 'STRING');
-      $events_menu = $app->getMenu()->getActive()->query['events_page']?:$app->getMenu()->getActive()->id;
-      $facilitators_menu = $app->getMenu()->getActive()->query['facilitators_page']?:$app->getMenu()->getActive()->id;
+      $events_menu = $app->getMenu()->getActive()->query['events_page']??$app->getMenu()->getActive()->id;
+      $facilitators_menu = $app->getMenu()->getActive()->query['facilitators_page']??$app->getMenu()->getActive()->id;
       
       self::$config = [
         'tenant_id' => $tenant_id,
