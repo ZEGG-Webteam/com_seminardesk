@@ -10,13 +10,13 @@
 // No direct access
 defined('_JEXEC') or die;
 
-use Joomla\CMS\Component\Router\RouterViewConfiguration;
+//use Joomla\CMS\Component\Router\RouterViewConfiguration;
 use Joomla\CMS\Component\Router\RouterView;
 use Joomla\CMS\Component\Router\Rules\StandardRules;
 use Joomla\CMS\Component\Router\Rules\NomenuRules;
 use Joomla\CMS\Component\Router\Rules\MenuRules;
 use Joomla\CMS\Factory;
-use Joomla\CMS\Categories\Categories;
+//use Joomla\CMS\Categories\Categories;
 
 /**
  * Class SeminardeskRouter

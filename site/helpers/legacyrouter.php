@@ -19,6 +19,8 @@ use Joomla\CMS\Categories\Categories;
  */
 class SeminardeskRulesLegacy implements RulesInterface
 {
+    protected $router;
+    
     /**
      * Constructor for this legacy router
      *

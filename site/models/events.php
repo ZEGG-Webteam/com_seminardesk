@@ -12,9 +12,9 @@ defined('_JEXEC') or die;
 
 use \Joomla\CMS\Factory;
 use \Joomla\CMS\Language\Text;
-use \Joomla\CMS\Helper\TagsHelper;
-use \Joomla\CMS\Layout\FileLayout;
-use \Joomla\Utilities\ArrayHelper;
+//use \Joomla\CMS\Helper\TagsHelper;
+//use \Joomla\CMS\Layout\FileLayout;
+//use \Joomla\Utilities\ArrayHelper;
 
 /**
  * Methods supporting a list of Seminardesk records. Reflecting EventDates

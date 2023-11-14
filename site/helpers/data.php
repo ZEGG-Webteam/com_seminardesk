@@ -28,6 +28,7 @@ class SeminardeskHelperData
   const DEFAULT_TENANT_ID = 'zegg';
   const LABELS_FESTIVALS_ID = 12;
   const LABELS_EXTERNAL_ID = 55;
+  const LABELS_ON_APPLICATION_ID = 69;
   const LABELS_TO_HIDE = [
       1, 2, 3, 53, 54, // Languages
 //      self::LABELS_FESTIVALS_ID, 
@@ -57,8 +58,8 @@ class SeminardeskHelperData
 
       //-- Get SeminarDesk API settings
       $tenant_id = $app->input->get('tenant_id', self::DEFAULT_TENANT_ID, 'STRING');
-      $events_menu = $app->getMenu()->getActive()->query['events_page']?:$app->getMenu()->getActive()->id;
-      $facilitators_menu = $app->getMenu()->getActive()->query['facilitators_page']?:$app->getMenu()->getActive()->id;
+      $events_menu = $app->getMenu()->getActive()->query['events_page']??$app->getMenu()->getActive()->id;
+      $facilitators_menu = $app->getMenu()->getActive()->query['facilitators_page']??$app->getMenu()->getActive()->id;
       
       self::$config = [
         'tenant_id' => $tenant_id,
@@ -353,6 +354,11 @@ class SeminardeskHelperData
     $label = '';
     if ($event->status) {
       $key = "COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($event->status);
+      // Special case: If status "wait_list" is set manually and label "Anmeldestatus/Auf Bewerbung" is set.
+      if ($key === "COM_SEMINARDESK_EVENTS_STATUS_WAIT_LIST" 
+          && self::hasLabel($event, self::LABELS_ON_APPLICATION_ID)) {
+        $key = "COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION";
+      }
       $label = JText::_($key);
       // No translation found? Use status as label
       if ($label == $key) {
@@ -391,6 +397,17 @@ class SeminardeskHelperData
       $boardPrices = array_merge($boardPrices, array_column($board->prices, 'price'));
     }
     return $boardPrices;
+  }
+  
+  /**
+   * Check if given label ID is assigned in the eventDates labels list.
+   * 
+   * @param stdClass $event
+   * @param integer $label
+   * @return boolean
+   */
+  public static function hasLabel($event, $label) {
+    return array_key_exists($label, $event->labels);
   }
   
   /**
@@ -710,8 +727,9 @@ class SeminardeskHelperData
     $eventDate->endDate = $eventDate->endDate / 1000;
 
     //-- Set special event flags (festivals, external organisers)
-    $eventDate->isFeatured = array_key_exists(SeminardeskHelperData::LABELS_FESTIVALS_ID, $eventDate->labels);
-    $eventDate->isExternal = array_key_exists(SeminardeskHelperData::LABELS_EXTERNAL_ID, $eventDate->labels);
+    $eventDate->isFeatured = self::hasLabel($eventDate, self::LABELS_FESTIVALS_ID);
+    $eventDate->isExternal = self::hasLabel($eventDate, self::LABELS_EXTERNAL_ID);
+    $eventDate->onApplication = self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_ID);
     $eventDate->showDateTitle = ($eventDate->eventDateTitle && $eventDate->eventDateTitle != $eventDate->title);
     $eventDate->isPastEvent = $eventDate->endDate < time();
 
@@ -754,7 +772,7 @@ class SeminardeskHelperData
       array_column($event->labels, 'id'), 
       array_column($event->labels, 'name')
     );
-    $event->isExternal = array_key_exists(SeminardeskHelperData::LABELS_EXTERNAL_ID, $event->labels);
+    $event->isExternal = self::hasLabel($event, self::LABELS_EXTERNAL_ID);
     
     //-- Get categories: Labels except LABELS_TO_HIDE
     $event->categories = array_filter($event->labels, function($key){
@@ -821,7 +839,7 @@ class SeminardeskHelperData
 //      }
 
       //-- Booking
-      $date->isExternal = array_key_exists(SeminardeskHelperData::LABELS_EXTERNAL_ID, $date->labels);
+      $date->isExternal = self::hasLabel($date, self::LABELS_EXTERNAL_ID);
       $date->bookingUrl = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, $date->id);
       $date->statusLabel = SeminardeskHelperData::getStatusLabel($date);
       $event->isExternal = $event->isExternal || $date->isExternal;
