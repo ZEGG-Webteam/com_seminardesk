@@ -16,10 +16,9 @@ $matchingFilters = SeminardeskHelperData::matchingFilters($this->eventDate, $thi
      itemscope="itemscope" itemtype="https://schema.org/Event" 
      data-start-date="<?= date('Y-m-d', $this->eventDate->beginDate) ?>"
      data-end-date="<?= date('Y-m-d', $this->eventDate->endDate) ?>"
-     data-title="<?= $this->eventDate->title . (($this->eventDate->showDateTitle)?(' ' . $this->eventDate->eventDateTitle):'') ?>"
-     data-fascilitators="<?= $this->eventDate->facilitatorsList ?>"
      data-categories='<?= json_encode(array_keys($this->eventDate->categories)); ?>'
-     data-labels="<?= $this->eventDate->labelsList ?>">
+     data-labels="<?= $this->eventDate->labelsList ?>"
+     data-searchable-text="<?= $this->eventDate->searchableText ?>">
 
   <a <?= ($this->eventDate->detailpageAvailable)?('href="' . $this->eventDate->detailsUrl . '" itemprop="url" target="_parent" '):'' ?>class="<?= $this->eventDate->cssClasses ?>">
     <?php $sameYear = date('Y', $this->eventDate->beginDate) === date('Y', $this->eventDate->endDate); ?>
@@ -33,7 +32,9 @@ $matchingFilters = SeminardeskHelperData::matchingFilters($this->eventDate, $thi
     </div>
     <div class="sd-event-title">
       <h4 itemprop="name"><?= $this->eventDate->title; ?></h4>
-      <?= ($this->eventDate->showDateTitle)?('<p>' . $this->eventDate->eventDateTitle . '</p>'):'' ?>
+      <?php if ($this->eventDate->mergedSubtitle) : ?>
+        <p><?= $this->eventDate->mergedSubtitle ?></p>
+      <?php endif; ?>
     </div>
     <div class="sd-event-facilitators" itemprop="organizer">
       <?= $this->eventDate->facilitatorsList; ?>
