@@ -51,7 +51,7 @@
         // Hide all events not matching ALL of the search terms
         $('.sd-eventlist .sd-event').each(function() {
           let isDateMatching = $(this).data('end-date') >= filterStartDate;
-          let eventSearchableText = $(this).data('title') + ' ' + $(this).data('facilitators') + ' ' + $(this).data('labels');
+          let eventSearchableText = $(this).data('searchable-text') + ' ' + $(this).data('categories');
           let areSearchTermsMatching = areSearchTermsEmpty || filterSearchTerms.every( 
             substring=>eventSearchableText.toLowerCase().includes( substring ) 
           );

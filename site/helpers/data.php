@@ -701,26 +701,45 @@ class SeminardeskHelperData
   {
     $eventDate->title = self::translate($eventDate->title, true);
     $eventDate->titleSlug = self::translate($eventDate->titleSlug);
+    $eventDate->subtitle = self::translate($eventDate->subtitle);
     $eventDate->eventDateTitle = self::translate($eventDate->eventDateTitle, true);
     $eventDate->teaser = self::translate($eventDate->teaser);
     $eventDate->teaserPictureUrl = self::translate($eventDate->teaserPictureUrl);
+//    $eventDate->description = self::translate($eventDate->eventInfo->description); // See below: Adding to html response slows down page loading
+    // Set 2nd title / subtitle to eventDateTitle, subtitile or teaser, if different from title
+    $eventDate->mergedSubtitle = ($eventDate->title != $eventDate->eventDateTitle)?$eventDate->eventDateTitle:'';
+    $eventDate->mergedSubtitle .= (!$eventDate->mergedSubtitle && $eventDate->title != $eventDate->subtitle)?$eventDate->subtitle:'';
+//    $eventDate->mergedSubtitle .= (!$eventDate->mergedSubtitle && $eventDate->title != $eventDate->teaser)?$eventDate->teaser:'';
+    // Add facilitators list
     $eventDate->facilitators = array_combine(
       array_column($eventDate->facilitators, 'id'), 
       array_column($eventDate->facilitators, 'name')
     );
     $eventDate->facilitatorsList = htmlentities(implode(', ', $eventDate->facilitators), ENT_QUOTES);
+    // Add labels list
     $eventDate->labels = array_combine(
       array_column($eventDate->labels, 'id'), 
       array_column($eventDate->labels, 'name')
     );
-    $eventDate->labelsList = htmlentities(implode(', ', $eventDate->labels), ENT_QUOTES);
+    $eventDate->labelsList = htmlspecialchars(implode(', ', $eventDate->labels), ENT_QUOTES);
     // Get categories: Labels except LABELS_TO_HIDE
     $eventDate->categories = array_filter($eventDate->labels, function($key){
       return !in_array($key, self::LABELS_TO_HIDE);
     }, ARRAY_FILTER_USE_KEY);
-    $eventDate->categoriesList = htmlentities(implode(', ', $eventDate->categories), ENT_QUOTES);
+    $eventDate->categoriesList = htmlspecialchars(implode(', ', $eventDate->categories), ENT_QUOTES);
 //    $eventDate->categoryLinks = implode(', ', SeminardeskHelperData::getCategoryLinks($eventDate->categories));
     $eventDate->statusLabel = SeminardeskHelperData::getStatusLabel($eventDate);
+    // Add searchable text for filters
+    $eventDate->searchableText = htmlspecialchars(strip_tags(implode(' ', [
+        $eventDate->title,
+        $eventDate->subtitle,
+        $eventDate->eventDateTitle,
+        $eventDate->teaser,
+//        $eventDate->description, // Slows down page loading (+150kB / +0.5s)
+        $eventDate->facilitatorsList,
+        implode(' ', array_keys($eventDate->categories)),
+        $eventDate->labelsList,
+    ])));
     
     // Fix event date / time
     $eventDate->beginDate = $eventDate->beginDate / 1000;
@@ -730,7 +749,6 @@ class SeminardeskHelperData
     $eventDate->isFeatured = self::hasLabel($eventDate, self::LABELS_FESTIVALS_ID);
     $eventDate->isExternal = self::hasLabel($eventDate, self::LABELS_EXTERNAL_ID);
     $eventDate->onApplication = self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_ID);
-    $eventDate->showDateTitle = ($eventDate->eventDateTitle && $eventDate->eventDateTitle != $eventDate->title);
     $eventDate->isPastEvent = $eventDate->endDate < time();
 
     //-- Set event classes
