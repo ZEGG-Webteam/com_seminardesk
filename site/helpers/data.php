@@ -699,12 +699,15 @@ class SeminardeskHelperData
    */
   public static function prepareEventDate(&$eventDate)
   {
+    // Map and translate fields - some have changed the structure (new sub object "eventInfo"), so include a fallback
+    $eventDate->eventId = $eventDate->eventId??$eventDate->eventInfo->id;
     $eventDate->title = self::translate($eventDate->title, true);
-    $eventDate->titleSlug = self::translate($eventDate->titleSlug);
-    $eventDate->subtitle = self::translate($eventDate->subtitle);
+    $eventDate->titleSlug = self::translate($eventDate->titleSlug??$eventDate->eventInfo->titleSlug);
+    $eventDate->subtitle = self::translate($eventDate->subtitle??$eventDate->eventInfo->subtitle);
     $eventDate->eventDateTitle = self::translate($eventDate->eventDateTitle, true);
-    $eventDate->teaser = self::translate($eventDate->teaser);
-    $eventDate->teaserPictureUrl = self::translate($eventDate->teaserPictureUrl);
+    $eventDate->teaser = self::translate($eventDate->teaser??$eventDate->eventInfo->teaser);
+    $eventDate->teaserPictureUrl = self::translate($eventDate->teaserPictureUrl??$eventDate->eventInfo->teaserPictureUrl);
+    $eventDate->detailpageAvailable = $eventDate->detailpageAvailable??$eventDate->eventInfo->detailpageAvailable;
 //    $eventDate->description = self::translate($eventDate->eventInfo->description); // See below: Adding to html response slows down page loading
     // Set 2nd title / subtitle to eventDateTitle, subtitile or teaser, if different from title
     $eventDate->mergedSubtitle = ($eventDate->title != $eventDate->eventDateTitle)?$eventDate->eventDateTitle:'';
