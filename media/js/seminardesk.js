@@ -22,8 +22,18 @@
         let filterOrganisers = $('#sd-filter-organisers').val();
         let filterCategory = $('#sd-filter-category').val();
 
-        // Field dependencies: Currently categories are only available for zegg events
-        filterCategory   = (filterOrganisers == 'external')?0:filterCategory;
+        // Field dependencies, based on trigger and values
+        let trigger_id = $(this).attr('id');
+        // - If search term is entered, reset all other filters
+        if (trigger_id === 'sd-filter-search-term' && !areSearchTermsEmpty) {
+          filterOrganisers = 'all';
+          $('#sd-filter-organisers').val(filterOrganisers);
+          filterCategory = 0;
+          $('#sd-filter-category').val(filterCategory);
+        }
+        
+        // - Currently categories are only available for zegg events
+        filterCategory = (filterOrganisers == 'external')?0:filterCategory;
         $('#sd-filter-category').val(filterCategory).prop( "disabled", (filterOrganisers == 'external') );
         filterOrganisers = (filterCategory > 0)?'zegg':filterOrganisers;
         $('#sd-filter-organisers').val(filterOrganisers).prop( "disabled", (filterCategory > 0) );
