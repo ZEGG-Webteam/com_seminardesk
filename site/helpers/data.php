@@ -138,7 +138,7 @@ class SeminardeskHelperData
    * @param array $fieldValues - Containing values for all languages
    * @param boolean|string $fallbackLang - true = Fallback to first language in array, OR 
    *                                   string = Fallback language key ('DE', 'EN' ...)
-   * @param boolean $htmlencode - true = encode html entities before returning
+   * @param boolean $htmlencode - true = encode html specialchars before returning
    * @return string - Value
    */
   public static function translate($fieldValues, $htmlencode = false, $fallbackLang = true)
@@ -172,7 +172,7 @@ class SeminardeskHelperData
     }
 
     //-- Encode html entities and return
-    return ($htmlencode) ? htmlentities($value, ENT_QUOTES) : $value;
+    return ($htmlencode) ? htmlspecialchars($value, ENT_QUOTES) : $value;
   }
 
   /**
