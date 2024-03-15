@@ -10,7 +10,6 @@
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
-use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Http\HttpFactory;
 use Joomla\CMS\Language\LanguageHelper;
 use Joomla\CMS\Log\Log;

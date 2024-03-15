@@ -28,6 +28,11 @@ $document->addScript('/media/com_seminardesk/js/seminardesk.js');
 $title = str_replace(['&ndash;', '&amp;'], ['-', '&'], html_entity_decode($this->event->title));
 $facilitators = implode(', ', array_column($this->event->facilitators, 'name'));
 $document->setTitle($title . ' - ' . $facilitators);
+
+//-- Order dates by startDate
+usort($this->event->dates, function($a, $b) {
+  return $a->beginDate - $b->beginDate;
+});
 ?>
 
 <div class="sd-component sd-event-details" data-api-uri="<?= $this->event->apiUri ?>" data-lang-key="<?= $this->event->langKey ?>">
