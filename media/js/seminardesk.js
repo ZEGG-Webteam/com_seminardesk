@@ -92,6 +92,7 @@
         var url_params = new URL(document.location).searchParams;
         $('.sd-eventlist').each(function() {
           if ($(this).find('.sd-event:not(.hidden)').length === 0) {
+            $('.sd-filter + .above-events-container').addClass('hidden');
             if (url_params.get('org') || url_params.get('cat')) {
               $(this).find('.no-events-found.all').addClass('hidden');
               $(this).find('.no-events-found.filtered').removeClass('hidden');
@@ -102,6 +103,7 @@
               $(this).find('.no-events-found.all').removeClass('hidden');
             }
           } else {
+            $('.sd-filter + .above-events-container').removeClass('hidden');
             $(this).find('.no-events-found').addClass('hidden');
           }
         });

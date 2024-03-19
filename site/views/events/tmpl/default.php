@@ -58,7 +58,7 @@ $filters = [
   </div>
   
   <?php if ($document->countModules('above-events')): ?>
-    <section class="above-events-container">
+    <section class="above-events-container<?= ($this->events->getItems())?' hidden':'' ?>">
       <div class="row">
         <?= JHtml::_('content.prepare', '{loadposition above-events, column}') ?>
       </div>
