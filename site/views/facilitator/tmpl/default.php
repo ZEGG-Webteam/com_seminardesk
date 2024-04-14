@@ -33,9 +33,7 @@ $document->setTitle($this->facilitator->fullName);
   <div class="backlink">
     <a href="#"><i class="fas fa-chevron-left"></i><?= JText::_("COM_SEMINARDESK_BACK") ?></a>
   </div>
-  <div class="facilitator" 
-       itemscope="itemscope" 
-       itemtype="https://schema.org/Person">
+  <div class="facilitator" itemscope itemtype="https://schema.org/Person">
 
     <div class="facilitator-name">
       <h1><?= $this->facilitator->title ?> <span itemprop="givenName"><?= $this->facilitator->firstName ?></span> <span itemprop="familyName"><?= $this->facilitator->lastName ?></span></h1>

@@ -75,13 +75,36 @@ class SeminardeskHelperData
   }
 
   /**
-   * Rplace multiple (>= 3) unterscores and dashes by <hr> a tag.
+   * Replace multiple (>= 3) unterscores and dashes by <hr> a tag.
    * 
    * @param string $text
    * @return string
    */
   public static function replaceHR($text) {
     return preg_replace('/[_-]{3,}/', '<hr>', $text);
+  }
+  
+  /**
+   * Replace characters that are missing in custom font, like superscript numbers
+   * 
+   * @param string $text
+   * @return string
+   */
+  public static function replaceMissingFontChars ($text) {
+    $replacements = [
+        '⁰' => '<sup>0</sup>',
+        '¹' => '<sup>1</sup>',
+        '²' => '<sup>2</sup>',
+        '³' => '<sup>3</sup>',
+        '⁴' => '<sup>4</sup>',
+        '⁵' => '<sup>5</sup>',
+        '⁶' => '<sup>6</sup>',
+        '⁷' => '<sup>7</sup>',
+        '⁸' => '<sup>8</sup>',
+        '⁹' => '<sup>9</sup>',
+        'ⁿ' => '<sup>n</sup>',
+    ];
+    return str_replace(array_keys($replacements), array_values($replacements), $text);
   }
 
   /**
