@@ -40,7 +40,9 @@ usort($this->event->dates, function($a, $b) {
     <?php if ($this->event->headerPictureUrl) : ?>
       <div class="header-picture"><img src="<?= $this->event->headerPictureUrl ?>"></div>
     <?php endif; ?>
-    <h1 class="title"><?= $this->event->title; ?></h1>
+    <h1 class="title">
+      <?= SeminardeskHelperData::replaceMissingFontChars($this->event->title); ?>
+    </h1>
     <?php if ($this->event->subtitle) : ?>
       <h2 class="subtitle"><?= $this->event->subtitle; ?></h2>
     <?php endif; ?>
