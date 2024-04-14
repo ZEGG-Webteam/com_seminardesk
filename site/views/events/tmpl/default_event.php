@@ -13,7 +13,7 @@ defined('_JEXEC') or die;
 $matchingFilters = SeminardeskHelperData::matchingFilters($this->eventDate, $this->filters);
 ?>
 <div class="sd-event loading<?= (!$matchingFilters)?' hidden':'' ?>" 
-     itemscope="itemscope" itemtype="https://schema.org/Event" 
+     itemscope itemtype="https://schema.org/Event" 
      data-start-date="<?= date('Y-m-d', $this->eventDate->beginDate) ?>"
      data-end-date="<?= date('Y-m-d', $this->eventDate->endDate) ?>"
      data-categories='<?= json_encode(array_keys($this->eventDate->categories)); ?>'

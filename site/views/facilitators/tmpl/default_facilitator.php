@@ -14,7 +14,7 @@ defined('_JEXEC') or die('Restricted access');
 $heading = $this->facilitator->heading ?? 'h2';
 ?>
 
-<div class="<?= $this->facilitator->cssClasses ?>" itemscope="itemscope" itemtype="https://schema.org/Person">
+<div class="<?= $this->facilitator->cssClasses ?>" itemscope itemtype="https://schema.org/Person">
 
   <a class="facilitator-picture noicon wfpopup" href="<?= $this->facilitator->detailsUrl ?>" itemprop="url" rel="{handler: 'iframe'}">
     <?= ($this->facilitator->pictureUrl)?'<img src="' . $this->facilitator->pictureUrl . '" alt="' . $this->facilitator->fullName . '">':'' ?>
