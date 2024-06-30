@@ -936,10 +936,11 @@ class SeminardeskHelperData
         return strcmp($a->beginDate, $b->beginDate);
     });
     
-    //-- Separate past and future events
+    //-- Separate past and future events. Past events only from 1 year ago and in reverse order
     $facilitator->pastEventDates = array_filter($facilitator->eventDates, function($eventDate) {
-      return $eventDate->endDate < time();
+      return $eventDate->endDate < time() && (intval(date("Y")) - intval(date("Y", $eventDate->endDate)) <= 1);
     });
+    $facilitator->pastEventDates = array_reverse($facilitator->pastEventDates);
     $facilitator->eventDates = array_filter($facilitator->eventDates, function($eventDate) {
       return $eventDate->endDate >= time();
     });
