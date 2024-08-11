@@ -44,7 +44,7 @@ class SeminardeskModelEvent extends \Joomla\CMS\MVC\Model\ItemModel
 	public function getItem ($eventId = null)
 	{
     if (!self::$event) {
-      self::$event = SeminardeskHelperData::loadEvent($eventId);
+      self::$event = SeminardeskDataHelper::loadEvent($eventId);
     }
 		return self::$event;
 	}

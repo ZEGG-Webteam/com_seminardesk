@@ -18,7 +18,7 @@ use \Joomla\CMS\Layout\LayoutHelper;
 JHtml::_('jquery.framework');
 JHtml::_('behavior.modal'); // use with class="modal" and rel="{handler: 'iframe'}" in link
 
-$config = SeminardeskHelperData::getConfiguration();
+$config = SeminardeskDataHelper::getConfiguration();
 
 //-- Load CSS / JS
 $document  = Factory::getDocument();

@@ -43,7 +43,7 @@ class SeminardeskViewEvents extends \Joomla\CMS\MVC\View\HtmlView
 		$this->params = $this->state->get('params');
 		
     // Assign data to the view
-    $this->events = SeminardeskHelperSeminardesk::getModel('Events');
+    $this->events = SeminardeskHelper::getModel('Events');
     $this->title = $app->getMenu()->getActive()->title;
     $this->pageclass_sfx = htmlspecialchars($app->input->get('pageclass_sfx', ''), ENT_COMPAT, 'UTF-8');
 

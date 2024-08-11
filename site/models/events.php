@@ -124,7 +124,7 @@ class SeminardeskModelEvents extends \Joomla\CMS\MVC\Model\ListModel
     // $items = parent::getItems();
     // If not yet loaded: Get events from API
     if (!self::$events) {
-      self::$events = SeminardeskHelperData::loadEventDates($filters);
+      self::$events = SeminardeskDataHelper::loadEventDates($filters);
     }
 		return self::$events;
 	}

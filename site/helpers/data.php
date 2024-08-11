@@ -15,11 +15,11 @@ use Joomla\CMS\Language\LanguageHelper;
 use Joomla\CMS\Log\Log;
 
 /**
- * Class SeminardeskHelperData: Helper for Seminardesk Data Handling
+ * Class SeminardeskDataHelper: Helper for Seminardesk Data Handling
  *
  * @since  3.0
  */
-class SeminardeskHelperData
+class SeminardeskDataHelper
 {
   /**
    * Configurations
@@ -43,19 +43,24 @@ class SeminardeskHelperData
    * @var array - ['tenant_id', 'langKey', 'api', 'booking_base'] // URL of the SeminarDesk API, base URL to events booking
    */
   protected static $config = [];
+
+  /**
+   * API controller
+   */
+  protected static $api_controller = null;
   
   /**
-   * 
+   * Get configuration (singleton)
    */
   public static function getConfiguration()
   {
     if (!self::$config) {
       $app  = Factory::getApplication();
 
-      //-- Get key for translations from SeminarDesk (e.g. 'DE', 'EN')
+      // Get key for translations from SeminarDesk (e.g. 'DE', 'EN')
       $langKey = self::getCurrentLanguageKey();
 
-      //-- Get SeminarDesk API settings
+      // Get SeminarDesk API settings
       $tenant_id = $app->input->get('tenant_id', self::DEFAULT_TENANT_ID, 'STRING');
       $events_menu = $app->getMenu()->getActive()->query['events_page']??$app->getMenu()->getActive()->id;
       $facilitators_menu = $app->getMenu()->getActive()->query['facilitators_page']??$app->getMenu()->getActive()->id;
@@ -72,6 +77,18 @@ class SeminardeskHelperData
     }
     
     return self::$config;
+  }
+
+  /**
+   * Get API controller (singleton)
+   */
+  public static function getApiController()
+  {
+    if (!self::$api_controller) {
+      JLoader::register('SeminardeskApiController', JPATH_COMPONENT . '/controllers/api.php');
+      self::$api_controller = new SeminardeskApiController();
+    }
+    return self::$api_controller;
   }
 
   /**
@@ -127,7 +144,7 @@ class SeminardeskHelperData
 
   /**
    * Remove all font tags and style attributes 
-   *   and replace multiple (>= 3) unterscores and dashes by <hr> a tag. (as in cleanupHtml()
+   * and replace multiple (>= 3) unterscores and dashes by <hr> a tag. (as in cleanupHtml()
    * 
    * @param string $text
    * @return string
@@ -203,28 +220,9 @@ class SeminardeskHelperData
    * @return  string Json data from Seminardesk
    * @since   3.0
    */
-  public static function getSeminarDeskApiUri($route) {
+  public static function getSeminarDeskApi() {
     $config = self::getConfiguration();
-    return $config['api'] . $route;
-  }
-  
-  /**
-   * Get data from SeminarDesk
-   *
-   * @return  string Json data from Seminardesk
-   * @since   3.0
-   */
-  public static function getSeminarDeskData($api_uri)
-  {
-    $connector = HttpFactory::getHttp();
-    try {
-      $data = $connector->get($api_uri);
-    } catch (\Exception $exception) {
-      Log::add('Failed to fetch remote IP data: ' . $exception->getMessage(), Log::ERROR, 'com_seminardesk');
-      $this->logger->error('Failed to fetch remote IP data: ' . $exception->getMessage());
-      $data = 'Failed to fetch remote IP data: ' . $exception->getMessage();
-    }
-    return $data;
+    return $config['api'];
   }
   
   /**
@@ -545,7 +543,7 @@ class SeminardeskHelperData
   }
 
   /**
-   * Load EventDates from SeminarDesk API
+   * Load and filter EventDates
    *
    * @param $filters array - e.g. ['labels' => '1,2,3'] or ['labels' => [1],[2],[3]] or ['labels_exceptions' => 1,2,3'] or ['limit' => 5] or ['show_canceled' => true]
    * @return  array Event Dates (stdClass)
@@ -553,15 +551,17 @@ class SeminardeskHelperData
    */
   public static function loadEventDates($filters = [])
   {
-    $config = self::getConfiguration();
-    $api_uri = self::getSeminarDeskApiUri('/eventDates');
-    $eventDatesData = self::getSeminarDeskData($api_uri);
-    $filtersMatching = true;
-    
-    if (is_object($eventDatesData) && $eventDatesData) {
-      $eventDates = json_decode($eventDatesData->body)->dates;
+    $eventDates = [];
+
+    // Load event dates from API or cache
+    $api = self::getSeminarDeskApi();
+    $data = self::getApiController()->getSeminarDeskData($api, '/eventDates');
+
+    if (is_object($data) && $data) {
+      // Extract dates from JSON response
+      $eventDates = json_decode($data->body)->dates;
       
-      //-- Get values in current language, with fallback to first language in set
+      // Get values in current language, with fallback to first language in set
       foreach ($eventDates as $key => &$eventDate) {
         self::prepareEventDate($eventDate);
       }
@@ -571,13 +571,13 @@ class SeminardeskHelperData
     }
     else {
       // Error handling
-      JLog::add(
-        'loadEventDates() failed! ($eventDatesData = ' . json_encode($eventDatesData) . ')', 
-        JLog::ERROR, 
+      Log::add(
+        'loadEventDates() failed! ($data = ' . json_encode($data) . ')', 
+        Log::ERROR, 
         'com_seminardesk'
       );
-      $eventDates = [];
     }
+
     return $eventDates;
   }
   
@@ -591,22 +591,22 @@ class SeminardeskHelperData
    */
   public static function loadEvent($eventId)
   {
-    $config = self::getConfiguration();
-    $api_uri = self::getSeminarDeskApiUri('/events/' . $eventId);
-    $eventData = self::getSeminarDeskData($api_uri);
+    $route = '/events/' . $eventId;
+    $api = self::getSeminarDeskApi();
+    $data = self::getApiController()->getSeminarDeskData($api, $route);
     
-    if (is_object($eventData) && $eventData) {
-      $event = json_decode($eventData->body);
+    if (is_object($data) && $data) {
+      $event = json_decode($data->body);
       //-- Get values in current language, with fallback to first language in set
       self::prepareEvent($event);
-      $event->apiUri = $api_uri;
+      $event->apiUri = self::getSeminarDeskApi() . $route;
       $event->langKey = self::getCurrentLanguageKey();
     }
     
     else {
       // Error handling
       JLog::add(
-        'loadEvent($id) failed! ($eventData = ' . json_encode($eventData) . ')', 
+        'loadEvent($id) failed! ($eventData = ' . json_encode($data) . ')', 
         JLog::ERROR, 
         'com_seminardesk'
       );
@@ -623,12 +623,11 @@ class SeminardeskHelperData
    */
   public static function loadFacilitators()
   {
-    $config = self::getConfiguration();
-    $api_uri = self::getSeminarDeskApiUri('/facilitators');
-    $facilitatorsData = self::getSeminarDeskData($api_uri);
+    $api = self::getSeminarDeskApi();
+    $data = self::getApiController()->getSeminarDeskData($api, '/facilitators');
     
-    if (is_object($facilitatorsData) && $facilitatorsData) {
-      $facilitators = json_decode($facilitatorsData->body)->data;
+    if (is_object($data) && $data) {
+      $facilitators = json_decode($data->body)->data;
       
       //-- Get values in current language, with fallback to first language in set
       foreach ($facilitators as $key => &$facilitator) {
@@ -667,20 +666,19 @@ class SeminardeskHelperData
    */
   public static function loadFacilitator($facilitatorId)
   {
-    $config = self::getConfiguration();
-    $api_uri = self::getSeminarDeskApiUri('/facilitators/' . $facilitatorId);
-    $facilitatorData = self::getSeminarDeskData($api_uri);
-    $facilitator = null;
+    $api = self::getSeminarDeskApi();
+    $data = self::getApiController()->getSeminarDeskData($api, '/facilitators/' . $facilitatorId);
     
-    if (is_object($facilitatorData) && $facilitatorData) {
-      $facilitator = json_decode($facilitatorData->body);
+    if (is_object($data) && $data) {
+      $facilitator = json_decode($data->body);
       
       //-- Load events of this facilitator
-      $api_uri = self::getSeminarDeskApiUri('/facilitators/' . $facilitatorId . '/eventDates');
-      $eventDatesData = self::getSeminarDeskData($api_uri);
+      $route = '/facilitators/' . $facilitatorId . '/eventDates';
+      $api = self::getSeminarDeskApi();
+      $data = self::getApiController()->getSeminarDeskData($api, $route);
 
-      if (is_object($eventDatesData) && $eventDatesData) {
-        $eventDatesBody = json_decode($eventDatesData->body);
+      if (is_object($data) && $data) {
+        $eventDatesBody = json_decode($data->body);
         if ($eventDatesBody && $eventDatesBody->data) {
           $facilitator->eventDates = $eventDatesBody->data;
 
@@ -704,7 +702,7 @@ class SeminardeskHelperData
     else {
       // Error handling
       JLog::add(
-        'loadFacilitator('.$id.') failed! ($facilitatorData = ' . json_encode($facilitatorData) . ')', 
+        'loadFacilitator('.$id.') failed! ($facilitatorData = ' . json_encode($data) . ')', 
         JLog::ERROR, 
         'com_seminardesk'
       );
@@ -752,8 +750,8 @@ class SeminardeskHelperData
       return !in_array($key, self::LABELS_TO_HIDE);
     }, ARRAY_FILTER_USE_KEY);
     $eventDate->categoriesList = htmlspecialchars(implode(', ', $eventDate->categories), ENT_QUOTES);
-//    $eventDate->categoryLinks = implode(', ', SeminardeskHelperData::getCategoryLinks($eventDate->categories));
-    $eventDate->statusLabel = SeminardeskHelperData::getStatusLabel($eventDate);
+//    $eventDate->categoryLinks = implode(', ', SeminardeskDataHelper::getCategoryLinks($eventDate->categories));
+    $eventDate->statusLabel = SeminardeskDataHelper::getStatusLabel($eventDate);
     // Add searchable text for filters
     $eventDate->searchableText = htmlspecialchars(strip_tags(implode(' ', [
         $eventDate->title,
@@ -789,11 +787,11 @@ class SeminardeskHelperData
     $eventDate->cssClasses = implode(' ', $classes);
 
     //-- Format date
-    $eventDate->dateFormatted = SeminardeskHelperData::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
+    $eventDate->dateFormatted = SeminardeskDataHelper::getDateFormatted($eventDate->beginDate, $eventDate->endDate);
 
     //-- URLs
-    $eventDate->detailsUrl = ($eventDate->detailpageAvailable)?SeminardeskHelperData::getEventUrl($eventDate):'';
-    $eventDate->bookingUrl = SeminardeskHelperData::getBookingUrl($eventDate->eventId, $eventDate->titleSlug, $eventDate->id);
+    $eventDate->detailsUrl = ($eventDate->detailpageAvailable)?SeminardeskDataHelper::getEventUrl($eventDate):'';
+    $eventDate->bookingUrl = SeminardeskDataHelper::getBookingUrl($eventDate->eventId, $eventDate->titleSlug, $eventDate->id);
   }
   
   /**
@@ -841,7 +839,7 @@ class SeminardeskHelperData
     $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices), '<h1><h2><h3><h4><p><br><b><hr><strong><a>', false);
     $event->infoBoardLodging = self::translate($event->infoBoardLodging);
     $event->infoMisc = self::translate($event->infoMisc);
-    $event->bookingUrl = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug);
+    $event->bookingUrl = SeminardeskDataHelper::getBookingUrl($event->id, $event->titleSlug);
     foreach($event->facilitators as $key => $facilitator) {
       self::prepareFacilitator($event->facilitators[$key]);
     }
@@ -858,7 +856,7 @@ class SeminardeskHelperData
       //-- Format date
       $date->beginDate = $date->beginDate / 1000;
       $date->endDate = $date->endDate / 1000;
-      $date->dateFormatted = SeminardeskHelperData::getDateFormatted($date->beginDate, $date->endDate);
+      $date->dateFormatted = SeminardeskDataHelper::getDateFormatted($date->beginDate, $date->endDate);
 
       //-- Prepare facilitator list, if not same as in event. Remove otherwise
       $date->facilitatorLinks = [];
@@ -883,8 +881,8 @@ class SeminardeskHelperData
 
       //-- Booking
       $date->isExternal = self::hasLabel($date, self::LABELS_EXTERNAL_ID);
-      $date->bookingUrl = SeminardeskHelperData::getBookingUrl($event->id, $event->titleSlug, $date->id);
-      $date->statusLabel = SeminardeskHelperData::getStatusLabel($date);
+      $date->bookingUrl = SeminardeskDataHelper::getBookingUrl($event->id, $event->titleSlug, $date->id);
+      $date->statusLabel = SeminardeskDataHelper::getStatusLabel($date);
       $event->isExternal = $event->isExternal || $date->isExternal;
       $date->isBookable = ($event->settings->registrationAvailable && $date->registrationAvailable && $date->status != "fully_booked" && $date->status != "canceled" && !$date->isPastEvent);
       $event->isBookable = $event->isBookable || $date->isBookable;
@@ -923,7 +921,7 @@ class SeminardeskHelperData
     //-- Fullname (title + name), translations and URLs
     $facilitator->fullName = trim(implode(' ', [$facilitator->title, $facilitator->name]));
     $facilitator->about = self::cleanupFormatting(self::translate($facilitator->about));
-    $facilitator->detailsUrl = SeminardeskHelperData::getFacilitatorUrl($facilitator);
+    $facilitator->detailsUrl = SeminardeskDataHelper::getFacilitatorUrl($facilitator);
     
     //-- Add css classes
     $classes = ['facilitator'];

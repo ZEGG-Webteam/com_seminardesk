@@ -19,7 +19,7 @@ use \Joomla\CMS\MVC\Model\BaseDatabaseModel;
  *
  * @since  1.6
  */
-class SeminardeskHelperSeminardesk
+class SeminardeskHelper
 {
   /**
 	 * Get an instance of the named model
