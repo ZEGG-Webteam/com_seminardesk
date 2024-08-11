@@ -26,7 +26,7 @@ $heading = $this->facilitator->heading ?? 'h2';
       </a>
     </<?= $heading ?>>
     <div class="facilitator-about">
-      <?= SeminardeskHelperData::cleanupHtml($this->facilitator->about, '<p><br>') ?>
+      <?= SeminardeskDataHelper::cleanupHtml($this->facilitator->about, '<p><br>') ?>
     </div>
   </div>
   <div class="facilitator-details">

@@ -17,7 +17,7 @@ use \Joomla\CMS\Layout\LayoutHelper;
 JHtml::_('jquery.framework');
 JHtml::_('behavior.modal'); // use with class="modal" and rel="{handler: 'iframe'}" in link
 
-$config = SeminardeskHelperData::getConfiguration();
+$config = SeminardeskDataHelper::getConfiguration();
 
 //-- Load CSS / JS
 $document  = Factory::getDocument();
@@ -41,7 +41,7 @@ usort($this->event->dates, function($a, $b) {
       <div class="header-picture"><img src="<?= $this->event->headerPictureUrl ?>"></div>
     <?php endif; ?>
     <h1 class="title">
-      <?= SeminardeskHelperData::replaceMissingFontChars($this->event->title); ?>
+      <?= SeminardeskDataHelper::replaceMissingFontChars($this->event->title); ?>
     </h1>
     <?php if ($this->event->subtitle) : ?>
       <h2 class="subtitle"><?= $this->event->subtitle; ?></h2>

@@ -10,7 +10,7 @@
 defined('_JEXEC') or die;
 
 //-- Matching current filter? => Hide event if no
-$matchingFilters = SeminardeskHelperData::matchingFilters($this->eventDate, $this->filters);
+$matchingFilters = SeminardeskDataHelper::matchingFilters($this->eventDate, $this->filters);
 ?>
 <div class="sd-event loading<?= (!$matchingFilters)?' hidden':'' ?>" 
      itemscope itemtype="https://schema.org/Event" 

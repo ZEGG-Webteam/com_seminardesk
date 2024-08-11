@@ -116,7 +116,7 @@ class SeminardeskModelFacilitators extends \Joomla\CMS\MVC\Model\ListModel
     // $items = parent::getItems();
     // If not yet loaded: Get facilitators from API
     if (!self::$facilitators) {
-      self::$facilitators = SeminardeskHelperData::loadFacilitators();
+      self::$facilitators = SeminardeskDataHelper::loadFacilitators();
     }
 		return self::$facilitators;
 	}

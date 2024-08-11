@@ -44,7 +44,7 @@ class SeminardeskModelFacilitator extends \Joomla\CMS\MVC\Model\ItemModel
 	public function getItem ($facilitatorId = null)
 	{
     if (!self::$facilitator) {
-      self::$facilitator = SeminardeskHelperData::loadFacilitator($facilitatorId);
+      self::$facilitator = SeminardeskDataHelper::loadFacilitator($facilitatorId);
     }
 		return self::$facilitator;
 	}

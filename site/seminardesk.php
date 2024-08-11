@@ -17,8 +17,8 @@ jimport('joomla.application.component.controller');
 
 JLoader::registerPrefix('Seminardesk', JPATH_COMPONENT);
 JLoader::register('SeminardeskController', JPATH_COMPONENT . '/controller.php');
-JLoader::register('SeminardeskHelperSeminardesk', JPATH_COMPONENT . '/helpers/seminardesk.php');
-JLoader::register('SeminardeskHelperData', JPATH_COMPONENT . '/helpers/data.php');
+JLoader::register('SeminardeskHelper', JPATH_COMPONENT . '/helpers/seminardesk.php');
+JLoader::register('SeminardeskDataHelper', JPATH_COMPONENT . '/helpers/data.php');
 
 // Execute the task.
 $controller = BaseController::getInstance('Seminardesk');

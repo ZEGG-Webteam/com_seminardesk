@@ -44,7 +44,7 @@ class SeminardeskViewFacilitator extends \Joomla\CMS\MVC\View\HtmlView
 //    $this->item   = $this->get('Item');
 
     // Get facilitator information
-    $this->facilitatorModel = SeminardeskHelperSeminardesk::getModel('Facilitator');
+    $this->facilitatorModel = SeminardeskHelper::getModel('Facilitator');
     $this->facilitator = $this->facilitatorModel->getItem($app->input->getCmd('id', '0'));
 
     if (!empty($this->facilitator))
