@@ -733,6 +733,15 @@ class SeminardeskDataHelper
     $eventDate->mergedSubtitle = ($eventDate->title != $eventDate->eventDateTitle)?$eventDate->eventDateTitle:'';
     $eventDate->mergedSubtitle .= (!$eventDate->mergedSubtitle && $eventDate->title != $eventDate->subtitle)?$eventDate->subtitle:'';
 //    $eventDate->mergedSubtitle .= (!$eventDate->mergedSubtitle && $eventDate->title != $eventDate->teaser)?$eventDate->teaser:'';
+
+    // Additional fields: Link to event website
+    $eventDate->website = '';
+    foreach ($eventDate->additionalFields as $item) {
+      if ($item->field->name == 'Event-Website') {
+        $eventDate->website = $item->value;
+      }
+    }
+
     // Add facilitators list
     $eventDate->facilitators = array_combine(
       array_column($eventDate->facilitators, 'id'), 
@@ -777,9 +786,10 @@ class SeminardeskDataHelper
     //-- Set event classes
     $classes = ['registration-available'];
     if ($eventDate->isFeatured)           { $classes[] = 'featured';         }
-    if (!$eventDate->detailpageAvailable)  { $classes[] = 'no-detail-page';  }
+    if (!$eventDate->detailpageAvailable) { $classes[] = 'no-detail-page';  }
 //    if ($eventDate->categoriesList)     { $classes[] = 'has-categories';   } // Hide categories in List for now
     if ($eventDate->facilitatorsList)     { $classes[] = 'has-facilitators'; }
+    if ($eventDate->website)              { $classes[] = 'has-event-website'; }
     if ($eventDate->isExternal)           { $classes[] = 'external-event';   } 
     if (!$eventDate->isExternal)          { $classes[] = 'zegg-event';       }
     if ($eventDate->isPastEvent)          { $classes[] = 'past-event';       }
