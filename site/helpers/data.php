@@ -739,6 +739,7 @@ class SeminardeskDataHelper
     foreach ($eventDate->additionalFields as $item) {
       if ($item->field->name == 'Event-Website') {
         $eventDate->website = $item->value;
+        break;
       }
     }
 
