@@ -813,6 +813,7 @@ class SeminardeskDataHelper
   public static function prepareEvent(&$event)
   {
     $config = self::getConfiguration();
+    $app = Factory::getApplication();
     
     //-- Translations
     $event->title = self::translate($event->title, true);
@@ -856,6 +857,7 @@ class SeminardeskDataHelper
     }
     //-- Prepare event dates
     $count_canceled = 0;
+    $event->onApplication = self::hasLabel($event, self::LABELS_ON_APPLICATION_ID);
     $event->isBookable = false;
     foreach($event->dates as $key => $date) {
       $date->title = self::translate($date->title);
@@ -895,7 +897,16 @@ class SeminardeskDataHelper
       $date->bookingUrl = SeminardeskDataHelper::getBookingUrl($event->id, $event->titleSlug, $date->id);
       $date->statusLabel = SeminardeskDataHelper::getStatusLabel($date);
       $event->isExternal = $event->isExternal || $date->isExternal;
-      $date->isBookable = ($event->settings->registrationAvailable && $date->registrationAvailable && $date->status != "fully_booked" && $date->status != "canceled" && !$date->isPastEvent);
+      $date->onApplication = $event->onApplication || self::hasLabel($date, self::LABELS_ON_APPLICATION_ID);
+      $date->isBookable = (
+        $event->settings->registrationAvailable 
+        && $date->registrationAvailable 
+        && $date->status != "fully_booked" 
+        && $date->status != "canceled" 
+        && !$date->isPastEvent
+        // For events and dates with "on application" status, only show booking button if url param "bookable" is set
+        && (!$date->onApplication || $app->input->exists('bookable'))
+      );
       $event->isBookable = $event->isBookable || $date->isBookable;
       if ($date->status == 'canceled') $count_canceled++;
     }
