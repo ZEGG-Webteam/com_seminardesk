@@ -733,6 +733,16 @@ class SeminardeskDataHelper
     $eventDate->mergedSubtitle = ($eventDate->title != $eventDate->eventDateTitle)?$eventDate->eventDateTitle:'';
     $eventDate->mergedSubtitle .= (!$eventDate->mergedSubtitle && $eventDate->title != $eventDate->subtitle)?$eventDate->subtitle:'';
 //    $eventDate->mergedSubtitle .= (!$eventDate->mergedSubtitle && $eventDate->title != $eventDate->teaser)?$eventDate->teaser:'';
+
+    // Additional fields: Link to event website
+    $eventDate->website = '';
+    foreach ($eventDate->additionalFields as $item) {
+      if ($item->field->name == 'Event-Website') {
+        $eventDate->website = $item->value;
+        break;
+      }
+    }
+
     // Add facilitators list
     $eventDate->facilitators = array_combine(
       array_column($eventDate->facilitators, 'id'), 
@@ -777,9 +787,10 @@ class SeminardeskDataHelper
     //-- Set event classes
     $classes = ['registration-available'];
     if ($eventDate->isFeatured)           { $classes[] = 'featured';         }
-    if (!$eventDate->detailpageAvailable)  { $classes[] = 'no-detail-page';  }
+    if (!$eventDate->detailpageAvailable) { $classes[] = 'no-detail-page';  }
 //    if ($eventDate->categoriesList)     { $classes[] = 'has-categories';   } // Hide categories in List for now
     if ($eventDate->facilitatorsList)     { $classes[] = 'has-facilitators'; }
+    if ($eventDate->website)              { $classes[] = 'has-event-website'; }
     if ($eventDate->isExternal)           { $classes[] = 'external-event';   } 
     if (!$eventDate->isExternal)          { $classes[] = 'zegg-event';       }
     if ($eventDate->isPastEvent)          { $classes[] = 'past-event';       }
@@ -802,6 +813,7 @@ class SeminardeskDataHelper
   public static function prepareEvent(&$event)
   {
     $config = self::getConfiguration();
+    $app = Factory::getApplication();
     
     //-- Translations
     $event->title = self::translate($event->title, true);
@@ -845,6 +857,7 @@ class SeminardeskDataHelper
     }
     //-- Prepare event dates
     $count_canceled = 0;
+    $event->onApplication = self::hasLabel($event, self::LABELS_ON_APPLICATION_ID);
     $event->isBookable = false;
     foreach($event->dates as $key => $date) {
       $date->title = self::translate($date->title);
@@ -884,7 +897,16 @@ class SeminardeskDataHelper
       $date->bookingUrl = SeminardeskDataHelper::getBookingUrl($event->id, $event->titleSlug, $date->id);
       $date->statusLabel = SeminardeskDataHelper::getStatusLabel($date);
       $event->isExternal = $event->isExternal || $date->isExternal;
-      $date->isBookable = ($event->settings->registrationAvailable && $date->registrationAvailable && $date->status != "fully_booked" && $date->status != "canceled" && !$date->isPastEvent);
+      $date->onApplication = $event->onApplication || self::hasLabel($date, self::LABELS_ON_APPLICATION_ID);
+      $date->isBookable = (
+        $event->settings->registrationAvailable 
+        && $date->registrationAvailable 
+        && $date->status != "fully_booked" 
+        && $date->status != "canceled" 
+        && !$date->isPastEvent
+        // For events and dates with "on application" status, only show booking button if url param "bookable" is set
+        && (!$date->onApplication || $app->input->exists('bookable'))
+      );
       $event->isBookable = $event->isBookable || $date->isBookable;
       if ($date->status == 'canceled') $count_canceled++;
     }
