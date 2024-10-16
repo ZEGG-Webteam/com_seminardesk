@@ -366,23 +366,31 @@ class SeminardeskDataHelper
    * translation has been found (e.g. fully_booked => Fully Booked), 
    * or empty, if no status is set. 
    * 
-   * @param stdClass $event - containing status field
+   * @param stdClass $eventDate - containing status field
    * @return string - Status label translated
    */
-  public static function getStatusLabel($event)
+  public static function getStatusLabel($eventDate)
   {
     $label = '';
-    if ($event->status) {
-      $key = "COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($event->status);
-      // Special case: If status "wait_list" is set manually and label "Anmeldestatus/Auf Bewerbung" is set.
+    if ($eventDate->status) {
+      // Set status label dynamically
+      $key = "COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($eventDate->status);
+      
+      // Special case: If status "wait_list" and label "Anmeldestatus/Auf Bewerbung" are set
       if ($key === "COM_SEMINARDESK_EVENTS_STATUS_WAIT_LIST" 
-          && self::hasLabel($event, self::LABELS_ON_APPLICATION_ID)) {
+          && self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_ID)) {
         $key = "COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION";
       }
+      
+      // Special case: If no detailpageAvailable is set
+      if (!$eventDate->detailpageAvailable) {
+        $key = "COM_SEMINARDESK_EVENTS_STATUS_DETAILS_LATER";
+      }
+
+      // Translate status. If no translation found, use status as label
       $label = JText::_($key);
-      // No translation found? Use status as label
       if ($label == $key) {
-        $label = ucwords($event->status, "_");
+        $label = ucwords($eventDate->status, "_");
       }
     }
     return $label;
