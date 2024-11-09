@@ -376,14 +376,16 @@ class SeminardeskDataHelper
       // Set status label dynamically
       $key = "COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($eventDate->status);
       
-      // Special case: If status "wait_list" and label "Anmeldestatus/Auf Bewerbung" are set
-      if ($key === "COM_SEMINARDESK_EVENTS_STATUS_WAIT_LIST" 
-          && self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_ID)) {
+      // Special case: If label "Anmeldestatus/Auf Bewerbung" are set
+      if (self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_ID)) {
         $key = "COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION";
       }
       
-      // Special case: If no detailpageAvailable is set
-      if (!$eventDate->detailpageAvailable) {
+      // Special case: If detailpageAvailable is set to false
+      // Note: the attribute detailpageAvailable only exists in the 
+      // API response from https://zegg.seminardesk.de/api/eventDates/
+      // but not in the API response for a single event oder date. 
+      if (property_exists($eventDate, 'detailpageAvailable') && !$eventDate->detailpageAvailable) {
         $key = "COM_SEMINARDESK_EVENTS_STATUS_DETAILS_LATER";
       }
 
@@ -735,7 +737,7 @@ class SeminardeskDataHelper
     $eventDate->eventDateTitle = self::translate($eventDate->eventDateTitle, true);
     $eventDate->teaser = self::translate($eventDate->teaser??$eventDate->eventInfo->teaser);
     $eventDate->teaserPictureUrl = self::translate($eventDate->teaserPictureUrl??$eventDate->eventInfo->teaserPictureUrl);
-    $eventDate->detailpageAvailable = $eventDate->detailpageAvailable??$eventDate->eventInfo->detailpageAvailable;
+    $eventDate->detailpageAvailable = $eventDate->detailpageAvailable??$eventDate->eventInfo->detailpageAvailable??true;
 //    $eventDate->description = self::translate($eventDate->eventInfo->description); // See below: Adding to html response slows down page loading
     // Set 2nd title / subtitle to eventDateTitle, subtitile or teaser, if different from title
     $eventDate->mergedSubtitle = ($eventDate->title != $eventDate->eventDateTitle)?$eventDate->eventDateTitle:'';
