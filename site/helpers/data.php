@@ -156,9 +156,11 @@ class SeminardeskDataHelper
     $text = str_replace('<x', '<img', preg_replace('/(<[^x>]+) style=".*?"/i', '$1', str_replace('<img', '<x', $text)));
     // Remove font tags
     $text = preg_replace(["/<font.*?>/im", "/<\/font>/im"], "", $text);
+    // Replace <pre> Tags
+    $text = preg_replace(["/<pre.*?>/im", "/<\/pre>/im"], ["<div>", "</div>"], $text);
     return self::replaceHR(str_replace(['&nbsp;'], [' '], $text));
   }
-
+-
   /**
    * Get short language code in UC letters, e.g. 'DE' or 'EN'
    * 
@@ -566,6 +568,9 @@ class SeminardeskDataHelper
     // Load event dates from API or cache
     $api = self::getSeminarDeskApi();
     $data = self::getApiController()->getSeminarDeskData($api, '/eventDates');
+    //Check for 403 error...
+    //echo 'DEBUGGING: <br><br>Data from API Endpoint <strong>' . $api . '/eventDates</strong>: <br><br><textarea cols="80" rows="10">' . json_encode($data) . '</textarea><br>';
+    //die();
 
     if (is_object($data) && $data) {
       // Extract dates from JSON response
