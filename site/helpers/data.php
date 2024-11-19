@@ -143,6 +143,27 @@ class SeminardeskDataHelper
   }
 
   /**
+   * Remove all style attributes
+   * @param string $text
+   * @return string - text without style attributes
+   */
+  public static function cleanupStyles($text) {
+    // regex hack: (<[^x>]+) is for all tags except "img" => images should keep their styles. 
+    //   x replaces img because regex pattern for <img too complicated, and regex (<[^i>]+) is catching also <li> etc.
+    return str_replace('<x', '<img', preg_replace('/(<[^x>]+) style=".*?"/i', '$1', str_replace('<img', '<x', $text)));
+  }
+  /**
+   * Remove all given tags from a text
+   */
+  public static function cleanupTags($text, $taglist = []) {
+    if (is_array($taglist)) {
+      foreach ($taglist as $tag) {
+        $text = preg_replace(["/<$tag.*?>/im", "/<\/$tag>/im"], "", $text);
+      }
+    }
+    return $text;
+  }
+  /**
    * Remove all font tags and style attributes 
    * and replace multiple (>= 3) unterscores and dashes by <hr> a tag. (as in cleanupHtml()
    * 
@@ -150,17 +171,13 @@ class SeminardeskDataHelper
    * @return string
    */
   public static function cleanupFormatting($text) {
-    // Remove all style attributes
-    // regex hack: (<[^x>]+) is for all tags except "img" => images should keep their styles. 
-    //   x replaces img because regex pattern for <img too complicated, and regex (<[^i>]+) is catching also <li> etc.
-    $text = str_replace('<x', '<img', preg_replace('/(<[^x>]+) style=".*?"/i', '$1', str_replace('<img', '<x', $text)));
-    // Remove font tags
-    $text = preg_replace(["/<font.*?>/im", "/<\/font>/im"], "", $text);
-    // Replace <pre> Tags
-    $text = preg_replace(["/<pre.*?>/im", "/<\/pre>/im"], ["<div>", "</div>"], $text);
-    return self::replaceHR(str_replace(['&nbsp;'], [' '], $text));
+    // Replace nbsp because our font does not support it. 
+    $text = self::replaceHR(str_replace(['&nbsp;'], [' '], $text));
+    $text = self::cleanupStyles($text);
+    $text = self::cleanupTags($text, ["font", "pre"]);
+    return $text;
   }
--
+
   /**
    * Get short language code in UC letters, e.g. 'DE' or 'EN'
    * 
