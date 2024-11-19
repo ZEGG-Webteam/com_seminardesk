@@ -143,6 +143,27 @@ class SeminardeskDataHelper
   }
 
   /**
+   * Remove all style attributes
+   * @param string $text
+   * @return string - text without style attributes
+   */
+  public static function cleanupStyles($text) {
+    // regex hack: (<[^x>]+) is for all tags except "img" => images should keep their styles. 
+    //   x replaces img because regex pattern for <img too complicated, and regex (<[^i>]+) is catching also <li> etc.
+    return str_replace('<x', '<img', preg_replace('/(<[^x>]+) style=".*?"/i', '$1', str_replace('<img', '<x', $text)));
+  }
+  /**
+   * Remove all given tags from a text
+   */
+  public static function cleanupTags($text, $taglist = []) {
+    if (is_array($taglist)) {
+      foreach ($taglist as $tag) {
+        $text = preg_replace(["/<$tag.*?>/im", "/<\/$tag>/im"], "", $text);
+      }
+    }
+    return $text;
+  }
+  /**
    * Remove all font tags and style attributes 
    * and replace multiple (>= 3) unterscores and dashes by <hr> a tag. (as in cleanupHtml()
    * 
@@ -150,13 +171,11 @@ class SeminardeskDataHelper
    * @return string
    */
   public static function cleanupFormatting($text) {
-    // Remove all style attributes
-    // regex hack: (<[^x>]+) is for all tags except "img" => images should keep their styles. 
-    //   x replaces img because regex pattern for <img too complicated, and regex (<[^i>]+) is catching also <li> etc.
-    $text = str_replace('<x', '<img', preg_replace('/(<[^x>]+) style=".*?"/i', '$1', str_replace('<img', '<x', $text)));
-    // Remove font tags
-    $text = preg_replace(["/<font.*?>/im", "/<\/font>/im"], "", $text);
-    return self::replaceHR(str_replace(['&nbsp;'], [' '], $text));
+    // Replace nbsp because our font does not support it. 
+    $text = self::replaceHR(str_replace(['&nbsp;'], [' '], $text));
+    $text = self::cleanupStyles($text);
+    $text = self::cleanupTags($text, ["font", "pre"]);
+    return $text;
   }
 
   /**
@@ -366,23 +385,33 @@ class SeminardeskDataHelper
    * translation has been found (e.g. fully_booked => Fully Booked), 
    * or empty, if no status is set. 
    * 
-   * @param stdClass $event - containing status field
+   * @param stdClass $eventDate - containing status field
    * @return string - Status label translated
    */
-  public static function getStatusLabel($event)
+  public static function getStatusLabel($eventDate)
   {
     $label = '';
-    if ($event->status) {
-      $key = "COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($event->status);
-      // Special case: If status "wait_list" is set manually and label "Anmeldestatus/Auf Bewerbung" is set.
-      if ($key === "COM_SEMINARDESK_EVENTS_STATUS_WAIT_LIST" 
-          && self::hasLabel($event, self::LABELS_ON_APPLICATION_ID)) {
+    if ($eventDate->status) {
+      // Set status label dynamically
+      $key = "COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($eventDate->status);
+      
+      // Special case: If label "Anmeldestatus/Auf Bewerbung" are set
+      if (self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_ID)) {
         $key = "COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION";
       }
+      
+      // Special case: If detailpageAvailable is set to false
+      // Note: the attribute detailpageAvailable only exists in the 
+      // API response from https://zegg.seminardesk.de/api/eventDates/
+      // but not in the API response for a single event oder date. 
+      if (property_exists($eventDate, 'detailpageAvailable') && !$eventDate->detailpageAvailable) {
+        $key = "COM_SEMINARDESK_EVENTS_STATUS_DETAILS_LATER";
+      }
+
+      // Translate status. If no translation found, use status as label
       $label = JText::_($key);
-      // No translation found? Use status as label
       if ($label == $key) {
-        $label = ucwords($event->status, "_");
+        $label = ucwords($eventDate->status, "_");
       }
     }
     return $label;
@@ -556,6 +585,9 @@ class SeminardeskDataHelper
     // Load event dates from API or cache
     $api = self::getSeminarDeskApi();
     $data = self::getApiController()->getSeminarDeskData($api, '/eventDates');
+    //Check for 403 error...
+    //echo 'DEBUGGING: <br><br>Data from API Endpoint <strong>' . $api . '/eventDates</strong>: <br><br><textarea cols="80" rows="10">' . json_encode($data) . '</textarea><br>';
+    //die();
 
     if (is_object($data) && $data) {
       // Extract dates from JSON response
@@ -727,7 +759,7 @@ class SeminardeskDataHelper
     $eventDate->eventDateTitle = self::translate($eventDate->eventDateTitle, true);
     $eventDate->teaser = self::translate($eventDate->teaser??$eventDate->eventInfo->teaser);
     $eventDate->teaserPictureUrl = self::translate($eventDate->teaserPictureUrl??$eventDate->eventInfo->teaserPictureUrl);
-    $eventDate->detailpageAvailable = $eventDate->detailpageAvailable??$eventDate->eventInfo->detailpageAvailable;
+    $eventDate->detailpageAvailable = $eventDate->detailpageAvailable??$eventDate->eventInfo->detailpageAvailable??true;
 //    $eventDate->description = self::translate($eventDate->eventInfo->description); // See below: Adding to html response slows down page loading
     // Set 2nd title / subtitle to eventDateTitle, subtitile or teaser, if different from title
     $eventDate->mergedSubtitle = ($eventDate->title != $eventDate->eventDateTitle)?$eventDate->eventDateTitle:'';
