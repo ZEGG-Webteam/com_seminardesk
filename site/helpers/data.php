@@ -155,7 +155,7 @@ class SeminardeskDataHelper
   /**
    * Remove all given tags from a text
    */
-  public static function cleanupTags($text, $taglist = []) {
+  public static function cleanupTags($text, $taglist) {
     if (is_array($taglist)) {
       foreach ($taglist as $tag) {
         $text = preg_replace(["/<$tag.*?>/im", "/<\/$tag>/im"], "", $text);
@@ -760,7 +760,7 @@ class SeminardeskDataHelper
     $eventDate->teaser = self::translate($eventDate->teaser??$eventDate->eventInfo->teaser);
     $eventDate->teaserPictureUrl = self::translate($eventDate->teaserPictureUrl??$eventDate->eventInfo->teaserPictureUrl);
     $eventDate->detailpageAvailable = $eventDate->detailpageAvailable??$eventDate->eventInfo->detailpageAvailable??true;
-//    $eventDate->description = self::translate($eventDate->eventInfo->description); // See below: Adding to html response slows down page loading
+    $eventDate->description = self::translate($eventDate->eventInfo->description); // See below: Adding to html response slows down page loading
     // Set 2nd title / subtitle to eventDateTitle, subtitile or teaser, if different from title
     $eventDate->mergedSubtitle = ($eventDate->title != $eventDate->eventDateTitle)?$eventDate->eventDateTitle:'';
     $eventDate->mergedSubtitle .= (!$eventDate->mergedSubtitle && $eventDate->title != $eventDate->subtitle)?$eventDate->subtitle:'';
@@ -800,9 +800,10 @@ class SeminardeskDataHelper
         $eventDate->subtitle,
         $eventDate->eventDateTitle,
         $eventDate->teaser,
-//        $eventDate->description, // Slows down page loading (+150kB / +0.5s)
+        $eventDate->description, // Slows down page loading (+150kB / +0.5s)
         $eventDate->facilitatorsList,
-        implode(' ', array_keys($eventDate->categories)),
+        //implode(' ', array_keys($eventDate->categories)),
+        //implode(' ', $eventDate->categories),
         $eventDate->labelsList,
     ])));
     
@@ -891,6 +892,10 @@ class SeminardeskDataHelper
     $count_canceled = 0;
     $event->onApplication = self::hasLabel($event, self::LABELS_ON_APPLICATION_ID);
     $event->isBookable = false;
+    // Sort dates by beginDate
+    usort($event->dates, function($a, $b) {
+      return $a->beginDate - $b->beginDate;
+    });
     foreach($event->dates as $key => $date) {
       $date->title = self::translate($date->title);
       $date->labels = array_combine(
@@ -945,6 +950,7 @@ class SeminardeskDataHelper
     
     //-- Get list of dates, limit to 5
     $event->datesList = array_column($event->dates, 'dateFormatted');
+
     $count = count($event->datesList);
     if ($count > 5) {
       $event->datesList = array_slice($event->datesList, 0, 5);
