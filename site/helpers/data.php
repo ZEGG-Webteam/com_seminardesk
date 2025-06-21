@@ -28,6 +28,7 @@ class SeminardeskDataHelper
   const LABELS_FESTIVALS_ID = 12;
   const LABELS_EXTERNAL_ID = 55;
   const LABELS_ON_APPLICATION_ID = 69;
+  const LABELS_WITHOUT_REGISTRATION_ID = 81;
   const LABELS_TO_HIDE = [
       1, 2, 3, 53, 54, // Languages
 //      self::LABELS_FESTIVALS_ID, 
@@ -406,6 +407,11 @@ class SeminardeskDataHelper
       // but not in the API response for a single event oder date. 
       if (property_exists($eventDate, 'detailpageAvailable') && !$eventDate->detailpageAvailable) {
         $key = "COM_SEMINARDESK_EVENTS_STATUS_DETAILS_LATER";
+      }
+
+      // Spesial case: If label "Ohne Anmeldung" is set
+      if (self::hasLabel($eventDate, self::LABELS_WITHOUT_REGISTRATION_ID)) {
+        $key = "COM_SEMINARDESK_EVENTS_STATUS_WITHOUT_REGISTRATION";
       }
 
       // Translate status. If no translation found, use status as label
