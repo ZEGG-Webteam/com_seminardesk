@@ -1,6 +1,7 @@
 <?php
 /**
  * Render the event list as a HTML table for newsletters (with AcyMailing 5 on newletter.zegg.de)
+ * Usage: Call /de/veranstaltungen/programm?layout=newsletter and follow instructions.
  * 
  * @package     SeminarDesk
  * @subpackage  com_seminardesk
