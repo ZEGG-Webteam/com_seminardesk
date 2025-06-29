@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @version    CVS: 1.0.0
- * @package    Com_Seminardesk
+ * @package    Seminardesk
+ * @subpackage com_seminardesk
  * @author     Benno Flory <benno.flory@gmx.ch>
  * @copyright  2022 Benno Flory
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
