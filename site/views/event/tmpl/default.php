@@ -50,12 +50,17 @@ usort($this->event->dates, function($a, $b) {
     <div class="dates-list"><?= implode(' / ', $this->event->datesList); ?></div>
 
     <?php if ($this->event->isBookable) : ?>
-    <div class="registration">
-      <a href="<?= $this->event->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}"
-         <?= ($this->event->isExternal)?(' title="' . JText::_("COM_SEMINARDESK_EVENT_REGISTRATION_A_M_FULL") . '"'):'' ?>>
-        <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($this->event->isExternal?"_A_M":"")); ?>
-      </a>
-    </div>
+      <div class="registration">
+        <a href="<?= $this->event->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}"
+          <?= ($this->event->isExternal)?(' title="' . JText::_("COM_SEMINARDESK_EVENT_REGISTRATION_A_M_FULL") . '"'):'' ?>>
+          <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($this->event->isExternal?"_A_M":"")); ?>
+        </a>
+      </div>
+    <?php elseif ($this->event->onApplication) : ?>
+      <!-- Special case: If label "Anmeldestatus/Auf Bewerbung" are set -->
+      <div class="registration">
+        <span class="btn btn-inactive"><?= JText::_("COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION") ?></span>
+      </div>
     <?php endif; ?>
   </div>
 
@@ -83,7 +88,7 @@ usort($this->event->dates, function($a, $b) {
       <div class="dates">
         <?php $showRegNotice = !$this->event->settings->registrationAvailable ?>
         <?php foreach($this->event->dates as $date) : ?>
-          <div class="date<?= $date->facilitatorLinks?' has-facilitators':'' ?>">
+          <div class="date<?= ($date->facilitatorLinks?' has-facilitators':'') . (time() > $date->endDate?' past-event':'') ?>">
             <div class="date-date"><?= $date->dateFormatted ?></div>
             <div class="date-title"><?= $date->title ?></div>
             <div class="date-prices">
@@ -132,11 +137,14 @@ usort($this->event->dates, function($a, $b) {
             <div class="date-registration">
             <?php if ($date->isBookable) : ?>
               <a href="<?= $date->bookingUrl ?>" class="btn modal" rel="{handler: 'iframe'}"
-                 <?= ($this->event->isExternal)?(' title="' . JText::_("COM_SEMINARDESK_EVENT_REGISTRATION_A_M_FULL") . '"'):'' ?>>
+                <?= ($this->event->isExternal)?(' title="' . JText::_("COM_SEMINARDESK_EVENT_REGISTRATION_A_M_FULL") . '"'):'' ?>>
                 <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($date->isExternal?"_A_M":"")); ?>
               </a>
+            <?php elseif ($this->event->onApplication) : ?>
+              <!-- Special case: If label "Anmeldestatus/Auf Bewerbung" are set -->
+              <span class="btn btn-inactive"><?= JText::_("COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION") ?></span>
             <?php else : ?>
-              *) <?php $showRegNotice = true; ?>
+              <span class="notice">*) <?php $showRegNotice = true; ?></span>
             <?php endif; ?>
             </div>
           </div>
