@@ -28,9 +28,11 @@ class SeminardeskDataHelper
   const LABELS_FESTIVALS_ID = 12;
   const LABELS_EXTERNAL_ID = 55;
   const LABELS_ON_APPLICATION_ID = 69;
+  const LABELS_ON_APPLICATION_WITH_REGISTRATION_ID = 82;
   const LABELS_WITHOUT_REGISTRATION_ID = 81;
   const LABELS_TO_HIDE = [
       1, 2, 3, 53, 54, // Languages
+      self::LABELS_ON_APPLICATION_ID,
 //      self::LABELS_FESTIVALS_ID, 
       self::LABELS_EXTERNAL_ID, 
   ];
@@ -395,12 +397,7 @@ class SeminardeskDataHelper
     if ($eventDate->status) {
       // Set status label dynamically
       $key = "COM_SEMINARDESK_EVENTS_STATUS_" . strtoupper($eventDate->status);
-      
-      // Special case: If label "Anmeldestatus/Auf Bewerbung" are set
-      if (self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_ID)) {
-        $key = "COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION";
-      }
-      
+
       // Special case: If detailpageAvailable is set to false
       // Note: the attribute detailpageAvailable only exists in the 
       // API response from https://zegg.seminardesk.de/api/eventDates/
@@ -409,9 +406,20 @@ class SeminardeskDataHelper
         $key = "COM_SEMINARDESK_EVENTS_STATUS_DETAILS_LATER";
       }
 
-      // Spesial case: If label "Ohne Anmeldung" is set
+      // Special case: If label "Ohne Anmeldung" is set
       if (self::hasLabel($eventDate, self::LABELS_WITHOUT_REGISTRATION_ID)) {
         $key = "COM_SEMINARDESK_EVENTS_STATUS_WITHOUT_REGISTRATION";
+      }
+
+      // Special case: If label "Auf Bewerbung mit Anmeldung" is set, 
+      // then don't display "Warteliste" but "Plätze frei"
+      if (self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID)) {
+        $key = "COM_SEMINARDESK_EVENTS_STATUS_AVAILABLE";
+      }
+
+      // Label for past events
+      if (time() > $eventDate->endDate) {
+        $key = "COM_SEMINARDESK_EVENTS_STATUS_PAST_EVENT";
       }
 
       // Translate status. If no translation found, use status as label
@@ -1000,9 +1008,11 @@ class SeminardeskDataHelper
         return strcmp($a->beginDate, $b->beginDate);
     });
     
-    //-- Separate past and future events. Past events only from 1 year ago and in reverse order
+    //-- Separate past and future events. Past events only from 1 year ago, not cancelled and in reverse order
     $facilitator->pastEventDates = array_filter($facilitator->eventDates, function($eventDate) {
-      return $eventDate->endDate < time() && (intval(date("Y")) - intval(date("Y", $eventDate->endDate)) <= 1);
+      return $eventDate->endDate < time() 
+        && $eventDate->status != 'canceled'
+        && (intval(date("Y")) - intval(date("Y", $eventDate->endDate)) <= 1);
     });
     $facilitator->pastEventDates = array_reverse($facilitator->pastEventDates);
     $facilitator->eventDates = array_filter($facilitator->eventDates, function($eventDate) {
