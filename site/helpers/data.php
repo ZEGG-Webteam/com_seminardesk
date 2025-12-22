@@ -411,7 +411,7 @@ class SeminardeskDataHelper
         $key = "COM_SEMINARDESK_EVENTS_STATUS_WITHOUT_REGISTRATION";
       }
 
-      // Special case: If label "Auf Bewerbung mit Anmeldung" is set, 
+      // Special case: If label "Plätze frei trotz Warteliste" is set, 
       // then don't display "Warteliste" but "Plätze frei"
       if (self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID)) {
         $key = "COM_SEMINARDESK_EVENTS_STATUS_AVAILABLE";
@@ -437,7 +437,8 @@ class SeminardeskDataHelper
    * @param object $date - A single date of an event - event->date
    * @return array - List of all lodging prices, except for $config['lodging_to_exclude']
    */
-  public function getLodgingPrices($date) {
+  public function getLodgingPrices($date)
+  {
     $config = self::getConfiguration();
     $lodgingPrices = [];
     foreach ($date->availableLodging as $lodging) {
@@ -895,7 +896,7 @@ class SeminardeskDataHelper
     $event->description = self::cleanupFormatting($event->description);
     
     $event->headerPictureUrl = self::translate($event->headerPictureUrl);
-    $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices), '<h1><h2><h3><h4><p><br><b><hr><strong><a>', false);
+    $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices), '<h1><h2><h3><h4><p><br><b><hr><strong><a><ul><ol><li>', false);
     $event->infoBoardLodging = self::translate($event->infoBoardLodging);
     $event->infoMisc = self::translate($event->infoMisc);
     $event->bookingUrl = SeminardeskDataHelper::getBookingUrl($event->id, $event->titleSlug);
@@ -905,6 +906,7 @@ class SeminardeskDataHelper
     //-- Prepare event dates
     $count_canceled = 0;
     $event->onApplication = self::hasLabel($event, self::LABELS_ON_APPLICATION_ID);
+    $event->availableDespiteWaitlist = self::hasLabel($event, self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID);
     $event->isBookable = false;
     // Sort dates by beginDate
     usort($event->dates, function($a, $b) {
@@ -945,10 +947,12 @@ class SeminardeskDataHelper
 
       //-- Booking
       $date->isExternal = self::hasLabel($date, self::LABELS_EXTERNAL_ID);
+      $event->isExternal = $event->isExternal || $date->isExternal;
       $date->bookingUrl = SeminardeskDataHelper::getBookingUrl($event->id, $event->titleSlug, $date->id);
       $date->statusLabel = SeminardeskDataHelper::getStatusLabel($date);
-      $event->isExternal = $event->isExternal || $date->isExternal;
       $date->onApplication = $event->onApplication || self::hasLabel($date, self::LABELS_ON_APPLICATION_ID);
+      $date->availableDespiteWaitlist = self::hasLabel($date, self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID);
+      $event->availableDespiteWaitlist = $event->availableDespiteWaitlist || $date->availableDespiteWaitlist;
       $date->isBookable = (
         $event->settings->registrationAvailable 
         && $date->registrationAvailable 

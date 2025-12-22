@@ -57,9 +57,9 @@ usort($this->event->dates, function($a, $b) {
         </a>
       </div>
     <?php elseif ($this->event->onApplication) : ?>
-      <!-- Special case: If label "Anmeldestatus/Auf Bewerbung" are set -->
+      <!-- Special case: If label "Anmeldestatus/Auf Bewerbung" is set -->
       <div class="registration">
-        <span class="btn btn-inactive"><?= JText::_("COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION") ?></span>
+        <a class="btn" href="#bewerbung"><?= JText::_("COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION") ?></a>
       </div>
     <?php endif; ?>
   </div>
@@ -141,8 +141,8 @@ usort($this->event->dates, function($a, $b) {
                 <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($date->isExternal?"_A_M":"")); ?>
               </a>
             <?php elseif ($this->event->onApplication) : ?>
-              <!-- Special case: If label "Anmeldestatus/Auf Bewerbung" are set -->
-              <span class="btn btn-inactive"><?= JText::_("COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION") ?></span>
+              <!-- Special case: If label "Anmeldestatus/Auf Bewerbung" is set -->
+              <a class="btn" href="#bewerbung"><?= JText::_("COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION") ?></a>
             <?php else : ?>
               <span class="notice">*) <?php $showRegNotice = true; ?></span>
             <?php endif; ?>
