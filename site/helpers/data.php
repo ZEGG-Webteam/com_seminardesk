@@ -35,6 +35,7 @@ class SeminardeskDataHelper
       self::LABELS_ON_APPLICATION_ID,
 //      self::LABELS_FESTIVALS_ID, 
       self::LABELS_EXTERNAL_ID, 
+      self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID, 
   ];
   const FACILITATORS_TO_HIDE = [
       '& Team',
@@ -429,6 +430,18 @@ class SeminardeskDataHelper
       }
     }
     return $label;
+  }
+
+  public function getBookingLabel($eventDate)
+  {
+    if ($eventDate->isBookable) {
+      if (self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID)) {
+        return JText::_("COM_SEMINARDESK_EVENT_...");
+      } else {
+        return JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($eventDate->isExternal?"_A_M":""));
+      }
+    }
+    return "*)";
   }
   
   /**
