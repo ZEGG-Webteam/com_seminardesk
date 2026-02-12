@@ -30,6 +30,11 @@ class SeminardeskDataHelper
   const LABELS_ON_APPLICATION_ID = 69;
   const LABELS_ON_APPLICATION_WITH_REGISTRATION_ID = 82;
   const LABELS_WITHOUT_REGISTRATION_ID = 81;
+  const LABELS_GERMAN_ID = 1;
+  const LABELS_GERMAN_POSSIBLE_ID = 54;
+  const LABELS_ENGLISH_ID = 2;
+  const LABELS_ENGLISH_POSSIBLE_ID = 53;
+  const LABELS_SPANISH_ID = 3;
   const LABELS_TO_HIDE = [
       1, 2, 3, 53, 54, // Languages
       self::LABELS_ON_APPLICATION_ID,
@@ -193,7 +198,37 @@ class SeminardeskDataHelper
     $languages = LanguageHelper::getLanguages('lang_code');
     return strtoupper($languages[$currentLanguage]->sef);
   }
-  
+
+  /**
+   * Get eventDate languages based on labels
+   * 
+   * @param stdClass $eventDate - must contain labels array with id field
+   * @return array - array of language codes ('en', 'es', 'de', ...)
+   */
+  public static function getEventLanguages($eventDate)
+  {
+    $languages = [];
+    // English?
+    if (self::hasLabel($eventDate, self::LABELS_ENGLISH_ID) || self::hasLabel($eventDate, self::LABELS_ENGLISH_POSSIBLE_ID)) {
+      $languages[] = 'en';
+    }
+    // Spanish?
+    if (self::hasLabel($eventDate, self::LABELS_SPANISH_ID)) {
+      $languages[] = 'es';
+    }
+    // German? If not only English or Spanish, we assume a German speaking event, 
+    // even if no German label is set, because many events do not have language labels at all.
+    if (
+      (!self::hasLabel($eventDate, self::LABELS_ENGLISH_ID) && 
+      !self::hasLabel($eventDate, self::LABELS_SPANISH_ID)) || 
+      (self::hasLabel($eventDate, self::LABELS_GERMAN_ID) || 
+      self::hasLabel($eventDate, self::LABELS_GERMAN_POSSIBLE_ID))
+    ) {
+      $languages[] = 'de';
+    }
+    return $languages;
+  }
+
   /**
    * Get localized value from languages provided by SeminarDesk
    * 
@@ -488,9 +523,11 @@ class SeminardeskDataHelper
   }
   
   /**
+   * Check if given eventDate matches the filters.
+   * Used in site\views\events\tmpl\default_event.php to preselect visibility in frontend.
    * 
    * @param stdClass $eventDate
-   * @param array $filters - containing keys 'date', 'cat', 'org' and/or 'term'
+   * @param array $filters - containing keys 'date', 'cat', 'org', 'term' and/or 'lang'
    * @return boolean - true if eventDate matches all filters, false if not.
    */
   public static function matchingFilters($eventDate, $filters) {
@@ -523,13 +560,18 @@ class SeminardeskDataHelper
       // Check organisator filter
       (
         !in_array($filters['org'], ['zegg', 'external']) ||
-        ($filters['org'] == 'zegg' && !$eventDate->isExternal) ||
-        ($filters['org'] == 'external' && $eventDate->isExternal)
+        ($filters['org'] === 'zegg' && !$eventDate->isExternal) ||
+        ($filters['org'] === 'external' && $eventDate->isExternal)
       )
       &&
       // Check search term filter (full text search)
       (
         !$filters['term'] || count($terms_matching) == count($terms)
+      )
+      &&
+      // Check language filter
+      (
+        !$filters['lang'] || array_search(strtolower($filters['lang']), $eventDate->languages) !== false
       );
   }
 
@@ -821,6 +863,10 @@ class SeminardeskDataHelper
     }, ARRAY_FILTER_USE_KEY);
     $eventDate->categoriesList = htmlspecialchars(implode(', ', $eventDate->categories), ENT_QUOTES);
 //    $eventDate->categoryLinks = implode(', ', SeminardeskDataHelper::getCategoryLinks($eventDate->categories));
+    // Add languages
+    $eventDate->languages = self::getEventLanguages($eventDate);
+    $eventDate->languageList = implode(',', $eventDate->languages);
+    // Add status label
     $eventDate->statusLabel = SeminardeskDataHelper::getStatusLabel($eventDate);
     // Add searchable text for filters
     $eventDate->searchableText = htmlspecialchars(strip_tags(implode(' ', [

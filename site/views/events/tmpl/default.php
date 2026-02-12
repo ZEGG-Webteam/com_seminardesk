@@ -27,6 +27,7 @@ $filters = [
   'cat'  => $app->input->get('cat',  0,  'integer'), 
   'org'  => $app->input->get('org',  '', 'string'), 
   'term' => $app->input->get('term', '', 'string'), 
+  'lang' => $app->input->get('lang', '', 'string'), 
 ];
 ?>
 
@@ -40,8 +41,14 @@ $filters = [
   
   <div class="sd-filter">
     <form class="sd-filter-form">
-      <input type="date" name="from" id="sd-filter-date-from" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_DATE_PLACEHOLDER");?>" value="<?= $filters['date'] ?>">
       <input type="text" name="term" id="sd-filter-search-term" value="" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_TERM_PLACEHOLDER");?>">
+      <input type="date" name="from" id="sd-filter-date-from" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_DATE_PLACEHOLDER");?>" value="<?= $filters['date'] ?>">
+      <select name="lang" id="sd-filter-lang">
+        <option value="all"<?= (!$filters['lang'] || $filters['lang'] == 'all')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_LANGUAGE_ALL");?></option>
+        <option value="de"<?= ($filters['lang'] == 'de')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_LANGUAGE_GERMAN");?></option>
+        <option value="en"<?= ($filters['lang'] == 'en')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_LANGUAGE_ENGLISH");?></option>
+        <!--<option value="es"<?= ($filters['lang'] == 'es')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_LANGUAGE_SPANISH");?></option>-->
+      </select>
       <select name="category" id="sd-filter-category">
         <option value="0"><?= JText::_("COM_SEMINARDESK_FILTER_CATEGORY_ALL") ?></option>
         <?php foreach($this->events->getAllEventCategories() as $key => $category) : ?>
