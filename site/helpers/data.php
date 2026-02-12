@@ -921,6 +921,7 @@ class SeminardeskDataHelper
     $event->onApplication = self::hasLabel($event, self::LABELS_ON_APPLICATION_ID);
     $event->availableDespiteWaitlist = self::hasLabel($event, self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID);
     $event->isBookable = false;
+    $event->isSelfAssessment = false;
     // Sort dates by beginDate
     usort($event->dates, function($a, $b) {
       return $a->beginDate - $b->beginDate;
@@ -948,8 +949,11 @@ class SeminardeskDataHelper
       }
       
       //-- Prices & fees
+      //$date->isSelfAssessment = false;
       foreach ( $date->attendanceFees as $key => $fee ) {
         $date->attendanceFees[$key]->name = self::translate($fee->name);
+        $event->isSelfAssessment = $event->isSelfAssessment || $fee->isSelfAssessment;
+        //$date->isSelfAssessment = $date->isSelfAssessment || $fee->isSelfAssessment;
       }
       $date->lodgingPrices = self::getLodgingPrices($date);
       $date->boardPrices = self::getBoardPrices($date);
