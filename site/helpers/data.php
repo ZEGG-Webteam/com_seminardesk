@@ -30,11 +30,17 @@ class SeminardeskDataHelper
   const LABELS_ON_APPLICATION_ID = 69;
   const LABELS_ON_APPLICATION_WITH_REGISTRATION_ID = 82;
   const LABELS_WITHOUT_REGISTRATION_ID = 81;
+  const LABELS_GERMAN_ID = 1;
+  const LABELS_GERMAN_POSSIBLE_ID = 54;
+  const LABELS_ENGLISH_ID = 2;
+  const LABELS_ENGLISH_POSSIBLE_ID = 53;
+  const LABELS_SPANISH_ID = 3;
   const LABELS_TO_HIDE = [
       1, 2, 3, 53, 54, // Languages
       self::LABELS_ON_APPLICATION_ID,
 //      self::LABELS_FESTIVALS_ID, 
       self::LABELS_EXTERNAL_ID, 
+      self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID, 
   ];
   const FACILITATORS_TO_HIDE = [
       '& Team',
@@ -192,7 +198,37 @@ class SeminardeskDataHelper
     $languages = LanguageHelper::getLanguages('lang_code');
     return strtoupper($languages[$currentLanguage]->sef);
   }
-  
+
+  /**
+   * Get eventDate languages based on labels
+   * 
+   * @param stdClass $eventDate - must contain labels array with id field
+   * @return array - array of language codes ('en', 'es', 'de', ...)
+   */
+  public static function getEventLanguages($eventDate)
+  {
+    $languages = [];
+    // English?
+    if (self::hasLabel($eventDate, self::LABELS_ENGLISH_ID) || self::hasLabel($eventDate, self::LABELS_ENGLISH_POSSIBLE_ID)) {
+      $languages[] = 'en';
+    }
+    // Spanish?
+    if (self::hasLabel($eventDate, self::LABELS_SPANISH_ID)) {
+      $languages[] = 'es';
+    }
+    // German? If not only English or Spanish, we assume a German speaking event, 
+    // even if no German label is set, because many events do not have language labels at all.
+    if (
+      (!self::hasLabel($eventDate, self::LABELS_ENGLISH_ID) && 
+      !self::hasLabel($eventDate, self::LABELS_SPANISH_ID)) || 
+      (self::hasLabel($eventDate, self::LABELS_GERMAN_ID) || 
+      self::hasLabel($eventDate, self::LABELS_GERMAN_POSSIBLE_ID))
+    ) {
+      $languages[] = 'de';
+    }
+    return $languages;
+  }
+
   /**
    * Get localized value from languages provided by SeminarDesk
    * 
@@ -411,7 +447,7 @@ class SeminardeskDataHelper
         $key = "COM_SEMINARDESK_EVENTS_STATUS_WITHOUT_REGISTRATION";
       }
 
-      // Special case: If label "Auf Bewerbung mit Anmeldung" is set, 
+      // Special case: If label "Plätze frei trotz Warteliste" is set, 
       // then don't display "Warteliste" but "Plätze frei"
       if (self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID)) {
         $key = "COM_SEMINARDESK_EVENTS_STATUS_AVAILABLE";
@@ -430,6 +466,18 @@ class SeminardeskDataHelper
     }
     return $label;
   }
+
+  public function getBookingLabel($eventDate)
+  {
+    if ($eventDate->isBookable) {
+      if (self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID)) {
+        return JText::_("COM_SEMINARDESK_EVENT_...");
+      } else {
+        return JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($eventDate->isExternal?"_A_M":""));
+      }
+    }
+    return "*)";
+  }
   
   /**
    * Get all accomodation prices excluding given config list (exÜn).
@@ -437,7 +485,8 @@ class SeminardeskDataHelper
    * @param object $date - A single date of an event - event->date
    * @return array - List of all lodging prices, except for $config['lodging_to_exclude']
    */
-  public function getLodgingPrices($date) {
+  public function getLodgingPrices($date)
+  {
     $config = self::getConfiguration();
     $lodgingPrices = [];
     foreach ($date->availableLodging as $lodging) {
@@ -474,9 +523,11 @@ class SeminardeskDataHelper
   }
   
   /**
+   * Check if given eventDate matches the filters.
+   * Used in site\views\events\tmpl\default_event.php to preselect visibility in frontend.
    * 
    * @param stdClass $eventDate
-   * @param array $filters - containing keys 'date', 'cat', 'org' and/or 'term'
+   * @param array $filters - containing keys 'date', 'cat', 'org', 'term' and/or 'lang'
    * @return boolean - true if eventDate matches all filters, false if not.
    */
   public static function matchingFilters($eventDate, $filters) {
@@ -509,13 +560,18 @@ class SeminardeskDataHelper
       // Check organisator filter
       (
         !in_array($filters['org'], ['zegg', 'external']) ||
-        ($filters['org'] == 'zegg' && !$eventDate->isExternal) ||
-        ($filters['org'] == 'external' && $eventDate->isExternal)
+        ($filters['org'] === 'zegg' && !$eventDate->isExternal) ||
+        ($filters['org'] === 'external' && $eventDate->isExternal)
       )
       &&
       // Check search term filter (full text search)
       (
         !$filters['term'] || count($terms_matching) == count($terms)
+      )
+      &&
+      // Check language filter
+      (
+        !$filters['lang'] || array_search(strtolower($filters['lang']), $eventDate->languages) !== false
       );
   }
 
@@ -807,6 +863,10 @@ class SeminardeskDataHelper
     }, ARRAY_FILTER_USE_KEY);
     $eventDate->categoriesList = htmlspecialchars(implode(', ', $eventDate->categories), ENT_QUOTES);
 //    $eventDate->categoryLinks = implode(', ', SeminardeskDataHelper::getCategoryLinks($eventDate->categories));
+    // Add languages
+    $eventDate->languages = self::getEventLanguages($eventDate);
+    $eventDate->languageList = implode(',', $eventDate->languages);
+    // Add status label
     $eventDate->statusLabel = SeminardeskDataHelper::getStatusLabel($eventDate);
     // Add searchable text for filters
     $eventDate->searchableText = htmlspecialchars(strip_tags(implode(' ', [
@@ -895,7 +955,7 @@ class SeminardeskDataHelper
     $event->description = self::cleanupFormatting($event->description);
     
     $event->headerPictureUrl = self::translate($event->headerPictureUrl);
-    $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices), '<h1><h2><h3><h4><p><br><b><hr><strong><a>', false);
+    $event->infoDatesPrices = self::cleanupHtml(self::translate($event->infoDatesPrices), '<h1><h2><h3><h4><p><br><b><hr><strong><a><ul><ol><li>', false);
     $event->infoBoardLodging = self::translate($event->infoBoardLodging);
     $event->infoMisc = self::translate($event->infoMisc);
     $event->bookingUrl = SeminardeskDataHelper::getBookingUrl($event->id, $event->titleSlug);
@@ -905,7 +965,9 @@ class SeminardeskDataHelper
     //-- Prepare event dates
     $count_canceled = 0;
     $event->onApplication = self::hasLabel($event, self::LABELS_ON_APPLICATION_ID);
+    $event->availableDespiteWaitlist = self::hasLabel($event, self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID);
     $event->isBookable = false;
+    $event->isSelfAssessment = false;
     // Sort dates by beginDate
     usort($event->dates, function($a, $b) {
       return $a->beginDate - $b->beginDate;
@@ -933,8 +995,11 @@ class SeminardeskDataHelper
       }
       
       //-- Prices & fees
+      //$date->isSelfAssessment = false;
       foreach ( $date->attendanceFees as $key => $fee ) {
         $date->attendanceFees[$key]->name = self::translate($fee->name);
+        $event->isSelfAssessment = $event->isSelfAssessment || $fee->isSelfAssessment;
+        //$date->isSelfAssessment = $date->isSelfAssessment || $fee->isSelfAssessment;
       }
       $date->lodgingPrices = self::getLodgingPrices($date);
       $date->boardPrices = self::getBoardPrices($date);
@@ -945,10 +1010,12 @@ class SeminardeskDataHelper
 
       //-- Booking
       $date->isExternal = self::hasLabel($date, self::LABELS_EXTERNAL_ID);
+      $event->isExternal = $event->isExternal || $date->isExternal;
       $date->bookingUrl = SeminardeskDataHelper::getBookingUrl($event->id, $event->titleSlug, $date->id);
       $date->statusLabel = SeminardeskDataHelper::getStatusLabel($date);
-      $event->isExternal = $event->isExternal || $date->isExternal;
       $date->onApplication = $event->onApplication || self::hasLabel($date, self::LABELS_ON_APPLICATION_ID);
+      $date->availableDespiteWaitlist = self::hasLabel($date, self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID);
+      $event->availableDespiteWaitlist = $event->availableDespiteWaitlist || $date->availableDespiteWaitlist;
       $date->isBookable = (
         $event->settings->registrationAvailable 
         && $date->registrationAvailable 

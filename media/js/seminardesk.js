@@ -11,16 +11,19 @@
     if ($('.sd-events .sd-filter-form').length > 0) {
       //-- Get current date
       let today = new Date()
-      let todaysDate = today.toISOString().split('T')[0];
+      // Set to first day of month and format as yyyy-mm-dd for easier comparison with event dates
+      let todaysDate = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0') + '-' + '01';
+      //let todaysDate = today.toISOString().split('T')[0];
 
       //-- Events filter
       function filterEvents() {
         // Get field values
-        let filterStartDate = $('#sd-filter-date-from').val().trim();
+        let filterStartDate = $('#sd-filter-date').val();
         let filterSearchTerms = $('#sd-filter-search-term').val().trim().replace(',', ' ').toLowerCase().split(' ').filter(Boolean);
         let areSearchTermsEmpty = (filterSearchTerms.length === 0);
         let filterOrganisers = $('#sd-filter-organisers').val();
         let filterCategory = $('#sd-filter-category').val();
+        let filterLang = $('#sd-filter-lang').val();
 
         // Field dependencies, based on trigger and values
         let trigger_id = $(this).attr('id');
@@ -47,7 +50,8 @@
         updateUrlParam('date', filterStartDate,   filterStartDate && todaysDate != filterStartDate);
         updateUrlParam('term', filterSearchTerms, !areSearchTermsEmpty);
         updateUrlParam('org',  filterOrganisers,  filterOrganisers != 'all');
-        updateUrlParam('cat',  filterCategory,    filterCategory > 0);
+        updateUrlParam('cat', filterCategory, filterCategory > 0);
+        updateUrlParam('lang', filterLang, filterLang && filterLang != 'all');
         window.history.pushState({}, '', url);
 
         // Update page title
@@ -60,16 +64,17 @@
 
         // Hide all events not matching ALL of the search terms
         $('.sd-eventlist .sd-event').each(function() {
-          let isDateMatching = $(this).data('end-date') >= filterStartDate;
+          let isDateMatching = $(this).data('start-date') >= filterStartDate;
           let eventSearchableText = $(this).data('searchable-text');
           let areSearchTermsMatching = areSearchTermsEmpty || filterSearchTerms.every( 
             substring=>eventSearchableText.toLowerCase().includes( substring ) 
           );
           let isCategoryMatching = filterCategory == '0' || $(this).data('categories').includes(parseInt(filterCategory));
           let isOrganiserMatching = filterOrganisers == 'all' || $(this).children('a').hasClass(filterOrganisers + '-event');
+          let isLangMatching = !filterLang || filterLang == 'all' || $(this).data('languages').includes(filterLang);
 
           // Show events if filters are matching, otherwise hide them
-          if (isDateMatching && areSearchTermsMatching && isCategoryMatching && isOrganiserMatching) {
+          if (isDateMatching && areSearchTermsMatching && isCategoryMatching && isOrganiserMatching && isLangMatching) {
             $(this).removeClass('hidden');
           } else {
             $(this).addClass('hidden');
@@ -112,11 +117,12 @@
       // Init filter form with values from url params
       var url_params = new URL(document.location).searchParams;
       if(url_params.has('date')) {
-        $('#sd-filter-date-from').val(url_params.get('date'));
+        $('#sd-filter-date').val(url_params.get('date'));
       }
       else {
         // Init form with current date and min date
-        $('#sd-filter-date-from').val(todaysDate).attr('min', todaysDate);
+        $('#sd-filter-date').val(todaysDate);
+        //$('#sd-filter-date').val(todaysDate).attr('min', todaysDate);
       }
       if(url_params.has('term')) {
         $('#sd-filter-search-term').val(url_params.get('term'));
@@ -127,12 +133,16 @@
       if(url_params.has('cat')) {
         $('#sd-filter-category').val(url_params.get('cat'));
       }
+      if(url_params.has('lang')) {
+        $('#sd-filter-lang').val(url_params.get('lang'));
+      }
 
       // Filter on any filter field changed
-      $('.sd-filter-form #sd-filter-date-from').on('change', filterEvents);
+      $('.sd-filter-form #sd-filter-date').on('change', filterEvents);
       $('.sd-filter-form #sd-filter-search-term').on('keyup blur change', filterEvents);
       $('.sd-filter-form #sd-filter-organisers').on('change', filterEvents);
       $('.sd-filter-form #sd-filter-category').on('change', filterEvents);
+      $('.sd-filter-form #sd-filter-lang').on('change', filterEvents);
       // Filter on submit
       $('.sd-filter-form [type="submit"]').on('click', function(e){
         e.preventDefault();

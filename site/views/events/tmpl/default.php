@@ -27,7 +27,17 @@ $filters = [
   'cat'  => $app->input->get('cat',  0,  'integer'), 
   'org'  => $app->input->get('org',  '', 'string'), 
   'term' => $app->input->get('term', '', 'string'), 
+  'lang' => $app->input->get('lang', '', 'string'), 
 ];
+
+// Collect unique months from events for the filter dropdown
+$availableMonths = [];
+foreach($this->events->getItems() as $eventDate) {
+  $monthKey = date('Y-m', $eventDate->beginDate) . '-01'; // Include day for easier date filter
+  if (!isset($availableMonths[$monthKey])) {
+    $availableMonths[$monthKey] = JHtml::_('date', $eventDate->beginDate, 'F Y');
+  }
+}
 ?>
 
 <div class="sd-component sd-events<?php echo ($this->pageclass_sfx)?' sd-events'.$this->pageclass_sfx:''; ?>">
@@ -40,8 +50,18 @@ $filters = [
   
   <div class="sd-filter">
     <form class="sd-filter-form">
-      <input type="date" name="from" id="sd-filter-date-from" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_DATE_PLACEHOLDER");?>" value="<?= $filters['date'] ?>">
       <input type="text" name="term" id="sd-filter-search-term" value="" placeholder="<?= JText::_("COM_SEMINARDESK_FILTER_TERM_PLACEHOLDER");?>">
+      <select name="date" id="sd-filter-date">
+        <?php foreach($availableMonths as $monthKey => $monthLabel) : ?>
+          <option value="<?= $monthKey ?>"<?= ($filters['date'] == $monthKey)?' selected':'' ?>><?= $monthLabel ?></option>
+        <?php endforeach; ?>
+      </select>
+      <select name="lang" id="sd-filter-lang">
+        <option value="all"<?= (!$filters['lang'] || $filters['lang'] == 'all')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_LANGUAGE_ALL");?></option>
+        <option value="de"<?= ($filters['lang'] == 'de')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_LANGUAGE_GERMAN");?></option>
+        <option value="en"<?= ($filters['lang'] == 'en')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_LANGUAGE_ENGLISH");?></option>
+        <!--<option value="es"<?= ($filters['lang'] == 'es')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_LANGUAGE_SPANISH");?></option>-->
+      </select>
       <select name="category" id="sd-filter-category">
         <option value="0"><?= JText::_("COM_SEMINARDESK_FILTER_CATEGORY_ALL") ?></option>
         <?php foreach($this->events->getAllEventCategories() as $key => $category) : ?>
@@ -53,7 +73,6 @@ $filters = [
         <option value="zegg"<?= ($filters['org'] == 'zegg')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_ORGANISER_ZEGG");?></option>
         <option value="external"<?= ($filters['org'] == 'external')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_ORGANISER_EXTERNAL");?></option>
       </select>
-      <!--<button class="btn btn-secondary" type="submit"><?= JText::_("COM_SEMINARDESK_FILTER_SUBMIT");?></button>-->
     </form>
   </div>
   
@@ -91,7 +110,7 @@ $filters = [
     <div class="no-events-found filtered<?= ($this->events->getItems())?' hidden':'' ?>">
       <p>
         <?= JText::_("COM_SEMINARDESK_EVENTS_NO_EVENTS_FOUND_IN");?><br>
-        &gt; <a href="?term=<?= $this->filters['term'] ?>"><?= JText::_("COM_SEMINARDESK_EVENTS_SEARCH_ALL");?></a>
+        &gt; <a href="?term=<?= $this->filters['term'] ?: '' ?>"><?= JText::_("COM_SEMINARDESK_EVENTS_SEARCH_ALL");?></a>
       </p>
     </div>
     <div class="no-events-found all<?= ($this->events->getItems())?' hidden':'' ?>">

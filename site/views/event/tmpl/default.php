@@ -57,9 +57,9 @@ usort($this->event->dates, function($a, $b) {
         </a>
       </div>
     <?php elseif ($this->event->onApplication) : ?>
-      <!-- Special case: If label "Anmeldestatus/Auf Bewerbung" are set -->
+      <!-- Special case: If label "Anmeldestatus/Auf Bewerbung" is set -->
       <div class="registration">
-        <span class="btn btn-inactive"><?= JText::_("COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION") ?></span>
+        <a class="btn" href="#bewerbung"><?= JText::_("COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION") ?></a>
       </div>
     <?php endif; ?>
   </div>
@@ -81,6 +81,11 @@ usort($this->event->dates, function($a, $b) {
       <?php if ($this->event->infoDatesPrices) : ?>
         <div class="info-dates-prices"><?= $this->event->infoDatesPrices; ?></div>
       <?php endif; ?>
+      <?php if ($this->event->isSelfAssessment) : ?>
+        <div class="info-prices-self-assessment">
+          <?= JHtml::_('content.prepare', '{loadposition event-price-infos, column}') ?>
+        </div>
+      <?php endif; ?>
       <?php if ($this->event->infoBoardLodging) : ?>
         <div class="info-board-lodging"><?= $this->event->infoBoardLodging; ?></div>
       <?php endif; ?>
@@ -96,10 +101,10 @@ usort($this->event->dates, function($a, $b) {
                 <?php if ($this->event->settings->showAttendanceFees) : ?>
                   <div class="date-fees">
                     <?php foreach ($date->attendanceFees as $fee) : ?>
-                      <?= ($fee->name?:JText::_("COM_SEMINARDESK_EVENT_ATT_FEE_LABEL")) . ': <strong>' . (($fee->isSelfAssessment)?($fee->priceRangeFrom . '&#8239;&ndash;&#8239;' . $fee->priceRangeTo):$fee->priceDefault) . '&#8239;€</strong><br>'; ?>
+                      <?= ($fee->name?:JText::_("COM_SEMINARDESK_EVENT_ATT_FEE_LABEL")) . ': <strong>' . (($fee->isSelfAssessment)?(sprintf('%.2f', $fee->priceRangeFrom) . '&#8239;&ndash;&#8239;' . sprintf('%.2f', $fee->priceRangeTo)):sprintf('%.2f', $fee->priceDefault)) . '&#8239;€</strong><br>'; ?>
                       <?php if ($fee->priceEarlyBird) : ?>
                         <strong>
-                          <?= JText::_("COM_SEMINARDESK_EVENT_ATT_EARLYBIRD") . ' ' . date('d.m.Y', intval($fee->earlyBirdDate)/1000) . ': ' . $fee->priceEarlyBird . '&#8239;€'; ?>
+                          <?= JText::_("COM_SEMINARDESK_EVENT_ATT_EARLYBIRD") . ' ' . date('d.m.Y', intval($fee->earlyBirdDate)/1000) . ': ' . sprintf('%.2f', $fee->priceEarlyBird) . '&#8239;€'; ?>
                         </strong><br>
                       <?php endif; ?>
                     <?php endforeach; ?>
@@ -141,8 +146,8 @@ usort($this->event->dates, function($a, $b) {
                 <?= JText::_("COM_SEMINARDESK_EVENT_REGISTRATION" . ($date->isExternal?"_A_M":"")); ?>
               </a>
             <?php elseif ($this->event->onApplication) : ?>
-              <!-- Special case: If label "Anmeldestatus/Auf Bewerbung" are set -->
-              <span class="btn btn-inactive"><?= JText::_("COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION") ?></span>
+              <!-- Special case: If label "Anmeldestatus/Auf Bewerbung" is set -->
+              <a class="btn" href="#bewerbung"><?= JText::_("COM_SEMINARDESK_EVENTS_STATUS_ON_APPLICATION") ?></a>
             <?php else : ?>
               <span class="notice">*) <?php $showRegNotice = true; ?></span>
             <?php endif; ?>
