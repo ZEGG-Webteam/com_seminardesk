@@ -11,12 +11,14 @@
     if ($('.sd-events .sd-filter-form').length > 0) {
       //-- Get current date
       let today = new Date()
-      let todaysDate = today.toISOString().split('T')[0];
+      // Set to first day of month and format as yyyy-mm-dd for easier comparison with event dates
+      let todaysDate = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0') + '-' + '01';
+      //let todaysDate = today.toISOString().split('T')[0];
 
       //-- Events filter
       function filterEvents() {
         // Get field values
-        let filterStartDate = $('#sd-filter-date-from').val().trim();
+        let filterStartDate = $('#sd-filter-date').val();
         let filterSearchTerms = $('#sd-filter-search-term').val().trim().replace(',', ' ').toLowerCase().split(' ').filter(Boolean);
         let areSearchTermsEmpty = (filterSearchTerms.length === 0);
         let filterOrganisers = $('#sd-filter-organisers').val();
@@ -62,7 +64,7 @@
 
         // Hide all events not matching ALL of the search terms
         $('.sd-eventlist .sd-event').each(function() {
-          let isDateMatching = $(this).data('end-date') >= filterStartDate;
+          let isDateMatching = $(this).data('start-date') >= filterStartDate;
           let eventSearchableText = $(this).data('searchable-text');
           let areSearchTermsMatching = areSearchTermsEmpty || filterSearchTerms.every( 
             substring=>eventSearchableText.toLowerCase().includes( substring ) 
@@ -115,11 +117,12 @@
       // Init filter form with values from url params
       var url_params = new URL(document.location).searchParams;
       if(url_params.has('date')) {
-        $('#sd-filter-date-from').val(url_params.get('date'));
+        $('#sd-filter-date').val(url_params.get('date'));
       }
       else {
         // Init form with current date and min date
-        $('#sd-filter-date-from').val(todaysDate).attr('min', todaysDate);
+        $('#sd-filter-date').val(todaysDate);
+        //$('#sd-filter-date').val(todaysDate).attr('min', todaysDate);
       }
       if(url_params.has('term')) {
         $('#sd-filter-search-term').val(url_params.get('term'));
@@ -135,7 +138,7 @@
       }
 
       // Filter on any filter field changed
-      $('.sd-filter-form #sd-filter-date-from').on('change', filterEvents);
+      $('.sd-filter-form #sd-filter-date').on('change', filterEvents);
       $('.sd-filter-form #sd-filter-search-term').on('keyup blur change', filterEvents);
       $('.sd-filter-form #sd-filter-organisers').on('change', filterEvents);
       $('.sd-filter-form #sd-filter-category').on('change', filterEvents);
