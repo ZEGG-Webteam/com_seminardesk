@@ -20,7 +20,7 @@ JLoader::register('SeminardeskController', JPATH_COMPONENT . '/controller.php');
 JLoader::register('SeminardeskHelper', JPATH_COMPONENT . '/helpers/seminardesk.php');
 JLoader::register('SeminardeskDataHelper', JPATH_COMPONENT . '/helpers/data.php');
 
-// Execute the task.
+// Execute the task
 $controller = BaseController::getInstance('Seminardesk');
 $controller->execute(Factory::getApplication()->input->get('task'));
 $controller->redirect();

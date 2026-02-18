@@ -632,7 +632,17 @@ class SeminardeskDataHelper
       else {
         $termsMatching = true;
       }
-      return $labelsMatching && !$labelExceptionsMatching && $termsMatching;
+
+      //-- Filter by language
+      $filterLang = $filters['lang'] ?? '';
+      if ($filterLang) {
+        $langMatching = in_array($filterLang, $eventDate->languages);
+      }
+      else {
+        $langMatching = true;
+      }
+
+      return $labelsMatching && !$labelExceptionsMatching && $termsMatching && $langMatching;
     });
 
     //-- Limit

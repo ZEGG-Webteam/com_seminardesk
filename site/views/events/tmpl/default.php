@@ -27,7 +27,7 @@ $filters = [
   'cat'  => $app->input->get('cat',  0,  'integer'), 
   'org'  => $app->input->get('org',  '', 'string'), 
   'term' => $app->input->get('term', '', 'string'), 
-  'lang' => $app->input->get('lang', '', 'string'), 
+  'lang' => $app->input->get->get('lang', $this->langKey, 'string'), // Only get "lang" from URL, not from other sources.
 ];
 
 // Collect unique months from events for the filter dropdown
@@ -56,7 +56,7 @@ foreach($this->events->getItems() as $eventDate) {
           <option value="<?= $monthKey ?>"<?= ($filters['date'] == $monthKey)?' selected':'' ?>><?= $monthLabel ?></option>
         <?php endforeach; ?>
       </select>
-      <select name="lang" id="sd-filter-lang">
+      <select name="lang" id="sd-filter-lang" data-current-lang="<?= $this->langKey ?>">
         <option value="all"<?= (!$filters['lang'] || $filters['lang'] == 'all')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_LANGUAGE_ALL");?></option>
         <option value="de"<?= ($filters['lang'] == 'de')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_LANGUAGE_GERMAN");?></option>
         <option value="en"<?= ($filters['lang'] == 'en')?' selected':'' ?>><?= JText::_("COM_SEMINARDESK_FILTER_LANGUAGE_ENGLISH");?></option>
