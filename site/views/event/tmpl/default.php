@@ -76,7 +76,7 @@ usort($this->event->dates, function($a, $b) {
     </div>
 
     <?php if (count($this->event->dates) > 0) : ?>
-      <h2><?= JText::_("COM_SEMINARDESK_EVENT_DATES_REGISTRATION"); ?></h2>
+      <h2 id="registration"><?= JText::_("COM_SEMINARDESK_EVENT_DATES_REGISTRATION"); ?></h2>
 
       <?php if ($this->event->infoDatesPrices) : ?>
         <div class="info-dates-prices"><?= $this->event->infoDatesPrices; ?></div>
@@ -167,7 +167,7 @@ usort($this->event->dates, function($a, $b) {
     <?php endif; ?>
 
     <?php if (count($this->event->facilitators) > 0) : ?>
-      <div class="sd-facilitators">
+      <div id="facilitators" class="sd-facilitators">
         <h2><?= JText::_("COM_SEMINARDESK_TITLE_FACILITATOR"); ?></h2>
         <?php foreach($this->event->facilitators as $facilitator) {
           $this->addTemplatePath(JPATH_COMPONENT . '/views/facilitators/tmpl');
