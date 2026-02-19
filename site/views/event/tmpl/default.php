@@ -35,7 +35,7 @@ usort($this->event->dates, function($a, $b) {
 });
 ?>
 
-<div class="sd-component sd-event-details" data-api-uri="<?= $this->event->apiUri ?>" data-lang-key="<?= $this->event->langKey ?>">
+<div class="sd-component sd-event-details" data-lang-key="<?= $this->event->langKey ?>">
   <div class="event-header">
     <?php if ($this->event->headerPictureUrl) : ?>
       <div class="header-picture"><img src="<?= $this->event->headerPictureUrl ?>"></div>

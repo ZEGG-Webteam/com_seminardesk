@@ -24,6 +24,7 @@
         let filterOrganisers = $('#sd-filter-organisers').val();
         let filterCategory = $('#sd-filter-category').val();
         let filterLang = $('#sd-filter-lang').val();
+        let currentLang = $('#sd-filter-lang').data('current-lang');
 
         // Field dependencies, based on trigger and values
         let trigger_id = $(this).attr('id');
@@ -51,7 +52,7 @@
         updateUrlParam('term', filterSearchTerms, !areSearchTermsEmpty);
         updateUrlParam('org',  filterOrganisers,  filterOrganisers != 'all');
         updateUrlParam('cat', filterCategory, filterCategory > 0);
-        updateUrlParam('lang', filterLang, filterLang && filterLang != 'all');
+        updateUrlParam('lang', filterLang, filterLang && filterLang != currentLang);
         window.history.pushState({}, '', url);
 
         // Update page title
