@@ -76,7 +76,7 @@ usort($this->event->dates, function($a, $b) {
     </div>
 
     <?php if (count($this->event->dates) > 0) : ?>
-      <h2><?= JText::_("COM_SEMINARDESK_EVENT_DATES_REGISTRATION"); ?></h2>
+      <h2 id="registration"><?= JText::_("COM_SEMINARDESK_EVENT_DATES_REGISTRATION"); ?></h2>
 
       <?php if ($this->event->infoDatesPrices) : ?>
         <div class="info-dates-prices"><?= $this->event->infoDatesPrices; ?></div>
@@ -102,7 +102,7 @@ usort($this->event->dates, function($a, $b) {
                   <div class="date-fees">
                     <?php foreach ($date->attendanceFees as $fee) : ?>
                       <?= ($fee->name?:JText::_("COM_SEMINARDESK_EVENT_ATT_FEE_LABEL")) . ': <strong>' . (($fee->isSelfAssessment)?(sprintf('%.2f', $fee->priceRangeFrom) . '&#8239;&ndash;&#8239;' . sprintf('%.2f', $fee->priceRangeTo)):sprintf('%.2f', $fee->priceDefault)) . '&#8239;€</strong><br>'; ?>
-                      <?php if ($fee->priceEarlyBird) : ?>
+                      <?php if ($fee->priceEarlyBird && $fee->earlyBirdDate >= time() * 1000) : ?>
                         <strong>
                           <?= JText::_("COM_SEMINARDESK_EVENT_ATT_EARLYBIRD") . ' ' . date('d.m.Y', intval($fee->earlyBirdDate)/1000) . ': ' . sprintf('%.2f', $fee->priceEarlyBird) . '&#8239;€'; ?>
                         </strong><br>
@@ -167,7 +167,7 @@ usort($this->event->dates, function($a, $b) {
     <?php endif; ?>
 
     <?php if (count($this->event->facilitators) > 0) : ?>
-      <div class="sd-facilitators">
+      <div id="facilitators" class="sd-facilitators">
         <h2><?= JText::_("COM_SEMINARDESK_TITLE_FACILITATOR"); ?></h2>
         <?php foreach($this->event->facilitators as $facilitator) {
           $this->addTemplatePath(JPATH_COMPONENT . '/views/facilitators/tmpl');
