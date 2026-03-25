@@ -41,7 +41,7 @@ class SeminardeskRouter extends RouterView
     }
     else
     {
-      JLoader::register('SeminardeskRulesLegacy', __DIR__ . '/helpers/legacyrouter.php');
+      require_once __DIR__ . '/helpers/legacyrouter.php';
       $this->attachRule(new SeminardeskRulesLegacy($this));
     }
   }
