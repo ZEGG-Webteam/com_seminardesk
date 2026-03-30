@@ -11,9 +11,9 @@
     if ($('.sd-events .sd-filter-form').length > 0) {
       //-- Get current date
       let today = new Date()
-      // Set to first day of month and format as yyyy-mm-dd for easier comparison with event dates
-      let todaysDate = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0') + '-' + '01';
-      //let todaysDate = today.toISOString().split('T')[0];
+      // Get date of first available month option in filter (1st of current month can fail, if e.g. date is 30. of month and no more seminars will start in this month. then the filter connot be set and no seminars will be shown.)
+      let defaultDate = $('#sd-filter-date option:first-child').val();
+      //let defaultDate = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0') + '-' + '01';
 
       //-- Events filter
       function filterEvents() {
@@ -48,7 +48,7 @@
           if (cond) url.searchParams.set(name, value)
           else      url.searchParams.delete(name);
         }
-        updateUrlParam('date', filterStartDate,   filterStartDate && todaysDate != filterStartDate);
+        updateUrlParam('date', filterStartDate,   filterStartDate && defaultDate != filterStartDate);
         updateUrlParam('term', filterSearchTerms, !areSearchTermsEmpty);
         updateUrlParam('org',  filterOrganisers,  filterOrganisers != 'all');
         updateUrlParam('cat', filterCategory, filterCategory > 0);
@@ -122,8 +122,7 @@
       }
       else {
         // Init form with current date and min date
-        $('#sd-filter-date').val(todaysDate);
-        //$('#sd-filter-date').val(todaysDate).attr('min', todaysDate);
+        $('#sd-filter-date').val(defaultDate);
       }
       if(url_params.has('term')) {
         $('#sd-filter-search-term').val(url_params.get('term'));
