@@ -15,13 +15,10 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 
 $app = Factory::getApplication();
-
-//-- Load CSS / JS via WebAssetManager
-$wa = $app->getDocument()->getWebAssetManager();
-$wa->registerAndUseStyle('com_seminardesk.styles', 'com_seminardesk/css/styles.css');
-$wa->registerAndUseScript('com_seminardesk.script', 'com_seminardesk/js/seminardesk.js');
-
 $document = $app->getDocument();
+
+$wa = $document->getWebAssetManager();
+$wa->useScript('com_seminardesk.scripts');
 
 $previousEventMonth = '';
 $filters = [

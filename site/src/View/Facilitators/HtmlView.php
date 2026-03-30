@@ -13,7 +13,6 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
-use Joomla\Component\Seminardesk\Site\Helper\SeminardeskHelper;
 
 /**
  * View class for a list of SeminarDesk Facilitators
@@ -44,11 +43,16 @@ class HtmlView extends BaseHtmlView
     {
         $app = Factory::getApplication();
         
+        // Load CSS / JS via WebAssetManager
+        $wa = $app->getDocument()->getWebAssetManager();
+        $wa->registerAndUseStyle('com_seminardesk.styles', 'com_seminardesk/css/styles.css');
+        $wa->registerAndUseScript('com_seminardesk.scripts', 'com_seminardesk/js/seminardesk.js', [], [], ['jquery']);
+        
         $this->state = $this->get('State');
         $this->params = $this->state->get('params');
         
         // Assign data to the view
-        $this->facilitators = SeminardeskHelper::getModel('Facilitators');
+        $this->facilitators = $this->getModel('Facilitators');
         $this->title = $app->getMenu()->getActive()->title ?? '';
         $this->pageclass_sfx = htmlspecialchars($app->getInput()->get('pageclass_sfx', ''), ENT_COMPAT, 'UTF-8');
         $this->events_page = $app->getInput()->get('events_page');
@@ -72,6 +76,12 @@ class HtmlView extends BaseHtmlView
     protected function prepareDocument(): void
     {
         $app   = Factory::getApplication();
+        
+        // Load CSS / JS via WebAssetManager
+        $wa = $app->getDocument()->getWebAssetManager();
+        $wa->registerAndUseStyle('com_seminardesk.styles', 'com_seminardesk/css/styles.css');
+        $wa->registerAndUseScript('com_seminardesk.scripts', 'com_seminardesk/js/seminardesk.js', [], [], ['jquery']);
+        
         $menus = $app->getMenu();
         $title = null;
 

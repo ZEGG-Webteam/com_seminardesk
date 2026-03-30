@@ -12,7 +12,7 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\ItemModel;
-use Joomla\Component\Seminardesk\Site\Helper\DataHelper;
+use Joomla\Component\Seminardesk\Site\Service\ServiceFactory;
 
 /**
  * Seminardesk Event model.
@@ -50,7 +50,7 @@ class EventModel extends ItemModel
     public function getItem($eventId = null): ?object
     {
         if (self::$event === null && $eventId !== null) {
-            self::$event = DataHelper::loadEvent($eventId);
+            self::$event = ServiceFactory::getEventService()->loadEvent($eventId);
         }
         
         return self::$event;

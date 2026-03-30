@@ -13,7 +13,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Model\ListModel;
-use Joomla\Component\Seminardesk\Site\Helper\DataHelper;
+use Joomla\Component\Seminardesk\Site\Service\ServiceFactory;
 
 /**
  * Methods supporting a list of Seminardesk Facilitators
@@ -87,7 +87,7 @@ class FacilitatorsModel extends ListModel
     {
         // If not yet loaded: Get facilitators from API
         if (empty(self::$facilitators)) {
-            self::$facilitators = DataHelper::loadFacilitators();
+            self::$facilitators = ServiceFactory::getFacilitatorService()->loadFacilitators();
         }
         
         return self::$facilitators;

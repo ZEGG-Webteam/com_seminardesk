@@ -13,7 +13,6 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
-use Joomla\Component\Seminardesk\Site\Helper\SeminardeskHelper;
 
 /**
  * View class for a single SeminarDesk Event
@@ -45,7 +44,7 @@ class HtmlView extends BaseHtmlView
         $this->params = $this->state->get('params');
 
         // Get event information from eventDates
-        $this->eventModel = SeminardeskHelper::getModel('Event');
+        $this->eventModel = $this->getModel('Event');
         $this->event = $this->eventModel->getItem($app->getInput()->getCmd('eventId', '0'));
 
         // Check for errors.
@@ -66,6 +65,12 @@ class HtmlView extends BaseHtmlView
     protected function prepareDocument(): void
     {
         $app   = Factory::getApplication();
+        
+        // Load CSS / JS via WebAssetManager
+        $wa = $app->getDocument()->getWebAssetManager();
+        $wa->registerAndUseStyle('com_seminardesk.styles', 'com_seminardesk/css/styles.css');
+        $wa->registerAndUseScript('com_seminardesk.scripts', 'com_seminardesk/js/seminardesk.js', [], [], ['jquery']);
+        
         $menus = $app->getMenu();
         $title = null;
 

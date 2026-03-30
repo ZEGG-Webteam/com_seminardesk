@@ -10,9 +10,10 @@
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Language\Text;
+use Joomla\Component\Seminardesk\Site\Service\EventDateService;
 
 //-- Matching current filter? => Hide event if no
-$matchingFilters = SeminardeskDataHelper::matchingFilters($this->eventDate, $this->filters);
+$matchingFilters = EventDateService::matchingFilters($this->eventDate, $this->filters);
 ?>
 <div class="sd-event loading<?= (!$matchingFilters)?' hidden':'' ?>" 
      itemscope itemtype="https://schema.org/Event" 

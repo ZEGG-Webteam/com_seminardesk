@@ -15,11 +15,6 @@ use Joomla\CMS\Language\Text;
 
 $app = Factory::getApplication();
 
-//-- Load CSS / JS via WebAssetManager
-$wa = $app->getDocument()->getWebAssetManager();
-$wa->registerAndUseStyle('com_seminardesk.styles', 'com_seminardesk/css/styles.css');
-$wa->registerAndUseScript('com_seminardesk.script', 'com_seminardesk/js/seminardesk.js');
-
 // Add template path for sub-templates
 $this->addTemplatePath(JPATH_COMPONENT . '/src/View/Facilitators/tmpl');
 ?>

@@ -8,20 +8,17 @@
  */
 // No direct access
 defined('_JEXEC') or die;
-use \Joomla\CMS\HTML\HTMLHelper;
-use \Joomla\CMS\Factory;
-use \Joomla\CMS\Uri\Uri;
-use \Joomla\CMS\Language\Text;
-use \Joomla\CMS\Layout\LayoutHelper;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Layout\LayoutHelper;
+use Joomla\Component\Seminardesk\Site\Helper\FormatHelper;
+use Joomla\Component\Seminardesk\Site\Service\ConfigService;
 
 $app = Factory::getApplication();
-$config = SeminardeskDataHelper::getConfiguration();
-
-//-- Load CSS / JS via WebAssetManager
-$wa = $app->getDocument()->getWebAssetManager();
-$wa->registerAndUseStyle('com_seminardesk.styles', 'com_seminardesk/css/styles.css');
-$wa->registerAndUseScript('com_seminardesk.script', 'com_seminardesk/js/seminardesk.js');
-
+$configService = new ConfigService($app);
+$config = $configService->getConfiguration();
 $document = $app->getDocument();
 
 //-- Set document title
@@ -44,7 +41,7 @@ $this->addTemplatePath(JPATH_COMPONENT . '/src/View/Facilitators/tmpl');
       <div class="header-picture"><img src="<?= $this->event->headerPictureUrl ?>"></div>
     <?php endif; ?>
     <h1 class="title">
-      <?= SeminardeskDataHelper::replaceMissingFontChars($this->event->title); ?>
+      <?= FormatHelper::replaceMissingFontChars($this->event->title); ?>
     </h1>
     <?php if ($this->event->subtitle) : ?>
       <h2 class="subtitle"><?= $this->event->subtitle; ?></h2>

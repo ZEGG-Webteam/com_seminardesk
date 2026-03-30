@@ -13,7 +13,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Model\ListModel;
-use Joomla\Component\Seminardesk\Site\Helper\DataHelper;
+use Joomla\Component\Seminardesk\Site\Service\ServiceFactory;
 
 /**
  * Methods supporting a list of Seminardesk Events
@@ -96,7 +96,7 @@ class EventsModel extends ListModel
         
         // If not yet loaded: Get events from API
         if (empty(self::$events)) {
-            self::$events = DataHelper::loadEventDates($filters);
+            self::$events = ServiceFactory::getEventDateService()->loadEventDates($filters);
         }
         
         return self::$events;

@@ -17,10 +17,6 @@ use Joomla\CMS\Factory;
 
 $app = Factory::getApplication();
 
-//-- Load CSS
-$wa = $app->getDocument()->getWebAssetManager();
-$wa->registerAndUseStyle('com_seminardesk.styles', 'com_seminardesk/css/styles.css');
-
 $previousEventMonth = '';
 
 // Add template path for sub-templates

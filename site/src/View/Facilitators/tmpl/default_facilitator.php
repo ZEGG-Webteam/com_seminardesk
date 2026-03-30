@@ -11,6 +11,7 @@
 defined('_JEXEC') or die('Restricted access');
 
 use Joomla\CMS\Language\Text;
+use Joomla\Component\Seminardesk\Site\Helper\FormatHelper;
 
 $heading = $this->facilitator->heading ?? 'h2';
 ?>
@@ -27,7 +28,7 @@ $heading = $this->facilitator->heading ?? 'h2';
       </a>
     </<?= $heading ?>>
     <div class="facilitator-about">
-      <?= SeminardeskDataHelper::cleanupHtml($this->facilitator->about, '<p><br>') ?>
+      <?= FormatHelper::cleanupHtml($this->facilitator->about, '<p><br>') ?>
     </div>
   </div>
   <div class="facilitator-details">

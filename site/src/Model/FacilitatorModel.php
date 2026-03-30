@@ -12,7 +12,7 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\ItemModel;
-use Joomla\Component\Seminardesk\Site\Helper\DataHelper;
+use Joomla\Component\Seminardesk\Site\Service\ServiceFactory;
 
 /**
  * Seminardesk Facilitator model.
@@ -50,7 +50,7 @@ class FacilitatorModel extends ItemModel
     public function getItem($facilitatorId = null): ?object
     {
         if (self::$facilitator === null && $facilitatorId !== null) {
-            self::$facilitator = DataHelper::loadFacilitator($facilitatorId);
+            self::$facilitator = ServiceFactory::getFacilitatorService()->loadFacilitator($facilitatorId);
         }
         
         return self::$facilitator;
