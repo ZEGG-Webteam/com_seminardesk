@@ -180,7 +180,7 @@ class ApiService
      * 
      * @return  object  Facilitator data
      */
-    public function getFacilitators(): ?object
+    public function getFacilitators(): ?array
     {
         $facilitators = $this->getData('/facilitators');
         return $facilitators ? ($facilitators->data ??  []) : [];
@@ -203,7 +203,7 @@ class ApiService
      * @param string $facilitatorId
      * @return  object  Event dates of the facilitator
      */
-    public function getFacilitatorEventDates(string $facilitatorId): ?object
+    public function getFacilitatorEventDates(string $facilitatorId): ?array
     {
         $eventDates = $this->getData('/facilitators/' . $facilitatorId . '/eventDates');
         return $eventDates ? ($eventDates->data ?? []) : [];   

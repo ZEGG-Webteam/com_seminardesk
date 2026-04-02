@@ -168,7 +168,7 @@ class FacilitatorService
             $this->prepareFacilitator($facilitator);
         }
         else {
-            $facilitator = [];
+            $facilitator = null;
         }
         
         return $facilitator;

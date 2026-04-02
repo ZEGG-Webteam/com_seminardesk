@@ -30,7 +30,6 @@
   <files folder="site">
     <folder>src</folder>
     <folder>tmpl</folder>
-    <filename>router.php</filename>
   </files>
   <media destination="com_seminardesk" folder="media">
     <folder>js</folder>

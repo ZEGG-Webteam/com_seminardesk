@@ -68,8 +68,9 @@ class HtmlView extends BaseHtmlView
         
         // Load CSS / JS via WebAssetManager
         $wa = $app->getDocument()->getWebAssetManager();
-        $wa->registerAndUseStyle('com_seminardesk.styles', 'com_seminardesk/css/styles.css');
-        $wa->registerAndUseScript('com_seminardesk.scripts', 'com_seminardesk/js/seminardesk.js', [], [], ['jquery']);
+        $wa->getRegistry()->addExtensionRegistryFile('com_seminardesk');
+        $wa->useStyle('com_seminardesk.styles');
+        $wa->useScript('com_seminardesk.scripts');
         
         $menus = $app->getMenu();
         $title = null;

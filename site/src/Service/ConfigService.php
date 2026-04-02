@@ -89,8 +89,10 @@ class ConfigService
             $tenantId = $this->app->getInput()->get('tenant_id', self::DEFAULT_TENANT_ID, 'STRING');
 
             $menu = $this->app->getMenu()->getActive();
-            $eventsMenu = $menu->query['events_page'] ?? $menu->id;
-            $facilitatorsMenu = $menu->query['facilitators_page'] ?? $menu->id;
+            
+            // Get menu item IDs from menu query (request fields), fallback to current menu
+            $eventsMenu = (int) ($menu->query['events_page'] ?? 0) ?: $menu->id;
+            $facilitatorsMenu = (int) ($menu->query['facilitators_page'] ?? 0) ?: $menu->id;
 
             $this->config = [
                 'tenant_id' => $tenantId,
@@ -149,11 +151,22 @@ class ConfigService
     /**
      * Get the language key from configuration
      *
-     * @return  string  Language key
+     * @return  string  Language key (uppercase, e.g. 'DE', 'EN')
      */
     public function getLangKey(): string
     {
         return $this->getConfiguration()['langKey'];
+    }
+
+    /**
+     * Get the current language key (e.g. 'de', 'en')
+     * Delegates to TranslationHelper for consistency.
+     *
+     * @return  string  Language key in lowercase
+     */
+    public function getCurrentLanguageKey(): string
+    {
+        return TranslationHelper::getCurrentLanguageKey();
     }
 
     /**
