@@ -185,5 +185,9 @@ usort($this->event->dates, function($a, $b) {
     </div>
   </aside>
 
+  <script type="application/ld+json">
+    <?= json_encode($this->event->structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+  </script>
+
 </div>
 

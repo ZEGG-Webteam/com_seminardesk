@@ -129,5 +129,10 @@ class SeminardeskViewEvent extends \Joomla\CMS\MVC\View\HtmlView
       $this->document->setMetadata('robots', $this->params->get('robots'));
     }
 
+    // Add noindex for past events to remove them from Google search results
+    if ($this->event->isPastEvent)
+    {
+      $this->document->setMetadata('robots', 'noindex, follow');
+    }
   }
 }

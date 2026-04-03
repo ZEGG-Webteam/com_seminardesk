@@ -10,8 +10,8 @@
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
-use Joomla\CMS\Http\HttpFactory;
 use Joomla\CMS\Language\LanguageHelper;
+use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Log\Log;
 
 /**
@@ -454,7 +454,7 @@ class SeminardeskDataHelper
       }
 
       // Label for past events
-      if (time() > $eventDate->endDate) {
+      if ($eventDate->isPastEvent) {
         $key = "COM_SEMINARDESK_EVENTS_STATUS_PAST_EVENT";
       }
 
@@ -825,6 +825,103 @@ class SeminardeskDataHelper
   }
 
   /**
+   * Get structured data for an event, based on schema.org Event, in JSON-LD format
+   * See https://developers.google.com/search/docs/appearance/structured-data/event
+   * Validator: https://validator.schema.org/
+   * 
+   * This method should be called as a last step in prepareEvent, because it is 
+   * based on other attributes like isCanceled, isExternal, bookingUrl etc.
+   */
+  public static function getStructuredData($event) {
+    if (!$event->dates) {
+      return null; // Structured data requires at least one date
+    }
+    //-- JSON-LD Structured Data for Event (schema.org)
+    $firstDate = reset($event->dates);
+    $lastDate = end($event->dates);
+
+    $structuredData = [
+      '@context' => 'https://schema.org',
+      '@type' => 'Event',
+      'name' => html_entity_decode($event->title, ENT_QUOTES, 'UTF-8'),
+      'description' => strip_tags(html_entity_decode($event->teaser ?: $event->subtitle, ENT_QUOTES, 'UTF-8')),
+      'startDate' => date('c', $firstDate->beginDate),
+      'endDate' => date('c', $lastDate->endDate),
+      'eventStatus' => $event->isCanceled 
+        ? 'https://schema.org/EventCancelled' 
+        : 'https://schema.org/EventScheduled',
+      'eventAttendanceMode' => 'https://schema.org/OfflineEventAttendanceMode',
+      'location' => [
+        '@type' => 'Place',
+        'name' => 'ZEGG',
+        'address' => [
+          '@type' => 'PostalAddress',
+          'streetAddress' => 'Rosa-Luxemburg-Str. 89',
+          'addressLocality' => 'Bad Belzig',
+          'postalCode' => '14806',
+          'addressCountry' => 'DE'
+        ]
+      ],
+      'organizer' => [
+        '@type' => 'Organization',
+        'name' => 'ZEGG Bildungszentrum gGmbH',
+        // URL = Site URL
+        'url' => JUri::base()
+      ]
+    ];
+
+    // Add image if available
+    if ($event->headerPictureUrl) {
+      $structuredData['image'] = $event->headerPictureUrl;
+    }
+
+    // Add performers/facilitators if available
+    if ($event->facilitators) {
+      $structuredData['performer'] = array_map(function($f) {
+        return [
+          '@type' => 'Person',
+          'name' => $f->name
+        ];
+      }, $event->facilitators);
+    }
+
+    // Add offers if event is bookable and not past
+    if (!$event->isPastEvent && $event->isBookable) {
+      $structuredData['offers'] = [
+        '@type' => 'Offer',
+        //'url' => $event->bookingUrl,
+        // Don't take the booking URL as offer URL, because it is an embedded booking form pointing to https://booking.seminardesk.de/de/zegg/... 
+        // Instead, link to the event detail page (this view), which also contains the booking form.
+        'url' => Uri::getInstance()->toString(),
+        'availability' => 'https://schema.org/InStock'
+      ];
+    }
+
+    // Update organizer for external organizers
+    if ($event->isExternal) {
+      $structuredData['organizer']['name'] = implode(', ', array_column($structuredData['performer'], 'name')) . ' / ' . $structuredData['organizer']['name'];
+    }
+
+    // Add event dates as subEvents
+    if (count($event->dates) > 1) {
+      $structuredData['subEvent'] = array_map(function($date) use ($structuredData) {
+        $eventDateData = [
+          '@type' => 'Event',
+          'name' => $date->title ?: $structuredData['name'],
+          'startDate' => date('c', $date->beginDate),
+          'endDate' => date('c', $date->endDate),
+          'eventStatus' => $date->isCanceled 
+            ? 'https://schema.org/EventCancelled' 
+            : 'https://schema.org/EventScheduled',
+          'location' => $structuredData['location']
+        ];
+        return $eventDateData;
+      }, $event->dates);
+    }
+    return $structuredData;
+  }
+
+  /**
    * Preprocess / prepare fields of event date for use in views
    * 
    * @param stdClass $eventDate
@@ -876,8 +973,6 @@ class SeminardeskDataHelper
     // Add languages
     $eventDate->languages = self::getEventLanguages($eventDate);
     $eventDate->languageList = implode(',', $eventDate->languages);
-    // Add status label
-    $eventDate->statusLabel = SeminardeskDataHelper::getStatusLabel($eventDate);
     // Add searchable text for filters
     $eventDate->searchableText = htmlspecialchars(strip_tags(implode(' ', [
         $eventDate->title,
@@ -900,6 +995,10 @@ class SeminardeskDataHelper
     $eventDate->isExternal = self::hasLabel($eventDate, self::LABELS_EXTERNAL_ID);
     $eventDate->onApplication = self::hasLabel($eventDate, self::LABELS_ON_APPLICATION_ID);
     $eventDate->isPastEvent = $eventDate->endDate < time();
+    $eventDate->isCanceled = $eventDate->status === 'canceled';
+
+    // Add status label
+    $eventDate->statusLabel = SeminardeskDataHelper::getStatusLabel($eventDate);
 
     //-- Set event classes
     $classes = ['registration-available'];
@@ -911,7 +1010,7 @@ class SeminardeskDataHelper
     if ($eventDate->isExternal)           { $classes[] = 'external-event';   } 
     if (!$eventDate->isExternal)          { $classes[] = 'zegg-event';       }
     if ($eventDate->isPastEvent)          { $classes[] = 'past-event';       }
-    if ($eventDate->status == 'canceled') { $classes[] = 'is-canceled';      }
+    if ($eventDate->isCanceled)           { $classes[] = 'is-canceled';      }
     $eventDate->cssClasses = implode(' ', $classes);
 
     //-- Format date
@@ -976,12 +1075,15 @@ class SeminardeskDataHelper
     $count_canceled = 0;
     $event->onApplication = self::hasLabel($event, self::LABELS_ON_APPLICATION_ID);
     $event->availableDespiteWaitlist = self::hasLabel($event, self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID);
-    $event->isBookable = false;
     $event->isSelfAssessment = false;
+    $event->isPastEvent = false;
+    $event->isBookable = false;
+
     // Sort dates by beginDate
     usort($event->dates, function($a, $b) {
       return $a->beginDate - $b->beginDate;
     });
+
     foreach($event->dates as $key => $date) {
       $date->title = self::translate($date->title);
       $date->labels = array_combine(
@@ -992,6 +1094,8 @@ class SeminardeskDataHelper
       //-- Format date
       $date->beginDate = $date->beginDate / 1000;
       $date->endDate = $date->endDate / 1000;
+      $date->isPastEvent = $date->endDate < time();
+      $event->isPastEvent = $event->isPastEvent || $date->isPastEvent;
       $date->dateFormatted = SeminardeskDataHelper::getDateFormatted($date->beginDate, $date->endDate);
 
       //-- Prepare facilitator list, if not same as in event. Remove otherwise
@@ -1026,17 +1130,18 @@ class SeminardeskDataHelper
       $date->onApplication = $event->onApplication || self::hasLabel($date, self::LABELS_ON_APPLICATION_ID);
       $date->availableDespiteWaitlist = self::hasLabel($date, self::LABELS_ON_APPLICATION_WITH_REGISTRATION_ID);
       $event->availableDespiteWaitlist = $event->availableDespiteWaitlist || $date->availableDespiteWaitlist;
+      $date->isCanceled = $date->status === 'canceled';
       $date->isBookable = (
         $event->settings->registrationAvailable 
         && $date->registrationAvailable 
         && $date->status != "fully_booked" 
-        && $date->status != "canceled" 
+        && !$date->isCanceled
         && !$date->isPastEvent
         // For events and dates with "on application" status, only show booking button if url param "bookable" is set
         && (!$date->onApplication || $app->input->exists('bookable'))
       );
       $event->isBookable = $event->isBookable || $date->isBookable;
-      if ($date->status == 'canceled') $count_canceled++;
+      if ($date->isCanceled) $count_canceled++;
     }
     
     //-- Get list of dates, limit to 5
@@ -1048,18 +1153,22 @@ class SeminardeskDataHelper
       array_push($event->datesList, '...');
     }
     //-- Add labels to dates list for canceled dates
-    if (count($event->dates) > 1 && $count_canceled == count($event->dates)) {
+    $event->isCanceled = count($event->dates) > 1 && $count_canceled == count($event->dates);
+    if ($event->isCanceled) {
       // >1 dates and ALL canceled: ONE label for all dates
       $event->datesList[0] = JText::_("COM_SEMINARDESK_EVENT_ALL_CANCELED") . ': ' . $event->datesList[0];
     } elseif ($count_canceled > 0) {
       // Only one date, or >1 and some events canceled, others not 
       // => Individual labels per date
       foreach($event->dates as $key => $date) {
-        if ($date->status == 'canceled') {
+        if ($date->isCanceled) {
           $event->datesList[$key] .= ' (' . JText::_("COM_SEMINARDESK_EVENT_CANCELED") . ')';
         }
       }
     }
+
+    // Get structured data for event
+    $event->structuredData = self::getStructuredData($event);
   }
   
   /**
