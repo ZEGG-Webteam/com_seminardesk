@@ -184,5 +184,9 @@ $this->addTemplatePath(JPATH_COMPONENT . '/src/View/Facilitators/tmpl');
     </div>
   </aside>
 
+  <script type="application/ld+json">
+    <?= json_encode($this->event->structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
+  </script>
+
 </div>
 

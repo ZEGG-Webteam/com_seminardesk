@@ -14,6 +14,7 @@ use Joomla\Component\Seminardesk\Site\Service\EventDateService;
 
 //-- Matching current filter? => Hide event if no
 $matchingFilters = EventDateService::matchingFilters($this->eventDate, $this->filters);
+$nofollow = ($this->eventDate->isPastEvent) ? ' rel="nofollow"' : '';
 ?>
 <div class="sd-event loading<?= (!$matchingFilters)?' hidden':'' ?>" 
      itemscope itemtype="https://schema.org/Event" 
@@ -23,7 +24,7 @@ $matchingFilters = EventDateService::matchingFilters($this->eventDate, $this->fi
      data-labels="<?= $this->eventDate->labelsList ?>"
      data-languages="<?= $this->eventDate->languageList ?>"
      data-searchable-text="<?= $this->eventDate->searchableText ?>">
-  <a <?= ($this->eventDate->detailpageAvailable)?('href="' . $this->eventDate->detailsUrl . '" itemprop="url" target="_parent" '):'' ?>class="<?= $this->eventDate->cssClasses ?>">
+  <a <?= ($this->eventDate->detailpageAvailable)?('href="' . $this->eventDate->detailsUrl . '" itemprop="url" target="_parent" '):'' ?>class="<?= $this->eventDate->cssClasses ?>"<?= $nofollow ?>>
     <?php $sameYear = date('Y', $this->eventDate->beginDate) === date('Y', $this->eventDate->endDate); ?>
     <div class="sd-event-date <?= (!$sameYear)?' not-same-year':'' ?>">
       <time itemprop="startDate" 

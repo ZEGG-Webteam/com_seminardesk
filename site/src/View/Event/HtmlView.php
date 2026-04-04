@@ -89,7 +89,6 @@ class HtmlView extends BaseHtmlView
         if (!empty($this->event->title)) {
             $title = $this->event->title;
         }
-
         if (empty($title)) {
             $title = $app->get('sitename');
         } elseif ($app->get('sitename_pagetitles', 0) == 1) {
@@ -97,7 +96,23 @@ class HtmlView extends BaseHtmlView
         } elseif ($app->get('sitename_pagetitles', 0) == 2) {
             $title = Text::sprintf('JPAGETITLE', $title, $app->get('sitename'));
         }
-
         $this->getDocument()->setTitle($title);
+
+        // Metadata
+        if ($this->params->get('menu-meta_description')) {
+            $this->getDocument()->setDescription($this->params->get('menu-meta_description'));
+        }
+        if ($this->params->get('menu-meta_keywords')) {
+            $this->getDocument()->setMetadata('keywords', $this->params->get('menu-meta_keywords'));
+        }
+
+        // Robots
+        if ($this->params->get('robots')) {
+            $this->getDocument()->setMetadata('robots', $this->params->get('robots'));
+        }
+        // Add noindex for past events to remove them from Google search results
+        if ($this->event->isPastEvent) {
+            $this->getDocument()->setMetadata('robots', 'noindex, follow');
+        }
     }
 }

@@ -170,7 +170,7 @@ class EventDateService
         }
 
         // Label for past events
-        if (time() > $eventDate->endDate) {
+        if ($eventDate->isPastEvent) {
           $key = "COM_SEMINARDESK_EVENTS_STATUS_PAST_EVENT";
         }
 
@@ -374,8 +374,6 @@ class EventDateService
       // Add languages
       $eventDate->languages = $this->getEventLanguages($eventDate);
       $eventDate->languageList = implode(',', $eventDate->languages);
-      // Add status label
-      $eventDate->statusLabel = $this->getStatusLabel($eventDate);
       // Add searchable text for filters
       $eventDate->searchableText = htmlspecialchars(strip_tags(implode(' ', [
           $eventDate->title,
@@ -398,6 +396,9 @@ class EventDateService
       $eventDate->isExternal = FormatHelper::hasLabel($eventDate, ConfigService::LABELS_EXTERNAL_ID);
       $eventDate->onApplication = FormatHelper::hasLabel($eventDate, ConfigService::LABELS_ON_APPLICATION_ID);
       $eventDate->isPastEvent = $eventDate->endDate < time();
+      $eventDate->isCanceled = $eventDate->status === 'canceled';
+      // Add status label
+      $eventDate->statusLabel = $this->getStatusLabel($eventDate);
 
       //-- Set event classes
       $classes = ['registration-available'];
@@ -409,7 +410,7 @@ class EventDateService
       if ($eventDate->isExternal)           { $classes[] = 'external-event';   } 
       if (!$eventDate->isExternal)          { $classes[] = 'zegg-event';       }
       if ($eventDate->isPastEvent)          { $classes[] = 'past-event';       }
-      if ($eventDate->status == 'canceled') { $classes[] = 'is-canceled';      }
+      if ($eventDate->isCanceled)           { $classes[] = 'is-canceled';      }
       $eventDate->cssClasses = implode(' ', $classes);
 
       //-- Format date
