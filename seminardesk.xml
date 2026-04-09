@@ -34,6 +34,7 @@
   <media destination="com_seminardesk" folder="media">
     <folder>js</folder>
     <folder>css</folder>
+    <filename>joomla.asset.json</filename>
   </media>
   <languages folder="site/languages">
     <language tag="en-GB">en-GB/en-GB.com_seminardesk.ini</language>

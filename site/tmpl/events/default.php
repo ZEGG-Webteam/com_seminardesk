@@ -17,8 +17,7 @@ use Joomla\CMS\Language\Text;
 $app = Factory::getApplication();
 $document = $app->getDocument();
 
-$wa = $document->getWebAssetManager();
-$wa->useScript('com_seminardesk.scripts');
+// Assets are loaded via WebAssetManager in HtmlView::prepareDocument()
 
 $previousEventMonth = '';
 $filters = [

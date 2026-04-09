@@ -1,0 +1,19 @@
+{
+  "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+  "name": "com_seminardesk",
+  "version": "2.0.0",
+  "description": "Joomla CMS - SeminarDesk Component",
+  "license": "GPL-2.0-or-later",
+  "assets": [
+    {
+      "name": "com_seminardesk.scripts",
+      "type": "script",
+      "uri": "com_seminardesk/js/seminardesk.js"
+    },
+    {
+      "name": "com_seminardesk.styles",
+      "type": "style",
+      "uri": "com_seminardesk/css/styles.css"
+    }
+  ]
+}

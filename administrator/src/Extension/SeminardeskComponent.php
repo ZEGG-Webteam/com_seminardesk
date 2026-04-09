@@ -41,7 +41,6 @@ class SeminardeskComponent extends MVCComponent implements
      */
     public function boot(ContainerInterface $container): void
     {
-        // Web assets are registered via joomla.asset.json in the media folder
-        // and loaded in the views via WebAssetManager
+        // CSS/JS assets are loaded in the site views via WebAssetManager::registerAndUseStyle/Script
     }
 }

@@ -1,7 +1,6 @@
 /**
  * JS for SeminarDesk Component
  */
-
 (function ($) {
   
   $( document ).ready(function() {
