@@ -27,7 +27,9 @@ $filters = [
   'cat'  => $app->input->get('cat',  0,  'integer'), 
   'org'  => $app->input->get('org',  '', 'string'), 
   'term' => $app->input->get('term', '', 'string'), 
-  'lang' => $app->input->get->get('lang', $this->langKey, 'string'), // Only get "lang" from URL, not from other sources.
+  // Only get "lang" from URL, not from other sources.
+  // If not set, use "all" for german and "en" for english visitors.
+  'lang' => $app->input->get->get('lang', ($this->langKey === 'de' ? 'all' : 'en'), 'string'),
 ];
 
 // Collect unique months from events for the filter dropdown
