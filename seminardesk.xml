@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="component" method="upgrade">
   <name>com_seminardesk</name>
-  <creationDate>March 2026</creationDate>
+  <creationDate>March 2022</creationDate>
   <copyright>2022-2026, Benno Flory, Luzern / ZEGG gGmbH, DE-Bad Belzig</copyright>
   <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
   <author>Benno Flory</author>

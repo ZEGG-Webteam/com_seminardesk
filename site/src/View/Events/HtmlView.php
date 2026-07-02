@@ -13,7 +13,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
-use Joomla\CMS\Uri\Uri;
+use Joomla\Component\Seminardesk\Site\Helper\AssetHelper;
 use Joomla\Component\Seminardesk\Site\Helper\TranslationHelper;
 
 /**
@@ -76,12 +76,8 @@ class HtmlView extends BaseHtmlView
     {
         $app   = Factory::getApplication();
         
-        // Load CSS / JS via WebAssetManager
-        // Note: Using Uri::root() for absolute paths because Joomla's relative media path
-        // resolution (HTMLHelper::mediaPath) does not resolve 'com_seminardesk/...' URIs correctly.
-        $wa = $app->getDocument()->getWebAssetManager();
-        $wa->registerAndUseStyle('com_seminardesk.styles', Uri::root() . 'media/com_seminardesk/css/styles.css');
-        $wa->registerAndUseScript('com_seminardesk.scripts', Uri::root() . 'media/com_seminardesk/js/seminardesk.js');
+        // Load component CSS / JS
+        AssetHelper::loadAssets($app->getDocument());
         
         $menus = $app->getMenu();
         $title = null;
