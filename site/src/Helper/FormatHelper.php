@@ -83,20 +83,16 @@ class FormatHelper
     }
 
     /**
-     * Remove all style attributes (but keep them on images)
-     *
-     * @param   string  $text  The text to process
-     *
-     * @return  string  Text without style attributes
+     * Remove all style attributes (but keep them on images, tables, table headers and cells)
+     * @param string $text
+     * @return string - text without style attributes
      */
-    public static function cleanupStyles(string $text): string
-    {
-        // regex hack: (<[^x>]+) is for all tags except "img" => images should keep their styles.
-        // x replaces img because regex pattern for <img too complicated
-        return str_replace(
-            '<x',
-            '<img',
-            preg_replace('/(<[^x>]+) style=".*?"/i', '$1', str_replace('<img', '<x', $text))
+    public static function cleanupStyles($text) {
+        // The negative lookahead (?!(?:img|table|th|td)\b) skips those tags.
+        return preg_replace(
+            '/(<(?!(?:img|table|th|td)\b)[a-z][a-z0-9]*\b[^>]*?) style=".*?"/i',
+            '$1',
+            $text
         );
     }
 
