@@ -136,6 +136,9 @@
       if(url_params.has('lang')) {
         $('#sd-filter-lang').val(url_params.get('lang'));
       }
+      else if ($('#sd-filter-lang').data('current-lang') === 'de') {
+        $('#sd-filter-lang').val('all');
+      }
 
       // Filter on any filter field changed
       $('.sd-filter-form #sd-filter-date').on('change', filterEvents);
