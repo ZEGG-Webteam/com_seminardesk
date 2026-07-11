@@ -21,8 +21,8 @@ $config = SeminardeskDataHelper::getConfiguration();
 
 //-- Load CSS / JS
 $document  = Factory::getDocument();
-$document->addStyleSheet('/media/com_seminardesk/css/styles.css?hash=20260702');
-$document->addScript('/media/com_seminardesk/js/seminardesk.js?hash=20260702');
+$document->addStyleSheet('/media/com_seminardesk/css/styles.css?hash=20260711');
+$document->addScript('/media/com_seminardesk/js/seminardesk.js?hash=20260711');
 
 //-- Set document title
 $title = str_replace(['&ndash;', '&amp;'], ['-', '&'], html_entity_decode($this->event->title));

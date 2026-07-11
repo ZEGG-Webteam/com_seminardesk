@@ -19,8 +19,8 @@ $app = Factory::getApplication();
 
 //-- Load CSS / JS
 $document  = Factory::getDocument();
-$document->addStyleSheet('/media/com_seminardesk/css/styles.css?hash=20260702');
-$document->addScript('/media/com_seminardesk/js/seminardesk.js?hash=20260702');
+$document->addStyleSheet('/media/com_seminardesk/css/styles.css?hash=20260711');
+$document->addScript('/media/com_seminardesk/js/seminardesk.js?hash=20260711');
 ?>
 
 <div class="sd-component sd-facilitators<?php echo ($this->pageclass_sfx)?' sd-facilitators'.$this->pageclass_sfx:''; ?>">
